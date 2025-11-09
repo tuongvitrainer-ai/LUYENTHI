@@ -57,8 +57,8 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes (will be added later)
-// app.use('/api', require('./routes/api'));
+// API routes
+app.use('/api', require('./routes/api'));
 
 // ============================================
 // ERROR HANDLING
