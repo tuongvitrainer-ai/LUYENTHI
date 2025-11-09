@@ -4,7 +4,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
 
-// Khßi t¡o Express app
+// Initialize Express app
 const app = express();
 
 // ============================================
@@ -33,16 +33,31 @@ if (process.env.NODE_ENV !== 'test') {
 // ROUTES
 // ============================================
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+// Welcome page
+app.get('/', (req, res) => {
   res.json({
-    status: 'OK',
-    message: 'Server ang ho¡t Ùng',
+    success: true,
+    message: 'Vuot Vu Mon - Quiz Platform API',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      health: '/health',
+      api: '/api/*'
+    },
     timestamp: new Date().toISOString()
   });
 });
 
-// API routes (s½ °ãc thêm sau)
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// API routes (will be added later)
 // app.use('/api', require('./routes/api'));
 
 // ============================================
@@ -53,7 +68,7 @@ app.get('/health', (req, res) => {
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Không tìm th¥y endpoint'
+    message: 'Endpoint not found'
   });
 });
 
@@ -62,7 +77,7 @@ app.use((err, req, res, next) => {
   console.error('Error:', err);
 
   const statusCode = err.statusCode || 500;
-  const message = err.message || 'L×i server';
+  const message = err.message || 'Server error';
 
   res.status(statusCode).json({
     success: false,
