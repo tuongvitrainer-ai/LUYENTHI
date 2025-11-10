@@ -86,11 +86,14 @@ export const questionsAPI = {
 // ============================================
 
 export const gameAPI = {
+  // Get questions
+  getQuestions: (params) => api.get('/game/questions', { params }),
+
   // Submit answer
   submitResult: (data) => api.post('/game/submit_result', data),
 
   // Get user results/history
-  getResults: (params) => api.get('/game/results', { params }),
+  getHistory: (params) => api.get('/game/history', { params }),
 
   // Get user stats
   getStats: () => api.get('/game/stats'),

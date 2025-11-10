@@ -4,6 +4,7 @@ const router = express.Router();
 // Import controllers
 const authController = require('../controllers/authController');
 const adminController = require('../controllers/adminController');
+const gameController = require('../controllers/gameController');
 
 // Import middleware
 const { authenticateToken, isAdmin } = require('../middleware/auth');
@@ -21,11 +22,20 @@ router.post('/auth/logout', authController.logout);
 router.get('/auth/me', authenticateToken, authController.getMe);
 
 // ============================================
-// GAME ROUTES (will be added later)
+// GAME ROUTES
 // ============================================
 
-// router.get('/questions', gameController.getQuestions);
-// router.post('/game/submit_result', authenticateToken, gameController.submitResult);
+// Get questions for game/practice
+router.get('/game/questions', authenticateToken, gameController.getQuestions);
+
+// Submit answer
+router.post('/game/submit_result', authenticateToken, gameController.submitResult);
+
+// Get user's game history
+router.get('/game/history', authenticateToken, gameController.getHistory);
+
+// Get user statistics
+router.get('/game/stats', authenticateToken, gameController.getStats);
 
 // ============================================
 // ADMIN ROUTES

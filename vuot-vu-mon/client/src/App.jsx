@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import GameMap from './pages/GameMap';
+import QuestionView from './pages/QuestionView';
 import './App.css';
 
 // Protected Route Component
@@ -23,33 +25,6 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-// Home Page (placeholder for now)
-function HomePage() {
-  const { user, logout } = useAuth();
-
-  return (
-    <div style={{ padding: '20px', textAlign: 'center' }}>
-      <h1>Chào mừng đến với Vượt Vũ Môn!</h1>
-      <p>Xin chào, {user?.display_name || user?.username}!</p>
-      <p>Role: {user?.role}</p>
-      <p>Tổng sao: {user?.total_stars}</p>
-      <button
-        onClick={logout}
-        style={{
-          padding: '10px 20px',
-          background: '#e74c3c',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-        }}
-      >
-        Đăng xuất
-      </button>
-    </div>
-  );
-}
-
 function App() {
   return (
     <Router>
@@ -64,7 +39,16 @@ function App() {
             path="/"
             element={
               <ProtectedRoute>
-                <HomePage />
+                <GameMap />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/game/play"
+            element={
+              <ProtectedRoute>
+                <QuestionView />
               </ProtectedRoute>
             }
           />
