@@ -1,42 +1,394 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* ========================================
+   PASTEL COLOR PALETTE FOR KIDS
+======================================== */
+:root {
+  /* Primary Pastel Colors */
+  --pastel-blue: #A8D8EA;
+  --pastel-blue-light: #D4F1F4;
+  --pastel-blue-dark: #7BB8D8;
+
+  --pastel-pink: #FFB6C1;
+  --pastel-pink-light: #FFD4E5;
+  --pastel-pink-dark: #FFA0B0;
+
+  --pastel-purple: #D4BBDD;
+  --pastel-purple-light: #E8D5F2;
+  --pastel-purple-dark: #C0A5CC;
+
+  --pastel-green: #B4E7CE;
+  --pastel-green-light: #D5F3E5;
+  --pastel-green-dark: #9DD9BC;
+
+  --pastel-yellow: #FFF9A6;
+  --pastel-yellow-light: #FFFACD;
+  --pastel-yellow-dark: #FFE873;
+
+  --pastel-orange: #FFD5A8;
+  --pastel-orange-light: #FFE5CC;
+  --pastel-orange-dark: #FFC080;
+
+  --pastel-peach: #FFB3BA;
+  --pastel-mint: #BFFCC6;
+  --pastel-lavender: #C9A6F9;
+
+  /* Gradient Backgrounds */
+  --gradient-rainbow: linear-gradient(135deg, #A8D8EA 0%, #FFB6C1 50%, #FFF9A6 100%);
+  --gradient-blue-pink: linear-gradient(135deg, #A8D8EA 0%, #FFB6C1 100%);
+  --gradient-pink-purple: linear-gradient(135deg, #FFB6C1 0%, #D4BBDD 100%);
+  --gradient-green-blue: linear-gradient(135deg, #B4E7CE 0%, #A8D8EA 100%);
+  --gradient-yellow-orange: linear-gradient(135deg, #FFF9A6 0%, #FFD5A8 100%);
+
+  /* Subject Colors */
+  --color-math: #A8D8EA;        /* Pastel Blue for Math */
+  --color-vietnamese: #FFB6C1;  /* Pastel Pink for Vietnamese */
+  --color-english: #B4E7CE;     /* Pastel Green for English */
+
+  /* Neutral Colors */
+  --white: #FFFFFF;
+  --light-gray: #F8F9FA;
+  --gray: #E9ECEF;
+  --dark-gray: #6C757D;
+  --text-dark: #495057;
+  --text-light: #868E96;
+
+  /* Semantic Colors */
+  --success: #B4E7CE;
+  --error: #FFB3BA;
+  --warning: #FFD5A8;
+  --info: #A8D8EA;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(168, 216, 234, 0.15);
+  --shadow-md: 0 4px 16px rgba(168, 216, 234, 0.2);
+  --shadow-lg: 0 8px 24px rgba(168, 216, 234, 0.25);
+
+  /* Border Radius */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* Font Families */
+  --font-primary: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* ========================================
+   GLOBAL STYLES
+======================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-@keyframes logo-spin {
-  from {
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-primary);
+  color: var(--text-dark);
+  background: var(--gradient-blue-pink);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Typography for Kids */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-dark);
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.75rem;
+}
+
+h4 {
+  font-size: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+  }
+
+  h4 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Buttons */
+button {
+  font-family: var(--font-primary);
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Links */
+a {
+  color: var(--pastel-blue-dark);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--pastel-purple-dark);
+}
+
+/* Inputs */
+input, textarea, select {
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--gray);
+  padding: var(--spacing-sm);
+  transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--pastel-blue);
+  box-shadow: 0 0 0 3px rgba(168, 216, 234, 0.2);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--pastel-blue-light);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pastel-pink);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pastel-pink-dark);
+}
+
+/* Selection */
+::selection {
+  background: var(--pastel-purple-light);
+  color: var(--text-dark);
+}
+
+/* Animations */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes wiggle {
+  0%, 100% {
     transform: rotate(0deg);
   }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+/* Utility Classes */
+.fade-in {
+  animation: fadeIn 0.5s ease;
+}
+
+.bounce {
+  animation: bounce 0.5s ease;
+}
+
+.wiggle {
+  animation: wiggle 0.5s ease;
+}
+
+.pulse {
+  animation: pulse 0.5s ease infinite;
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* App Root */
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Loading Spinner */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--gradient-rainbow);
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid var(--pastel-blue-light);
+  border-top-color: var(--pastel-pink);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+/* Card Styles */
+.card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-lg);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+/* Container */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--spacing-md);
   }
 }
 
-.card {
-  padding: 2em;
+/* Responsive Images */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
-.read-the-docs {
-  color: #888;
+/* Hide on Mobile */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Hide on Desktop */
+@media (min-width: 769px) {
+  .hide-desktop {
+    display: none !important;
+  }
 }
