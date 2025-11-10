@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { gameAPI } from '../services/api';
+import UserAvatar from '../components/UserAvatar';
 import './QuestionView.css';
 
 function QuestionView() {
@@ -136,7 +137,10 @@ function QuestionView() {
         <div className="question-progress">
           Câu {currentIndex + 1} / {questions.length}
         </div>
-        <div className="user-stars">⭐ {user?.total_stars || 0}</div>
+        <div className="header-right">
+          <div className="user-stars">⭐ {user?.total_stars || 0}</div>
+          <UserAvatar />
+        </div>
       </div>
 
       {/* Question Content */}

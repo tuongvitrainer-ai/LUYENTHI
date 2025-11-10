@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { shopAPI } from '../services/api';
+import UserAvatar from '../components/UserAvatar';
 import './Shop.css';
 
 function Shop() {
@@ -145,7 +146,10 @@ function Shop() {
             ← Về trang chủ
           </button>
           <h1>🛒 Cửa Hàng</h1>
-          <div className="user-stars">⭐ {user?.total_stars || 0}</div>
+          <div className="header-right">
+            <div className="user-stars">⭐ {user?.total_stars || 0}</div>
+            <UserAvatar />
+          </div>
         </div>
       </div>
 

@@ -134,6 +134,12 @@
   animation: wiggle 0.5s ease;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
 .user-stars {
   background: var(--gradient-yellow-orange);
   color: var(--white);
