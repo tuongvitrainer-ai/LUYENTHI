@@ -116,9 +116,10 @@ export const adminAPI = {
 // ============================================
 
 export const shopAPI = {
-  getItems: () => api.get('/shop/items'),
-  purchase: (itemId, quantity) => api.post('/shop/purchase', { itemId, quantity }),
-  getUserPurchases: () => api.get('/shop/purchases'),
+  getItems: (params) => api.get('/shop/items', { params }),
+  purchase: (data) => api.post('/shop/purchase', data),
+  getUserPurchases: (params) => api.get('/shop/purchases', { params }),
+  getInventory: () => api.get('/shop/inventory'),
 };
 
 // Export default axios instance for custom requests

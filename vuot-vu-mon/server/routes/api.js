@@ -5,6 +5,7 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const adminController = require('../controllers/adminController');
 const gameController = require('../controllers/gameController');
+const shopController = require('../controllers/shopController');
 
 // Import middleware
 const { authenticateToken, isAdmin } = require('../middleware/auth');
@@ -48,10 +49,19 @@ router.put('/admin/questions/:id', authenticateToken, isAdmin, adminController.u
 router.delete('/admin/questions/:id', authenticateToken, isAdmin, adminController.deleteQuestion);
 
 // ============================================
-// SHOP ROUTES (will be added later)
+// SHOP ROUTES
 // ============================================
 
-// router.get('/shop/items', shopController.getItems);
-// router.post('/shop/purchase', authenticateToken, shopController.purchase);
+// Get all shop items
+router.get('/shop/items', authenticateToken, shopController.getItems);
+
+// Purchase an item
+router.post('/shop/purchase', authenticateToken, shopController.purchase);
+
+// Get user's purchase history
+router.get('/shop/purchases', authenticateToken, shopController.getUserPurchases);
+
+// Get user's inventory
+router.get('/shop/inventory', authenticateToken, shopController.getInventory);
 
 module.exports = router;
