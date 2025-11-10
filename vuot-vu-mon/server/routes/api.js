@@ -3,6 +3,7 @@ const router = express.Router();
 
 // Import controllers
 const authController = require('../controllers/authController');
+const adminController = require('../controllers/adminController');
 
 // Import middleware
 const { authenticateToken, isAdmin } = require('../middleware/auth');
@@ -27,10 +28,14 @@ router.get('/auth/me', authenticateToken, authController.getMe);
 // router.post('/game/submit_result', authenticateToken, gameController.submitResult);
 
 // ============================================
-// ADMIN ROUTES (will be added later)
+// ADMIN ROUTES
 // ============================================
 
-// router.post('/admin/questions', authenticateToken, isAdmin, adminController.createQuestion);
+// Question management (Admin only)
+router.post('/admin/questions', authenticateToken, isAdmin, adminController.createQuestion);
+router.get('/admin/questions', authenticateToken, isAdmin, adminController.getQuestions);
+router.put('/admin/questions/:id', authenticateToken, isAdmin, adminController.updateQuestion);
+router.delete('/admin/questions/:id', authenticateToken, isAdmin, adminController.deleteQuestion);
 
 // ============================================
 // SHOP ROUTES (will be added later)
