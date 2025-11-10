@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import GameMap from './pages/GameMap';
 import QuestionView from './pages/QuestionView';
+import Shop from './pages/Shop';
 import './App.css';
 
 // Protected Route Component
@@ -49,6 +50,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <QuestionView />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/shop"
+            element={
+              <ProtectedRoute>
+                <Shop />
               </ProtectedRoute>
             }
           />
