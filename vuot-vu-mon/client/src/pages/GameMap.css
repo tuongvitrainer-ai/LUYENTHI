@@ -36,10 +36,7 @@
 
 .header-content h1 {
   margin: 0;
-  background: var(--gradient-pink-purple);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--theme-text, var(--text-dark));
   font-size: 1.6rem;
   font-family: var(--font-display);
   animation: bounce 1s ease;
@@ -75,14 +72,16 @@
 }
 
 .user-stars {
-  border-color: var(--pastel-yellow);
-  color: var(--text-dark);
+  background: #FFD700 !important;
+  border-color: rgba(255, 215, 0, 0.3);
+  color: #5A4000;
   animation: pulse 2s ease infinite;
 }
 
 .user-streak {
-  border-color: var(--pastel-orange);
-  color: var(--text-dark);
+  background: #FF8C42 !important;
+  border-color: rgba(255, 140, 66, 0.3);
+  color: #5A3000;
 }
 
 .btn-shop,

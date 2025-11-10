@@ -67,14 +67,10 @@
 }
 
 .auth-header h1 {
-  color: var(--text-dark);
+  color: var(--theme-text, var(--text-dark));
   margin: 0 0 var(--spacing-sm) 0;
   font-size: 2rem;
   font-family: var(--font-display);
-  background: var(--gradient-blue-pink);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   animation: slideInLeft 0.5s ease;
 }
 

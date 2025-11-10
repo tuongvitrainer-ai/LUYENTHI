@@ -21,6 +21,7 @@ router.post('/auth/logout', authController.logout);
 
 // Protected routes (require authentication)
 router.get('/auth/me', authenticateToken, authController.getMe);
+router.put('/auth/profile', authenticateToken, authController.updateProfile);
 
 // ============================================
 // GAME ROUTES
