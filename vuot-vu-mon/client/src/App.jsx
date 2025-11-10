@@ -7,6 +7,11 @@ import GameMap from './pages/GameMap';
 import QuestionView from './pages/QuestionView';
 import Shop from './pages/Shop';
 import Profile from './pages/Profile';
+import AdminRoute from './components/AdminRoute';
+import Dashboard from './pages/admin/Dashboard';
+import QuestionBank from './pages/admin/QuestionBank';
+import QuestionForm from './pages/admin/QuestionForm';
+import UserManagement from './pages/admin/UserManagement';
 import './App.css';
 
 // Protected Route Component
@@ -72,6 +77,52 @@ function App() {
                 <ProtectedRoute>
                   <Profile />
                 </ProtectedRoute>
+              }
+            />
+
+            {/* Admin Routes */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <AdminRoute>
+                  <Dashboard />
+                </AdminRoute>
+              }
+            />
+
+            <Route
+              path="/admin/question-bank"
+              element={
+                <AdminRoute>
+                  <QuestionBank />
+                </AdminRoute>
+              }
+            />
+
+            <Route
+              path="/admin/question-bank/create"
+              element={
+                <AdminRoute>
+                  <QuestionForm />
+                </AdminRoute>
+              }
+            />
+
+            <Route
+              path="/admin/question-bank/edit/:id"
+              element={
+                <AdminRoute>
+                  <QuestionForm />
+                </AdminRoute>
+              }
+            />
+
+            <Route
+              path="/admin/users"
+              element={
+                <AdminRoute>
+                  <UserManagement />
+                </AdminRoute>
               }
             />
 
