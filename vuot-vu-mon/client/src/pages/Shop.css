@@ -103,10 +103,7 @@
 
 .header-content h1 {
   margin: 0;
-  background: var(--gradient-yellow-orange);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--theme-text, var(--text-dark));
   font-size: 1.6rem;
   flex-shrink: 0;
   font-family: var(--font-display);
@@ -115,8 +112,8 @@
 
 .btn-back {
   padding: var(--spacing-sm) var(--spacing-lg);
-  background: var(--gradient-blue-pink);
-  color: var(--white);
+  background: var(--theme-primary, var(--pastel-blue));
+  color: white;
   border: none;
   border-radius: var(--radius-lg);
   cursor: pointer;
@@ -141,8 +138,8 @@
 }
 
 .user-stars {
-  background: var(--gradient-yellow-orange);
-  color: var(--white);
+  background: #FFD700;
+  color: #5A4000;
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-full);
   font-weight: 700;
@@ -150,7 +147,7 @@
   box-shadow: var(--shadow-sm);
   white-space: nowrap;
   animation: pulse 2s ease infinite;
-  border: 3px solid rgba(255, 255, 255, 0.5);
+  border: 3px solid rgba(255, 215, 0, 0.3);
 }
 
 /* Desktop Header */

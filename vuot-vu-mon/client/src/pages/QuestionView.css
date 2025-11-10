@@ -77,14 +77,14 @@
 }
 
 .user-stars {
-  background: var(--gradient-yellow-orange);
+  background: #FFD700;
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-full);
   font-weight: 700;
-  color: var(--white);
+  color: #5A4000;
   box-shadow: var(--shadow-sm);
   animation: pulse 2s ease infinite;
-  border: 3px solid rgba(255, 255, 255, 0.5);
+  border: 3px solid rgba(255, 215, 0, 0.3);
   font-family: var(--font-display);
 }
 

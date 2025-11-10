@@ -214,6 +214,74 @@ const getMe = (req, res) => {
 };
 
 /**
+ * Update user profile
+ * PUT /api/auth/profile
+ * Requires authentication
+ */
+const updateProfile = (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const { display_name, avatar_url } = req.body;
+
+    // Validate input
+    if (!display_name && !avatar_url) {
+      return res.status(400).json({
+        success: false,
+        message: 'At least one field (display_name or avatar_url) is required'
+      });
+    }
+
+    // Build update query dynamically
+    const updateFields = [];
+    const params = [];
+
+    if (display_name) {
+      updateFields.push('display_name = ?');
+      params.push(display_name);
+    }
+
+    if (avatar_url) {
+      updateFields.push('avatar_url = ?');
+      params.push(avatar_url);
+    }
+
+    updateFields.push("updated_at = datetime('now')");
+    params.push(user_id);
+
+    const query = `
+      UPDATE users
+      SET ${updateFields.join(', ')}
+      WHERE id = ?
+    `;
+
+    db.prepare(query).run(...params);
+
+    // Get updated user
+    const updatedUser = db.prepare(`
+      SELECT id, username, email, display_name, avatar_url, role,
+             total_stars, current_streak, max_streak
+      FROM users
+      WHERE id = ?
+    `).get(user_id);
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: {
+        user: updatedUser
+      }
+    });
+
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating profile'
+    });
+  }
+};
+
+/**
  * Logout (client-side mainly, just for API consistency)
  * POST /api/auth/logout
  */
@@ -228,5 +296,6 @@ module.exports = {
   register,
   login,
   getMe,
+  updateProfile,
   logout
 };

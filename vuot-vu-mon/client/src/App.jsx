@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage';
 import GameMap from './pages/GameMap';
 import QuestionView from './pages/QuestionView';
 import Shop from './pages/Shop';
+import Profile from './pages/Profile';
 import './App.css';
 
 // Protected Route Component
@@ -61,6 +62,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Shop />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               }
             />
