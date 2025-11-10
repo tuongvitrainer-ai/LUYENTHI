@@ -15,6 +15,51 @@
   font-weight: 600;
 }
 
+.error-message {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+}
+
+.error-message h2 {
+  color: #e74c3c;
+  margin: 0 0 25px 0;
+  font-size: 20px;
+}
+
+.btn-retry,
+.btn-back-home {
+  padding: 12px 24px;
+  margin: 8px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-retry {
+  background: #3498db;
+  color: white;
+}
+
+.btn-retry:hover {
+  background: #2980b9;
+}
+
+.btn-back-home {
+  background: #95a5a6;
+  color: white;
+}
+
+.btn-back-home:hover {
+  background: #7f8c8d;
+}
+
 /* Header */
 .shop-header {
   background: rgba(255, 255, 255, 0.95);
@@ -23,12 +68,18 @@
 }
 
 .header-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+@media (min-width: 1200px) {
+  .header-content {
+    padding: 0 40px;
+  }
 }
 
 .header-content h1 {
@@ -65,9 +116,15 @@
 
 /* Shop Container */
 .shop-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 40px 20px;
+}
+
+@media (min-width: 1200px) {
+  .shop-container {
+    padding: 50px 40px;
+  }
 }
 
 .shop-category {
@@ -99,6 +156,21 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 25px;
+}
+
+/* Desktop optimization */
+@media (min-width: 1200px) {
+  .items-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  .items-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+  }
 }
 
 .shop-item-card {
@@ -206,6 +278,13 @@
   position: relative;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   animation: modalSlideIn 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .modal-content {
+    max-width: 550px;
+    padding: 40px;
+  }
 }
 
 @keyframes modalSlideIn {
