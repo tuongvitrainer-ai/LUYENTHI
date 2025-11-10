@@ -10,6 +10,7 @@ function Shop() {
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [purchasing, setPurchasing] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -22,14 +23,21 @@ function Shop() {
   const loadShopItems = async () => {
     try {
       setLoading(true);
+      setError(null);
+
       const response = await shopAPI.getItems();
+      console.log('Shop API response:', response.data);
 
       if (response.data.success) {
-        setItems(response.data.data.items);
+        setItems(response.data.data.items || []);
+        console.log('Loaded items:', response.data.data.items?.length || 0);
+      } else {
+        setError(response.data.message || 'Không thể tải danh sách sản phẩm');
       }
     } catch (error) {
       console.error('Load shop items error:', error);
-      alert('Lỗi khi tải cửa hàng. Vui lòng thử lại.');
+      const errorMessage = error.response?.data?.message || error.message || 'Lỗi khi tải cửa hàng';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -112,6 +120,18 @@ function Shop() {
     return (
       <div className="shop-page loading">
         <div className="loading-spinner">Đang tải cửa hàng...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="shop-page loading">
+        <div className="error-message">
+          <h2>❌ {error}</h2>
+          <button onClick={loadShopItems} className="btn-retry">Thử lại</button>
+          <button onClick={handleBackToMap} className="btn-back-home">Về trang chủ</button>
+        </div>
       </div>
     );
   }
