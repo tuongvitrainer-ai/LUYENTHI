@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import UserAvatar from '../components/UserAvatar';
 import './GameMap.css';
 
 function GameMap() {
@@ -42,11 +43,9 @@ function GameMap() {
         <div className="header-content">
           <h1>Vượt Vũ Môn</h1>
           <div className="user-info">
-            <span className="user-name">{user?.display_name || user?.username}</span>
             <span className="user-stars">⭐ {user?.total_stars || 0}</span>
             <span className="user-streak">🔥 {user?.current_streak || 0}</span>
-            <button onClick={() => navigate('/shop')} className="btn-shop">🛒 Cửa hàng</button>
-            <button onClick={logout} className="btn-logout">Đăng xuất</button>
+            <UserAvatar />
           </div>
         </div>
       </header>

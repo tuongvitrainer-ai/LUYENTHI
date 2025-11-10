@@ -70,6 +70,12 @@
   font-family: var(--font-display);
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
 .user-stars {
   background: var(--gradient-yellow-orange);
   padding: var(--spacing-sm) var(--spacing-lg);
@@ -89,9 +95,18 @@
   }
 
   .btn-back,
-  .question-progress,
-  .user-stars {
+  .question-progress {
     width: 100%;
+    text-align: center;
+    padding: var(--spacing-xs) var(--spacing-md);
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .user-stars {
     text-align: center;
     padding: var(--spacing-xs) var(--spacing-md);
   }

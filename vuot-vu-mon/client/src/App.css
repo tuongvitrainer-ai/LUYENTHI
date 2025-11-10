@@ -2,54 +2,70 @@
    PASTEL COLOR PALETTE FOR KIDS
 ======================================== */
 :root {
-  /* Primary Pastel Colors */
-  --pastel-blue: #A8D8EA;
-  --pastel-blue-light: #D4F1F4;
-  --pastel-blue-dark: #7BB8D8;
+  /* Theme Variables (can be overridden by ThemeContext) */
+  --theme-primary: #87CEEB;
+  --theme-secondary: #B0E0E6;
+  --theme-accent: #ADD8E6;
+  --theme-background: linear-gradient(135deg, #E0F6FF 0%, #B0E0E6 50%, #87CEEB 100%);
+  --theme-card-bg: rgba(224, 246, 255, 0.9);
+  --theme-text: #2C5F7F;
+  --theme-text-light: #4A7FA0;
+  --theme-border: #87CEEB;
+  --theme-shadow: rgba(135, 206, 235, 0.2);
+
+  /* Text Colors - Easier to Read */
+  --text-primary: #2C3E50;
+  --text-secondary: #5A6C7D;
+  --text-muted: #7F8C9D;
+
+  /* Primary Pastel Colors - Softer Tones */
+  --pastel-blue: #87CEEB;
+  --pastel-blue-light: #B0E0E6;
+  --pastel-blue-dark: #6FB1D8;
 
   --pastel-pink: #FFB6C1;
-  --pastel-pink-light: #FFD4E5;
+  --pastel-pink-light: #FFC0CB;
   --pastel-pink-dark: #FFA0B0;
 
-  --pastel-purple: #D4BBDD;
-  --pastel-purple-light: #E8D5F2;
+  --pastel-purple: #D8BFD8;
+  --pastel-purple-light: #DDA0DD;
   --pastel-purple-dark: #C0A5CC;
 
-  --pastel-green: #B4E7CE;
-  --pastel-green-light: #D5F3E5;
-  --pastel-green-dark: #9DD9BC;
+  --pastel-green: #98D8C8;
+  --pastel-green-light: #B4E7CE;
+  --pastel-green-dark: #7FC4B8;
 
-  --pastel-yellow: #FFF9A6;
+  --pastel-yellow: #F0E68C;
   --pastel-yellow-light: #FFFACD;
-  --pastel-yellow-dark: #FFE873;
+  --pastel-yellow-dark: #E6D68A;
 
   --pastel-orange: #FFD5A8;
-  --pastel-orange-light: #FFE5CC;
+  --pastel-orange-light: #FFDAB9;
   --pastel-orange-dark: #FFC080;
 
   --pastel-peach: #FFB3BA;
   --pastel-mint: #BFFCC6;
   --pastel-lavender: #C9A6F9;
 
-  /* Gradient Backgrounds */
-  --gradient-rainbow: linear-gradient(135deg, #A8D8EA 0%, #FFB6C1 50%, #FFF9A6 100%);
-  --gradient-blue-pink: linear-gradient(135deg, #A8D8EA 0%, #FFB6C1 100%);
-  --gradient-pink-purple: linear-gradient(135deg, #FFB6C1 0%, #D4BBDD 100%);
-  --gradient-green-blue: linear-gradient(135deg, #B4E7CE 0%, #A8D8EA 100%);
-  --gradient-yellow-orange: linear-gradient(135deg, #FFF9A6 0%, #FFD5A8 100%);
+  /* Gradient Backgrounds - Softer */
+  --gradient-rainbow: linear-gradient(135deg, #E0F6FF 0%, #FFE4E9 50%, #FFF9E6 100%);
+  --gradient-blue-pink: linear-gradient(135deg, #E0F6FF 0%, #FFE4E9 100%);
+  --gradient-pink-purple: linear-gradient(135deg, #FFE4E9 0%, #F8F0FF 100%);
+  --gradient-green-blue: linear-gradient(135deg, #E8FFF5 0%, #E0F6FF 100%);
+  --gradient-yellow-orange: linear-gradient(135deg, #FFF9E6 0%, #FFF5E6 100%);
 
   /* Subject Colors */
-  --color-math: #A8D8EA;        /* Pastel Blue for Math */
+  --color-math: #87CEEB;        /* Pastel Blue for Math */
   --color-vietnamese: #FFB6C1;  /* Pastel Pink for Vietnamese */
-  --color-english: #B4E7CE;     /* Pastel Green for English */
+  --color-english: #98D8C8;     /* Pastel Green for English */
 
   /* Neutral Colors */
   --white: #FFFFFF;
   --light-gray: #F8F9FA;
   --gray: #E9ECEF;
-  --dark-gray: #6C757D;
-  --text-dark: #495057;
-  --text-light: #868E96;
+  --dark-gray: #5A6C7D;
+  --text-dark: #2C3E50;
+  --text-light: #5A6C7D;
 
   /* Semantic Colors */
   --success: #B4E7CE;
@@ -100,7 +116,7 @@ html {
 body {
   font-family: var(--font-primary);
   color: var(--text-dark);
-  background: var(--gradient-blue-pink);
+  background: var(--theme-background, var(--gradient-rainbow));
   min-height: 100vh;
   line-height: 1.6;
 }
