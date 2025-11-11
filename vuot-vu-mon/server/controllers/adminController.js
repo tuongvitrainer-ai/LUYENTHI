@@ -1,29 +1,49 @@
 const { db } = require('../database/db');
 
+// ============================================
+// API 1: POST /api/admin/questions
+// Tạo câu hỏi mới (Admin only)
+// ============================================
 /**
- * Create a new question with tags (Admin only)
- * POST /api/admin/questions
+ * Tạo câu hỏi mới với tags
  *
- * Required fields:
- * - content_json: JSON object containing question data
- * - tags: Array of tag objects [{tag_type, tag_value}]
+ * Body:
+ * {
+ *   "content_json": {"question": "5 x 3 = ?", "options": ["10", "15", "20"]},
+ *   "correct_answer": "15",
+ *   "type": "matching_pair" | "multiple_choice" | "true_false" | "fill_blank",
+ *   "explanation": "5 nhân 3 bằng 15",
+ *   "is_premium": 0 | 1,
+ *   "tags": [
+ *     {"tag_key": "môn_học", "tag_value": "Toán"},
+ *     {"tag_key": "lớp_nguồn", "tag_value": "3"},
+ *     {"tag_key": "game_type", "tag_value": "matching_pairs_trang_chu"}
+ *   ]
+ * }
  *
- * Optional fields:
- * - difficulty_level: 1-5 (default: 1)
- * - points: Points for correct answer (default: 10)
- * - time_limit: Time limit in seconds (default: 60)
+ * Logic:
+ * - Validate input
+ * - Use transaction để insert vào cả questions và question_tags
+ * - Trả về question vừa tạo
  */
 const createQuestion = (req, res) => {
   try {
     const {
       content_json,
-      tags,
-      difficulty_level = 1,
-      points = 10,
-      time_limit = 60
+      correct_answer,
+      type,
+      explanation,
+      is_premium = 0,
+      tags
     } = req.body;
 
-    // Validation
+    console.log('📝 Admin tạo câu hỏi mới...');
+
+    // ============================================
+    // VALIDATION
+    // ============================================
+
+    // Required fields
     if (!content_json) {
       return res.status(400).json({
         success: false,
@@ -31,6 +51,30 @@ const createQuestion = (req, res) => {
       });
     }
 
+    if (!correct_answer) {
+      return res.status(400).json({
+        success: false,
+        message: 'correct_answer is required'
+      });
+    }
+
+    if (!type) {
+      return res.status(400).json({
+        success: false,
+        message: 'type is required (matching_pair, multiple_choice, true_false, fill_blank)'
+      });
+    }
+
+    // Validate type
+    const validTypes = ['matching_pair', 'multiple_choice', 'true_false', 'fill_blank'];
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid type. Must be one of: ${validTypes.join(', ')}`
+      });
+    }
+
+    // Validate tags
     if (!tags || !Array.isArray(tags) || tags.length === 0) {
       return res.status(400).json({
         success: false,
@@ -40,10 +84,10 @@ const createQuestion = (req, res) => {
 
     // Validate tags structure
     for (const tag of tags) {
-      if (!tag.tag_type || !tag.tag_value) {
+      if (!tag.tag_key || !tag.tag_value) {
         return res.status(400).json({
           success: false,
-          message: 'Each tag must have tag_type and tag_value'
+          message: 'Each tag must have tag_key and tag_value'
         });
       }
     }
@@ -64,32 +108,36 @@ const createQuestion = (req, res) => {
       });
     }
 
-    // Use transaction to insert into both tables
-    const transaction = db.transaction((contentJson, tagsArray, diffLevel, pts, timeLimit, userId) => {
-      // Insert question
+    // ============================================
+    // TRANSACTION: INSERT QUESTION + TAGS
+    // ============================================
+
+    const transaction = db.transaction((contentJson, answer, qType, expl, premium, tagsArray) => {
+      // 1. Insert question
       const insertQuestion = db.prepare(`
-        INSERT INTO questions (content_json, difficulty_level, points, time_limit, created_by)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO questions (
+          content_json, correct_answer, type, explanation, is_premium
+        ) VALUES (?, ?, ?, ?, ?)
       `);
 
       const questionResult = insertQuestion.run(
         contentJson,
-        diffLevel,
-        pts,
-        timeLimit,
-        userId
+        answer,
+        qType,
+        expl || null,
+        premium
       );
 
       const questionId = questionResult.lastInsertRowid;
 
-      // Insert tags
+      // 2. Insert tags
       const insertTag = db.prepare(`
-        INSERT INTO question_tags (question_id, tag_type, tag_value)
+        INSERT INTO question_tags (question_id, tag_key, tag_value)
         VALUES (?, ?, ?)
       `);
 
       for (const tag of tagsArray) {
-        insertTag.run(questionId, tag.tag_type, tag.tag_value);
+        insertTag.run(questionId, tag.tag_key, tag.tag_value);
       }
 
       return questionId;
@@ -98,26 +146,32 @@ const createQuestion = (req, res) => {
     // Execute transaction
     const questionId = transaction(
       contentJsonString,
-      tags,
-      difficulty_level,
-      points,
-      time_limit,
-      req.user.id
+      correct_answer,
+      type,
+      explanation,
+      is_premium,
+      tags
     );
 
-    // Fetch created question with tags
+    // ============================================
+    // FETCH CREATED QUESTION WITH TAGS
+    // ============================================
+
     const question = db.prepare(`
-      SELECT id, content_json, difficulty_level, points, time_limit,
-             status, created_by, created_at
+      SELECT
+        id, content_json, correct_answer, type, explanation,
+        is_premium, created_at, updated_at
       FROM questions
       WHERE id = ?
     `).get(questionId);
 
     const questionTags = db.prepare(`
-      SELECT tag_type, tag_value
+      SELECT tag_key, tag_value
       FROM question_tags
       WHERE question_id = ?
     `).all(questionId);
+
+    console.log(`✅ Question #${questionId} được tạo với ${questionTags.length} tags`);
 
     res.status(201).json({
       success: true,
@@ -132,7 +186,7 @@ const createQuestion = (req, res) => {
     });
 
   } catch (error) {
-    console.error('Create question error:', error);
+    console.error('❌ Create question error:', error);
     res.status(500).json({
       success: false,
       message: 'Error creating question',
@@ -141,68 +195,128 @@ const createQuestion = (req, res) => {
   }
 };
 
+// ============================================
+// API 2: GET /api/game/questions
+// Lấy câu hỏi theo tag (Public, Guest có thể gọi)
+// ============================================
 /**
- * Get all questions (with optional filtering)
- * GET /api/admin/questions
+ * Lấy câu hỏi theo tag
+ *
+ * Query params:
+ * - tag: tag_value để filter (VD: ?tag=matching_pairs_trang_chu)
+ * - tag_key: tag_key để filter cùng với tag_value (VD: ?tag_key=game_type&tag=matching_pairs_trang_chu)
+ * - limit: Số câu hỏi tối đa (default: 10)
+ *
+ * Response: Danh sách câu hỏi với tags
  */
 const getQuestions = (req, res) => {
   try {
     const {
-      tag_type,
-      tag_value,
-      difficulty_level,
-      status = 'active',
-      limit = 50,
-      offset = 0
+      tag,           // tag_value
+      tag_key,       // tag_key (optional, để filter chính xác hơn)
+      limit = 10
     } = req.query;
 
+    console.log(`🔍 Lấy câu hỏi theo filter: tag_key=${tag_key}, tag=${tag}, limit=${limit}`);
+
     let query = `
-      SELECT DISTINCT q.id, q.content_json, q.difficulty_level, q.points,
-             q.time_limit, q.status, q.total_attempts, q.correct_attempts,
-             q.created_by, q.created_at
+      SELECT DISTINCT q.id, q.content_json, q.correct_answer, q.type,
+             q.explanation, q.is_premium, q.created_at
       FROM questions q
     `;
 
     const conditions = [];
     const params = [];
 
-    if (tag_type || tag_value) {
+    // Filter by tag
+    if (tag) {
       query += ` INNER JOIN question_tags qt ON q.id = qt.question_id`;
 
-      if (tag_type) {
-        conditions.push('qt.tag_type = ?');
-        params.push(tag_type);
-      }
-
-      if (tag_value) {
+      if (tag_key) {
+        // Filter by both tag_key and tag_value
+        conditions.push('qt.tag_key = ?');
         conditions.push('qt.tag_value = ?');
-        params.push(tag_value);
+        params.push(tag_key, tag);
+      } else {
+        // Filter by tag_value only
+        conditions.push('qt.tag_value = ?');
+        params.push(tag);
       }
     }
 
-    if (status) {
-      conditions.push('q.status = ?');
-      params.push(status);
-    }
-
-    if (difficulty_level) {
-      conditions.push('q.difficulty_level = ?');
-      params.push(difficulty_level);
-    }
-
+    // Add WHERE clause
     if (conditions.length > 0) {
       query += ' WHERE ' + conditions.join(' AND ');
     }
 
-    query += ' ORDER BY q.created_at DESC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
+    // Order by newest first
+    query += ' ORDER BY q.created_at DESC';
 
+    // Add limit
+    query += ' LIMIT ?';
+    params.push(parseInt(limit));
+
+    // Execute query
     const questions = db.prepare(query).all(...params);
 
     // Get tags for each question
     const questionsWithTags = questions.map(q => {
       const tags = db.prepare(`
-        SELECT tag_type, tag_value
+        SELECT tag_key, tag_value
+        FROM question_tags
+        WHERE question_id = ?
+      `).all(q.id);
+
+      return {
+        ...q,
+        content_json: JSON.parse(q.content_json),
+        tags
+      };
+    });
+
+    console.log(`✅ Tìm thấy ${questionsWithTags.length} câu hỏi`);
+
+    res.json({
+      success: true,
+      data: {
+        questions: questionsWithTags,
+        count: questionsWithTags.length,
+        limit: parseInt(limit)
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Get questions error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching questions',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// ============================================
+// API BỔ SUNG: GET ALL QUESTIONS (Admin)
+// ============================================
+/**
+ * Lấy tất cả câu hỏi (Admin only)
+ */
+const getAllQuestions = (req, res) => {
+  try {
+    const { limit = 100, offset = 0 } = req.query;
+
+    const questions = db.prepare(`
+      SELECT id, content_json, correct_answer, type, explanation,
+             is_premium, created_at, updated_at
+      FROM questions
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `).all(parseInt(limit), parseInt(offset));
+
+    // Get tags for each question
+    const questionsWithTags = questions.map(q => {
+      const tags = db.prepare(`
+        SELECT tag_key, tag_value
         FROM question_tags
         WHERE question_id = ?
       `).all(q.id);
@@ -225,7 +339,7 @@ const getQuestions = (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get questions error:', error);
+    console.error('❌ Get all questions error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching questions'
@@ -233,156 +347,8 @@ const getQuestions = (req, res) => {
   }
 };
 
-/**
- * Update question
- * PUT /api/admin/questions/:id
- */
-const updateQuestion = (req, res) => {
-  try {
-    const { id } = req.params;
-    const { content_json, tags, difficulty_level, points, time_limit, status } = req.body;
-
-    // Check if question exists
-    const existingQuestion = db.prepare('SELECT id FROM questions WHERE id = ?').get(id);
-
-    if (!existingQuestion) {
-      return res.status(404).json({
-        success: false,
-        message: 'Question not found'
-      });
-    }
-
-    // Use transaction for update
-    const transaction = db.transaction((questionId, updates) => {
-      // Build update query dynamically
-      const updateFields = [];
-      const updateParams = [];
-
-      if (updates.content_json !== undefined) {
-        updateFields.push('content_json = ?');
-        const contentStr = typeof updates.content_json === 'string'
-          ? updates.content_json
-          : JSON.stringify(updates.content_json);
-        updateParams.push(contentStr);
-      }
-
-      if (updates.difficulty_level !== undefined) {
-        updateFields.push('difficulty_level = ?');
-        updateParams.push(updates.difficulty_level);
-      }
-
-      if (updates.points !== undefined) {
-        updateFields.push('points = ?');
-        updateParams.push(updates.points);
-      }
-
-      if (updates.time_limit !== undefined) {
-        updateFields.push('time_limit = ?');
-        updateParams.push(updates.time_limit);
-      }
-
-      if (updates.status !== undefined) {
-        updateFields.push('status = ?');
-        updateParams.push(updates.status);
-      }
-
-      if (updateFields.length > 0) {
-        updateFields.push('updated_at = datetime(\'now\')');
-        updateParams.push(questionId);
-
-        const updateQuery = `UPDATE questions SET ${updateFields.join(', ')} WHERE id = ?`;
-        db.prepare(updateQuery).run(...updateParams);
-      }
-
-      // Update tags if provided
-      if (updates.tags && Array.isArray(updates.tags)) {
-        // Delete existing tags
-        db.prepare('DELETE FROM question_tags WHERE question_id = ?').run(questionId);
-
-        // Insert new tags
-        const insertTag = db.prepare(`
-          INSERT INTO question_tags (question_id, tag_type, tag_value)
-          VALUES (?, ?, ?)
-        `);
-
-        for (const tag of updates.tags) {
-          insertTag.run(questionId, tag.tag_type, tag.tag_value);
-        }
-      }
-    });
-
-    // Execute transaction
-    transaction(id, { content_json, tags, difficulty_level, points, time_limit, status });
-
-    // Fetch updated question
-    const question = db.prepare(`
-      SELECT id, content_json, difficulty_level, points, time_limit,
-             status, created_at, updated_at
-      FROM questions
-      WHERE id = ?
-    `).get(id);
-
-    const questionTags = db.prepare(`
-      SELECT tag_type, tag_value
-      FROM question_tags
-      WHERE question_id = ?
-    `).all(id);
-
-    res.json({
-      success: true,
-      message: 'Question updated successfully',
-      data: {
-        question: {
-          ...question,
-          content_json: JSON.parse(question.content_json),
-          tags: questionTags
-        }
-      }
-    });
-
-  } catch (error) {
-    console.error('Update question error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating question'
-    });
-  }
-};
-
-/**
- * Delete question
- * DELETE /api/admin/questions/:id
- */
-const deleteQuestion = (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const result = db.prepare('DELETE FROM questions WHERE id = ?').run(id);
-
-    if (result.changes === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Question not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Question deleted successfully'
-    });
-
-  } catch (error) {
-    console.error('Delete question error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error deleting question'
-    });
-  }
-};
-
 module.exports = {
-  createQuestion,
-  getQuestions,
-  updateQuestion,
-  deleteQuestion
+  createQuestion,    // POST /api/admin/questions
+  getQuestions,      // GET /api/game/questions (Public)
+  getAllQuestions    // GET /api/admin/questions (Admin only)
 };
