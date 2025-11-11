@@ -11,26 +11,25 @@ const shopController = require('../controllers/shopController');
 const { authenticateToken, isAdmin } = require('../middleware/auth');
 
 // ============================================
-// AUTH ROUTES
+// AUTH ROUTES (V6 - GUEST-FIRST)
 // ============================================
 
 // Public routes
-router.post('/auth/register', authController.register);
-router.post('/auth/login', authController.login);
-router.post('/auth/logout', authController.logout);
+router.post('/auth/guest', authController.createGuestUser);  // NEW: Tạo guest user
+router.post('/auth/register', authController.register);      // Nâng cấp guest → student hoặc tạo mới
+router.post('/auth/login', authController.login);           // Đăng nhập thủ công
 
 // Protected routes (require authentication)
 router.get('/auth/me', authenticateToken, authController.getMe);
-router.put('/auth/profile', authenticateToken, authController.updateProfile);
 
 // ============================================
-// GAME ROUTES
+// GAME ROUTES (V6)
 // ============================================
 
-// Get questions for game/practice
-router.get('/game/questions', authenticateToken, gameController.getQuestions);
+// Get questions for game/practice (PUBLIC - Guest có thể gọi)
+router.get('/game/questions', adminController.getQuestions);
 
-// Submit answer
+// Submit answer (Requires auth)
 router.post('/game/submit_result', authenticateToken, gameController.submitResult);
 
 // Get user's game history
@@ -40,14 +39,13 @@ router.get('/game/history', authenticateToken, gameController.getHistory);
 router.get('/game/stats', authenticateToken, gameController.getStats);
 
 // ============================================
-// ADMIN ROUTES
+// ADMIN ROUTES (V6)
 // ============================================
 
 // Question management (Admin only)
 router.post('/admin/questions', authenticateToken, isAdmin, adminController.createQuestion);
-router.get('/admin/questions', authenticateToken, isAdmin, adminController.getQuestions);
-router.put('/admin/questions/:id', authenticateToken, isAdmin, adminController.updateQuestion);
-router.delete('/admin/questions/:id', authenticateToken, isAdmin, adminController.deleteQuestion);
+router.get('/admin/questions', authenticateToken, isAdmin, adminController.getAllQuestions);
+// Note: update and delete will be added later if needed
 
 // ============================================
 // SHOP ROUTES

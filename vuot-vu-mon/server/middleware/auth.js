@@ -26,10 +26,11 @@ const authenticateToken = (req, res, next) => {
         });
       }
 
-      // Get user from database
+      // Get user from database (V6 schema)
       const user = db.prepare(`
-        SELECT id, username, email, display_name, role, total_stars,
-               current_streak, max_streak, auth_provider, is_guest
+        SELECT id, email, full_name, role, is_anonymous,
+               stars_balance, current_streak, max_streak, freeze_streaks,
+               avatar_url, google_id, last_learnt_date
         FROM users
         WHERE id = ?
       `).get(decoded.userId);
@@ -88,8 +89,9 @@ const optionalAuth = (req, res, next) => {
       }
 
       const user = db.prepare(`
-        SELECT id, username, email, display_name, role, total_stars,
-               current_streak, max_streak, auth_provider, is_guest
+        SELECT id, email, full_name, role, is_anonymous,
+               stars_balance, current_streak, max_streak, freeze_streaks,
+               avatar_url, google_id, last_learnt_date
         FROM users
         WHERE id = ?
       `).get(decoded.userId);
