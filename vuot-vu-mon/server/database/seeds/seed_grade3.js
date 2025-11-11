@@ -1,4 +1,4 @@
-const { db } = require('./db');
+const { db } = require('../db');
 
 /**
  * Seed data for Grade 3 questions
