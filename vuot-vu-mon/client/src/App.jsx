@@ -8,6 +8,7 @@ import QuestionView from './pages/QuestionView';
 import Shop from './pages/Shop';
 import Profile from './pages/Profile';
 import AdminRoute from './components/AdminRoute';
+import GuestRoute from './components/GuestRoute';
 import Dashboard from './pages/admin/Dashboard';
 import QuestionBank from './pages/admin/QuestionBank';
 import QuestionForm from './pages/admin/QuestionForm';
@@ -43,24 +44,26 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
-            {/* Protected Routes */}
+            {/* Guest Routes - Tự động tạo guest user */}
             <Route
               path="/"
               element={
-                <ProtectedRoute>
+                <GuestRoute>
                   <GameMap />
-                </ProtectedRoute>
+                </GuestRoute>
               }
             />
 
             <Route
               path="/game/play"
               element={
-                <ProtectedRoute>
+                <GuestRoute>
                   <QuestionView />
-                </ProtectedRoute>
+                </GuestRoute>
               }
             />
+
+            {/* Protected Routes - Cần đăng ký */}
 
             <Route
               path="/shop"

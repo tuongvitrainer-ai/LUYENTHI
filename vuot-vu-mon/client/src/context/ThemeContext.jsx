@@ -10,7 +10,7 @@ export const useTheme = () => {
   return context;
 };
 
-// Theme definitions với màu dịu mắt hơn
+// Theme definitions - All text in BLACK for better readability
 export const themes = {
   blue: {
     id: 'blue',
@@ -21,8 +21,8 @@ export const themes = {
     accent: '#C8E9F3',
     background: 'linear-gradient(135deg, #F0F8FF 0%, #E6F3F8 50%, #D4EDF5 100%)',
     cardBg: 'rgba(255, 255, 255, 0.95)',
-    text: '#1A4D6B',
-    textLight: '#2C5F7F',
+    text: '#000000',
+    textLight: '#1a1a1a',
     border: '#7EC8E3',
     shadow: 'rgba(126, 200, 227, 0.15)'
   },
@@ -35,8 +35,8 @@ export const themes = {
     accent: '#FFE0E9',
     background: 'linear-gradient(135deg, #FFF5F7 0%, #FFE8ED 50%, #FFD6E0 100%)',
     cardBg: 'rgba(255, 255, 255, 0.95)',
-    text: '#7A2E4A',
-    textLight: '#9B4866',
+    text: '#000000',
+    textLight: '#1a1a1a',
     border: '#F5A9B8',
     shadow: 'rgba(245, 169, 184, 0.15)'
   },
@@ -49,8 +49,8 @@ export const themes = {
     accent: '#EDD9F3',
     background: 'linear-gradient(135deg, #FAF5FC 0%, #F0E6F5 50%, #E6D9ED 100%)',
     cardBg: 'rgba(255, 255, 255, 0.95)',
-    text: '#5A3468',
-    textLight: '#754D84',
+    text: '#000000',
+    textLight: '#1a1a1a',
     border: '#C8A2D0',
     shadow: 'rgba(200, 162, 208, 0.15)'
   },
@@ -63,8 +63,8 @@ export const themes = {
     accent: '#C3F0E3',
     background: 'linear-gradient(135deg, #F0FAF7 0%, #E0F5EF 50%, #D0F0E6 100%)',
     cardBg: 'rgba(255, 255, 255, 0.95)',
-    text: '#1D5A4D',
-    textLight: '#2E7565',
+    text: '#000000',
+    textLight: '#1a1a1a',
     border: '#7DC9B8',
     shadow: 'rgba(125, 201, 184, 0.15)'
   },
@@ -77,8 +77,8 @@ export const themes = {
     accent: '#FFF5BD',
     background: 'linear-gradient(135deg, #FFFDF5 0%, #FFF9E6 50%, #FFF4D6 100%)',
     cardBg: 'rgba(255, 255, 255, 0.95)',
-    text: '#6B5E2E',
-    textLight: '#877449',
+    text: '#000000',
+    textLight: '#1a1a1a',
     border: '#E8D475',
     shadow: 'rgba(232, 212, 117, 0.15)'
   },
@@ -91,8 +91,8 @@ export const themes = {
     accent: '#FFE5C2',
     background: 'linear-gradient(135deg, #FFF8F0 0%, #FFEDE0 50%, #FFE2CC 100%)',
     cardBg: 'rgba(255, 255, 255, 0.95)',
-    text: '#7A4E2E',
-    textLight: '#9B6446',
+    text: '#000000',
+    textLight: '#1a1a1a',
     border: '#F5C17F',
     shadow: 'rgba(245, 193, 127, 0.15)'
   }
