@@ -1,277 +1,269 @@
 const { db } = require('../database/db');
 
+// ============================================
+// API: POST /api/game/submit_result
+// CỐT LÕI HỆ THỐNG GAMIFICATION
+// ============================================
 /**
- * Get questions for game/practice
- * GET /api/game/questions
- *
- * Query params:
- * - subject: Filter by subject (Toán, Tiếng Việt, Tiếng Anh)
- * - grade: Filter by grade (Lớp 3)
- * - difficulty_level: Filter by difficulty (1-5)
- * - limit: Number of questions (default: 10)
- */
-const getQuestions = (req, res) => {
-  try {
-    const {
-      subject,
-      grade = 'Lớp 3',
-      difficulty_level,
-      limit = 10
-    } = req.query;
-
-    let query = `
-      SELECT DISTINCT q.id, q.content_json, q.difficulty_level,
-             q.points, q.time_limit
-      FROM questions q
-      INNER JOIN question_tags qt ON q.id = qt.question_id
-      WHERE q.status = 'active'
-    `;
-
-    const params = [];
-
-    // Filter by grade (always Lớp 3 for now)
-    query += ` AND q.id IN (
-      SELECT question_id FROM question_tags
-      WHERE tag_type = 'grade' AND tag_value = ?
-    )`;
-    params.push(grade);
-
-    // Filter by subject if provided
-    if (subject) {
-      query += ` AND q.id IN (
-        SELECT question_id FROM question_tags
-        WHERE tag_type = 'subject' AND tag_value = ?
-      )`;
-      params.push(subject);
-    }
-
-    // Filter by difficulty if provided
-    if (difficulty_level) {
-      query += ` AND q.difficulty_level = ?`;
-      params.push(difficulty_level);
-    }
-
-    // Random order and limit
-    query += ` ORDER BY RANDOM() LIMIT ?`;
-    params.push(parseInt(limit));
-
-    const questions = db.prepare(query).all(...params);
-
-    // Parse content_json and get tags for each question
-    const questionsWithTags = questions.map(q => {
-      const tags = db.prepare(`
-        SELECT tag_type, tag_value
-        FROM question_tags
-        WHERE question_id = ?
-      `).all(q.id);
-
-      return {
-        id: q.id,
-        content: JSON.parse(q.content_json),
-        difficulty_level: q.difficulty_level,
-        points: q.points,
-        time_limit: q.time_limit,
-        tags: tags
-      };
-    });
-
-    res.json({
-      success: true,
-      data: {
-        questions: questionsWithTags,
-        count: questionsWithTags.length
-      }
-    });
-
-  } catch (error) {
-    console.error('Get questions error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching questions'
-    });
-  }
-};
-
-/**
- * Submit answer and update user stats
- * POST /api/game/submit_result
+ * Chấm điểm, thưởng sao, tính streak (Lazy Calculation)
  *
  * Body:
- * - question_id: ID of the question
- * - user_answer: User's answer
- * - time_spent: Time spent in seconds
+ * {
+ *   "exam_type": "game_matching_pairs" | "luyen_tap" | "kiem_tra",
+ *   "score": 85,
+ *   "details_json": {
+ *     "questions": [...],
+ *     "total_time": 60
+ *   }
+ * }
+ *
+ * Logic:
+ * 1. Lưu kết quả vào exam_results
+ * 2. Thưởng sao nếu score > 80
+ * 3. Tính Streak (Lazy Calculation)
+ * 4. Cập nhật users table
+ * 5. Trả về kết quả đầy đủ
  */
-const submitResult = (req, res) => {
+const submitResult = async (req, res) => {
   try {
-    const { question_id, user_answer, time_spent } = req.body;
-    const user_id = req.user.id;
+    const userId = req.user.id;
+    const { exam_type, score, details_json } = req.body;
 
-    // Validation
-    if (!question_id || !user_answer) {
+    console.log(`🎮 User #${userId} submit kết quả: ${exam_type}, score=${score}`);
+
+    // ============================================
+    // VALIDATION
+    // ============================================
+
+    if (!exam_type || score === undefined) {
       return res.status(400).json({
         success: false,
-        message: 'question_id and user_answer are required'
+        message: 'exam_type and score are required'
       });
     }
 
-    // Get question
-    const question = db.prepare(`
-      SELECT id, content_json, points
-      FROM questions
-      WHERE id = ?
-    `).get(question_id);
-
-    if (!question) {
-      return res.status(404).json({
+    if (score < 0 || score > 100) {
+      return res.status(400).json({
         success: false,
-        message: 'Question not found'
+        message: 'score must be between 0 and 100'
       });
     }
 
-    const questionContent = JSON.parse(question.content_json);
-    const correctAnswer = questionContent.correct_answer;
-    const isCorrect = user_answer.toString() === correctAnswer.toString();
+    // ============================================
+    // 1. LƯU KẾT QUẢ VÀO exam_results
+    // ============================================
 
-    // Get current user data
+    const detailsJsonString = details_json
+      ? (typeof details_json === 'string' ? details_json : JSON.stringify(details_json))
+      : null;
+
+    const resultInsert = db.prepare(`
+      INSERT INTO exam_results (user_id, exam_type, score, details_json)
+      VALUES (?, ?, ?, ?)
+    `).run(userId, exam_type, score, detailsJsonString);
+
+    const examResultId = resultInsert.lastInsertRowid;
+
+    console.log(`   ✅ Lưu exam_result #${examResultId}`);
+
+    // ============================================
+    // 2. LẤY THÔNG TIN USER HIỆN TẠI
+    // ============================================
+
     const user = db.prepare(`
-      SELECT id, current_streak, max_streak, total_stars, last_activity_date
+      SELECT
+        id, stars_balance, current_streak, max_streak,
+        freeze_streaks, last_learnt_date
       FROM users
       WHERE id = ?
-    `).get(user_id);
+    `).get(userId);
 
-    // Calculate streak (Lazy Calculation)
-    const today = new Date().toISOString().split('T')[0];
-    const lastActivity = user.last_activity_date ? user.last_activity_date.split(' ')[0] : null;
+    let starsEarned = 0;
+    let streakIncreased = false;
+    let streakFrozen = false;
+    let freezeUsed = 0;
 
-    let newStreak = user.current_streak || 0;
-    let newMaxStreak = user.max_streak || 0;
+    // ============================================
+    // 3. THƯỞNG SAO NẾU score > 80
+    // ============================================
 
-    if (isCorrect) {
-      if (!lastActivity || lastActivity === today) {
-        // Same day or first time - maintain streak
-        newStreak = user.current_streak || 1;
-      } else {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
+    if (score > 80) {
+      starsEarned = 5;
+      console.log(`   ⭐ Thưởng ${starsEarned} sao (score > 80)`);
+    }
 
-        if (lastActivity === yesterdayStr) {
-          // Yesterday - increment streak
-          newStreak = (user.current_streak || 0) + 1;
+    // ============================================
+    // 4. TÍNH STREAK (LAZY CALCULATION)
+    // ============================================
+
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const lastLearntDate = user.last_learnt_date;
+
+    let newCurrentStreak = user.current_streak;
+    let newMaxStreak = user.max_streak;
+    let newFreezeStreaks = user.freeze_streaks;
+
+    console.log(`   📅 Today: ${today}, Last learnt: ${lastLearntDate || 'Never'}`);
+
+    if (!lastLearntDate) {
+      // Lần đầu tiên học
+      newCurrentStreak = 1;
+      newMaxStreak = Math.max(1, user.max_streak);
+      console.log(`   🎯 Lần đầu học → streak = 1`);
+    } else if (today === lastLearntDate) {
+      // Đã học hôm nay rồi → Không tăng streak
+      console.log(`   ⏭️  Đã học hôm nay → Không tăng streak`);
+    } else {
+      // Tính số ngày gap
+      const lastDate = new Date(lastLearntDate);
+      const currentDate = new Date(today);
+      const daysDiff = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
+
+      console.log(`   📊 Gap: ${daysDiff} ngày`);
+
+      if (daysDiff === 1) {
+        // Ngày liên tiếp → Tăng streak
+        newCurrentStreak = user.current_streak + 1;
+        newMaxStreak = Math.max(newCurrentStreak, user.max_streak);
+        streakIncreased = true;
+        console.log(`   🔥 Ngày liên tiếp → streak tăng lên ${newCurrentStreak}`);
+      } else if (daysDiff > 1) {
+        // Có gap → Kiểm tra freeze
+        const missedDays = daysDiff - 1; // Số ngày bỏ lỡ (không tính hôm nay)
+
+        if (user.freeze_streaks >= missedDays) {
+          // Đủ freeze để bảo vệ streak
+          newFreezeStreaks = user.freeze_streaks - missedDays;
+          newCurrentStreak = user.current_streak + 1; // Vẫn tăng streak cho hôm nay
+          newMaxStreak = Math.max(newCurrentStreak, user.max_streak);
+          streakFrozen = true;
+          freezeUsed = missedDays;
+          console.log(`   🛡️  Dùng ${missedDays} freeze → Giữ streak, tăng lên ${newCurrentStreak}`);
         } else {
-          // Missed days - reset to 1
-          newStreak = 1;
+          // Không đủ freeze → Reset streak
+          newCurrentStreak = 1;
+          streakFrozen = false;
+          console.log(`   ❄️  Không đủ freeze → Reset streak về 1`);
         }
-      }
-
-      // Update max streak
-      if (newStreak > newMaxStreak) {
-        newMaxStreak = newStreak;
       }
     }
 
-    // Calculate points earned
-    const pointsEarned = isCorrect ? question.points : 0;
-    const newTotalStars = user.total_stars + pointsEarned;
+    // ============================================
+    // 5. CẬP NHẬT USERS TABLE
+    // ============================================
 
-    // Use transaction to update everything
-    const transaction = db.transaction(() => {
-      // Insert exam result
-      db.prepare(`
-        INSERT INTO exam_results
-        (user_id, question_id, user_answer, is_correct, points_earned, time_spent, streak_at_time)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(
-        user_id,
-        question_id,
-        user_answer,
-        isCorrect ? 1 : 0,
-        pointsEarned,
-        time_spent || null,
-        newStreak
-      );
+    const newStarsBalance = user.stars_balance + starsEarned;
 
-      // Update user stats
-      db.prepare(`
-        UPDATE users
-        SET total_stars = ?,
-            current_streak = ?,
-            max_streak = ?,
-            last_activity_date = datetime('now'),
-            updated_at = datetime('now')
-        WHERE id = ?
-      `).run(newTotalStars, newStreak, newMaxStreak, user_id);
+    db.prepare(`
+      UPDATE users
+      SET
+        stars_balance = ?,
+        current_streak = ?,
+        max_streak = ?,
+        freeze_streaks = ?,
+        last_learnt_date = ?,
+        updated_at = datetime('now')
+      WHERE id = ?
+    `).run(
+      newStarsBalance,
+      newCurrentStreak,
+      newMaxStreak,
+      newFreezeStreaks,
+      today,
+      userId
+    );
 
-      // Update question stats
-      db.prepare(`
-        UPDATE questions
-        SET total_attempts = total_attempts + 1,
-            correct_attempts = correct_attempts + ?,
-            updated_at = datetime('now')
-        WHERE id = ?
-      `).run(isCorrect ? 1 : 0, question_id);
-    });
+    console.log(`   💾 Cập nhật user: stars=${newStarsBalance}, streak=${newCurrentStreak}, freeze=${newFreezeStreaks}`);
 
-    // Execute transaction
-    transaction();
+    // ============================================
+    // 6. TRẢ VỀ KẾT QUẢ ĐẦY ĐỦ
+    // ============================================
+
+    const result = {
+      exam_result_id: examResultId,
+      score: score,
+      exam_type: exam_type,
+
+      // Gamification rewards
+      stars_earned: starsEarned,
+      stars_balance: newStarsBalance,
+
+      // Streak info
+      streak_status: {
+        current_streak: newCurrentStreak,
+        max_streak: newMaxStreak,
+        streak_increased: streakIncreased,
+        streak_frozen: streakFrozen,
+        freeze_used: freezeUsed,
+        freeze_remaining: newFreezeStreaks
+      },
+
+      // User stats
+      user: {
+        id: userId,
+        stars_balance: newStarsBalance,
+        current_streak: newCurrentStreak,
+        max_streak: newMaxStreak,
+        freeze_streaks: newFreezeStreaks,
+        last_learnt_date: today
+      }
+    };
+
+    console.log(`   ✅ Hoàn tất gamification cho user #${userId}\n`);
 
     res.json({
       success: true,
-      data: {
-        is_correct: isCorrect,
-        correct_answer: correctAnswer,
-        explanation: questionContent.explanation || null,
-        points_earned: pointsEarned,
-        new_total_stars: newTotalStars,
-        current_streak: newStreak,
-        max_streak: newMaxStreak
-      }
+      message: 'Result submitted successfully',
+      data: result
     });
 
   } catch (error) {
-    console.error('Submit result error:', error);
+    console.error('❌ Submit result error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error submitting result'
+      message: 'Error submitting result',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
 
+// ============================================
+// API BỔ SUNG: GET /api/game/history
+// ============================================
 /**
- * Get user's game history
- * GET /api/game/history
+ * Lấy lịch sử làm bài của user
  */
 const getHistory = (req, res) => {
   try {
-    const user_id = req.user.id;
+    const userId = req.user.id;
     const { limit = 20, offset = 0 } = req.query;
 
     const history = db.prepare(`
-      SELECT er.id, er.question_id, er.is_correct, er.points_earned,
-             er.time_spent, er.streak_at_time, er.created_at,
-             q.content_json
-      FROM exam_results er
-      INNER JOIN questions q ON er.question_id = q.id
-      WHERE er.user_id = ?
-      ORDER BY er.created_at DESC
+      SELECT
+        id, exam_type, score, details_json, created_at
+      FROM exam_results
+      WHERE user_id = ?
+      ORDER BY created_at DESC
       LIMIT ? OFFSET ?
-    `).all(user_id, parseInt(limit), parseInt(offset));
+    `).all(userId, parseInt(limit), parseInt(offset));
 
-    const historyWithContent = history.map(h => ({
+    const historyWithParsedDetails = history.map(h => ({
       ...h,
-      content: JSON.parse(h.content_json)
+      details_json: h.details_json ? JSON.parse(h.details_json) : null
     }));
 
     res.json({
       success: true,
       data: {
-        history: historyWithContent,
-        count: historyWithContent.length
+        history: historyWithParsedDetails,
+        count: historyWithParsedDetails.length,
+        limit: parseInt(limit),
+        offset: parseInt(offset)
       }
     });
 
   } catch (error) {
-    console.error('Get history error:', error);
+    console.error('❌ Get history error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching history'
@@ -279,43 +271,60 @@ const getHistory = (req, res) => {
   }
 };
 
+// ============================================
+// API BỔ SUNG: GET /api/game/stats
+// ============================================
 /**
- * Get user statistics
- * GET /api/game/stats
+ * Lấy thống kê tổng quan của user
  */
 const getStats = (req, res) => {
   try {
-    const user_id = req.user.id;
+    const userId = req.user.id;
 
-    const stats = db.prepare(`
-      SELECT
-        COUNT(*) as total_attempts,
-        SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END) as correct_answers,
-        SUM(points_earned) as total_points_earned,
-        AVG(time_spent) as avg_time_spent
-      FROM exam_results
-      WHERE user_id = ?
-    `).get(user_id);
-
+    // User info
     const user = db.prepare(`
-      SELECT total_stars, current_streak, max_streak
+      SELECT
+        stars_balance, current_streak, max_streak, freeze_streaks,
+        last_learnt_date, created_at
       FROM users
       WHERE id = ?
-    `).get(user_id);
+    `).get(userId);
+
+    // Exam stats
+    const examStats = db.prepare(`
+      SELECT
+        COUNT(DISTINCT id) as total_exams,
+        COALESCE(AVG(score), 0) as avg_score,
+        MAX(score) as max_score,
+        MIN(score) as min_score,
+        COUNT(DISTINCT DATE(created_at)) as days_active
+      FROM exam_results
+      WHERE user_id = ?
+    `).get(userId);
+
+    // Stats by exam type
+    const statsByType = db.prepare(`
+      SELECT
+        exam_type,
+        COUNT(*) as count,
+        AVG(score) as avg_score,
+        MAX(score) as max_score
+      FROM exam_results
+      WHERE user_id = ?
+      GROUP BY exam_type
+    `).all(userId);
 
     res.json({
       success: true,
       data: {
-        ...user,
-        ...stats,
-        accuracy: stats.total_attempts > 0
-          ? ((stats.correct_answers / stats.total_attempts) * 100).toFixed(1)
-          : 0
+        user: user,
+        exam_stats: examStats,
+        stats_by_type: statsByType
       }
     });
 
   } catch (error) {
-    console.error('Get stats error:', error);
+    console.error('❌ Get stats error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching stats'
@@ -324,8 +333,7 @@ const getStats = (req, res) => {
 };
 
 module.exports = {
-  getQuestions,
-  submitResult,
-  getHistory,
-  getStats
+  submitResult,  // POST /api/game/submit_result
+  getHistory,    // GET /api/game/history
+  getStats       // GET /api/game/stats
 };
