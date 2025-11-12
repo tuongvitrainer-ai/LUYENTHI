@@ -65,17 +65,23 @@ const getQuestions = (req, res) => {
     // Parse content_json and format response
     const formattedQuestions = questions.map(q => {
       const content = JSON.parse(q.content_json);
+      const options = content.options.map((opt, idx) => ({
+        id: String.fromCharCode(65 + idx), // A, B, C, D
+        text: opt
+      }));
+
+      // Map correct_answer từ text sang ID (A, B, C, D)
+      const correctAnswerIndex = content.options.findIndex(opt => opt === q.correct_answer);
+      const correctAnswerId = correctAnswerIndex >= 0 ? String.fromCharCode(65 + correctAnswerIndex) : 'A';
+
       return {
         id: q.id,
         content: {
           question_text: content.question,
-          options: content.options.map((opt, idx) => ({
-            id: String.fromCharCode(65 + idx), // A, B, C, D
-            text: opt
-          })),
+          options: options,
           question_type: 'multiple_choice'
         },
-        correct_answer: q.correct_answer,
+        correct_answer: correctAnswerId, // Trả về A, B, C, D thay vì text
         type: q.type,
         explanation: q.explanation,
         is_premium: q.is_premium,
