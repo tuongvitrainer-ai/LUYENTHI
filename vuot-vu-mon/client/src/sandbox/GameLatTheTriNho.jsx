@@ -53,6 +53,7 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [isDifferentiateMode, setIsDifferentiateMode] = useState(false);
+  const [bgMusicVolume, setBgMusicVolume] = useState(0.3);
 
   // Background music ref
   const bgMusicRef = useRef(null);
@@ -170,7 +171,7 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
       // Try to load background music from public/sounds/background.mp3
       const audio = new Audio('/sounds/background.mp3');
       audio.loop = true;
-      audio.volume = 0.3; // 30% volume
+      audio.volume = bgMusicVolume;
 
       // Play with user interaction (required by browsers)
       audio.play().catch(err => {
@@ -188,6 +189,14 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
     if (bgMusicRef.current) {
       bgMusicRef.current.pause();
       bgMusicRef.current.currentTime = 0;
+    }
+  };
+
+  const handleVolumeChange = (e) => {
+    const newVolume = parseFloat(e.target.value);
+    setBgMusicVolume(newVolume);
+    if (bgMusicRef.current) {
+      bgMusicRef.current.volume = newVolume;
     }
   };
 
@@ -427,6 +436,19 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
           </label>
           <span className="switch-status">{isDifferentiateMode ? 'ON' : 'OFF'}</span>
         </div>
+        <div className="volume-control-container">
+          <label className="volume-label">🔊 Nhạc</label>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={bgMusicVolume}
+            onChange={handleVolumeChange}
+            className="volume-slider"
+          />
+          <span className="volume-value">{Math.round(bgMusicVolume * 100)}%</span>
+        </div>
         <button className="btn-restart" onClick={handleRestart}>
           🔄 Chơi lại
         </button>
@@ -460,9 +482,6 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
                 {/* Card Front */}
                 <div className="card-front">
                   <div className="card-front-content">
-                    <div className="card-type-badge">
-                      {card.type === 'question' ? '❓' : '💡'}
-                    </div>
                     <div className="card-text">{card.content}</div>
                   </div>
                 </div>
