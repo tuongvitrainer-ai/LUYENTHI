@@ -1,84 +1,89 @@
 /* ========================================
-   PASTEL COLOR PALETTE FOR KIDS
+   GOOGLE FONTS - KID-FRIENDLY ROUNDED FONTS
+======================================== */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+/* ========================================
+   PASTEL COLOR PALETTE FOR KIDS (flyer.vn style)
 ======================================== */
 :root {
   /* Theme Variables (can be overridden by ThemeContext) */
-  --theme-primary: #7EC8E3;
-  --theme-secondary: #A3D5E6;
-  --theme-accent: #C8E9F3;
-  --theme-background: linear-gradient(135deg, #F0F8FF 0%, #E6F3F8 50%, #D4EDF5 100%);
+  --theme-primary: #FF6B9D;
+  --theme-secondary: #4ECDC4;
+  --theme-accent: #FFD93D;
+  --theme-background: linear-gradient(135deg, #F0F8FF 0%, #FFF5F8 50%, #FFFDF5 100%);
   --theme-card-bg: rgba(255, 255, 255, 0.95);
-  --theme-text: #000000;
-  --theme-text-light: #1a1a1a;
-  --theme-border: #7EC8E3;
-  --theme-shadow: rgba(126, 200, 227, 0.15);
+  --theme-text: #333333;
+  --theme-text-light: #666666;
+  --theme-border: #FF6B9D;
+  --theme-shadow: rgba(255, 107, 157, 0.15);
 
-  /* Text Colors - Black for Better Readability */
-  --text-primary: #000000;
-  --text-secondary: #1a1a1a;
-  --text-muted: #333333;
+  /* Text Colors - Dark for Better Readability */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #999999;
 
-  /* Primary Pastel Colors - Softer Tones */
-  --pastel-blue: #87CEEB;
-  --pastel-blue-light: #B0E0E6;
-  --pastel-blue-dark: #6FB1D8;
+  /* Primary Pastel Colors - Bright & Cheerful (flyer.vn style) */
+  --pastel-blue: #4ECDC4;
+  --pastel-blue-light: #A8E6E3;
+  --pastel-blue-dark: #2BA89F;
 
-  --pastel-pink: #FFB6C1;
-  --pastel-pink-light: #FFC0CB;
-  --pastel-pink-dark: #FFA0B0;
+  --pastel-pink: #FF6B9D;
+  --pastel-pink-light: #FFB3D9;
+  --pastel-pink-dark: #E63977;
 
-  --pastel-purple: #D8BFD8;
-  --pastel-purple-light: #DDA0DD;
-  --pastel-purple-dark: #C0A5CC;
+  --pastel-purple: #A78BFA;
+  --pastel-purple-light: #C4B5FD;
+  --pastel-purple-dark: #7C3AED;
 
-  --pastel-green: #98D8C8;
-  --pastel-green-light: #B4E7CE;
-  --pastel-green-dark: #7FC4B8;
+  --pastel-green: #6BCB77;
+  --pastel-green-light: #A8E6A3;
+  --pastel-green-dark: #4CAF50;
 
-  --pastel-yellow: #F0E68C;
-  --pastel-yellow-light: #FFFACD;
-  --pastel-yellow-dark: #E6D68A;
+  --pastel-yellow: #FFD93D;
+  --pastel-yellow-light: #FFEB99;
+  --pastel-yellow-dark: #FFC107;
 
-  --pastel-orange: #FFD5A8;
-  --pastel-orange-light: #FFDAB9;
-  --pastel-orange-dark: #FFC080;
+  --pastel-orange: #FFA07A;
+  --pastel-orange-light: #FFD0B3;
+  --pastel-orange-dark: #FF8C4F;
 
   --pastel-peach: #FFB3BA;
   --pastel-mint: #BFFCC6;
   --pastel-lavender: #C9A6F9;
 
-  /* Gradient Backgrounds - Much Softer & Eye-friendly */
-  --gradient-rainbow: linear-gradient(135deg, #F5FAFF 0%, #FFF5F8 50%, #FFFDF5 100%);
-  --gradient-blue-pink: linear-gradient(135deg, #F5FAFF 0%, #FFF5F8 100%);
-  --gradient-pink-purple: linear-gradient(135deg, #FFF5F8 0%, #FCF5FF 100%);
-  --gradient-green-blue: linear-gradient(135deg, #F5FFF9 0%, #F5FAFF 100%);
-  --gradient-yellow-orange: linear-gradient(135deg, #FFFDF5 0%, #FFF9F0 100%);
+  /* Gradient Backgrounds - Bright & Eye-friendly (flyer.vn style) */
+  --gradient-rainbow: linear-gradient(135deg, #F0F8FF 0%, #FFF5F8 50%, #FFFDF5 100%);
+  --gradient-blue-pink: linear-gradient(135deg, #E0F7FF 0%, #FFE5F0 100%);
+  --gradient-pink-purple: linear-gradient(135deg, #FFE5F0 0%, #F3E5FF 100%);
+  --gradient-green-blue: linear-gradient(135deg, #E5FFF0 0%, #E0F7FF 100%);
+  --gradient-yellow-orange: linear-gradient(135deg, #FFF8E5 0%, #FFEEE0 100%);
 
-  /* Subject Colors */
-  --color-math: #87CEEB;        /* Pastel Blue for Math */
-  --color-vietnamese: #FFB6C1;  /* Pastel Pink for Vietnamese */
-  --color-english: #98D8C8;     /* Pastel Green for English */
+  /* Subject Colors - Vibrant & Clear */
+  --color-math: #4ECDC4;        /* Bright Teal for Math */
+  --color-vietnamese: #FF6B9D;  /* Bright Pink for Vietnamese */
+  --color-english: #6BCB77;     /* Bright Green for English */
 
   /* Neutral Colors */
   --white: #FFFFFF;
   --light-gray: #F8F9FA;
   --gray: #E9ECEF;
   --dark-gray: #333333;
-  --text-dark: #000000;
-  --text-light: #1a1a1a;
+  --text-dark: #333333;
+  --text-light: #666666;
 
-  /* Semantic Colors */
-  --success: #B4E7CE;
-  --error: #FFB3BA;
-  --warning: #FFD5A8;
-  --info: #A8D8EA;
+  /* Semantic Colors - Kid-friendly */
+  --success: #6BCB77;
+  --error: #FF6B9D;
+  --warning: #FFD93D;
+  --info: #4ECDC4;
 
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(168, 216, 234, 0.15);
-  --shadow-md: 0 4px 16px rgba(168, 216, 234, 0.2);
-  --shadow-lg: 0 8px 24px rgba(168, 216, 234, 0.25);
+  /* Shadows - Softer */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
 
-  /* Border Radius */
+  /* Border Radius - More Rounded (flyer.vn style) */
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 24px;
@@ -93,9 +98,9 @@
   --spacing-xl: 32px;
   --spacing-2xl: 48px;
 
-  /* Font Families */
-  --font-primary: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-  --font-display: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive;
+  /* Font Families - Nunito & Quicksand (flyer.vn style) */
+  --font-primary: 'Nunito', 'Quicksand', 'Arial Rounded MT Bold', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Quicksand', 'Nunito', 'Arial Rounded MT Bold', cursive, sans-serif;
 }
 
 /* ========================================
@@ -115,10 +120,11 @@ html {
 
 body {
   font-family: var(--font-primary);
-  color: #000000;
+  color: var(--text-primary);
   background: var(--theme-background, var(--gradient-rainbow));
   min-height: 100vh;
   line-height: 1.6;
+  font-weight: 400;
 }
 
 /* Typography for Kids */
@@ -126,7 +132,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 1.2;
-  color: #000000;
+  color: var(--text-primary);
 }
 
 h1 {
@@ -187,13 +193,14 @@ button:disabled {
 
 /* Links */
 a {
-  color: #000000;
+  color: var(--pastel-pink);
   text-decoration: none;
   transition: color 0.3s ease;
+  font-weight: 500;
 }
 
 a:hover {
-  color: #000000;
+  color: var(--pastel-pink-dark);
 }
 
 /* Inputs */
@@ -233,8 +240,8 @@ input:focus, textarea:focus, select:focus {
 
 /* Selection */
 ::selection {
-  background: var(--pastel-purple-light);
-  color: #000000;
+  background: var(--pastel-pink-light);
+  color: var(--text-primary);
 }
 
 /* Animations */
