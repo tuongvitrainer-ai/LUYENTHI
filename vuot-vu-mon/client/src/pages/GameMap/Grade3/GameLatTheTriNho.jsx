@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { gameAPI } from '../../../services/api';
 import './GameLatTheTriNho.css';
 
 const GameLatTheTriNho = ({ pairs: propPairs }) => {
+  const navigate = useNavigate();
   // ============================================
   // VOCABULARY DATA - Từ vựng tiếng Anh lớp 3
   // ============================================
@@ -185,6 +187,8 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   });
   const [starsEarned, setStarsEarned] = useState(0);
   const [isSubmittingResult, setIsSubmittingResult] = useState(false);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
 
   // Background music ref
   const bgMusicRef = useRef(null);
@@ -366,6 +370,47 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   };
 
   // ============================================
+  // FETCH LEADERBOARD FOR LEVEL
+  // ============================================
+  const fetchLeaderboard = async (level) => {
+    try {
+      setIsLoadingLeaderboard(true);
+      // Giả lập dữ liệu leaderboard (sẽ thay bằng API call sau)
+      // TODO: Replace with actual API call
+      const mockData = [
+        {
+          rank: 1,
+          username: 'Player123',
+          time_seconds: 45,
+          score: 800,
+          moves: 12,
+          math_types: ['multiplication', 'division'],
+          created_at: '2024-01-15'
+        },
+        {
+          rank: 2,
+          username: 'Alice',
+          time_seconds: 52,
+          score: 750,
+          moves: 14,
+          math_types: ['addition'],
+          created_at: '2024-01-14'
+        },
+        // Add more mock data as needed
+      ];
+
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setLeaderboard(mockData);
+    } catch (error) {
+      console.error('Failed to fetch leaderboard:', error);
+      setLeaderboard([]);
+    } finally {
+      setIsLoadingLeaderboard(false);
+    }
+  };
+
+  // ============================================
   // SELECT LEVEL & INITIALIZE GAME
   // ============================================
   const selectLevel = (levelConfig) => {
@@ -373,6 +418,7 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
     setStartTime(Date.now());
     initializeGame(levelConfig.pairs);
     startBackgroundMusic(); // Bắt đầu nhạc nền khi chọn level
+    fetchLeaderboard(levelConfig.level); // Load leaderboard for this level
   };
 
   const initializeGame = (pairCount) => {
@@ -592,20 +638,11 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
     return (
       <div className="game-lat-the-tri-nho">
         <div className="level-select-screen">
+          <button className="btn-home" onClick={() => navigate('/')}>
+            ← Về trang chủ
+          </button>
+
           <h1 className="game-title">🎮 CÙNG CHƠI GAME NÀO!!</h1>
-          <p className="game-subtitle">Chọn mức độ:</p>
-          <div className="level-buttons">
-            {LEVELS.map((level) => (
-              <button
-                key={level.level}
-                className="level-btn"
-                onClick={() => selectLevel(level)}
-              >
-                <span className="level-btn-emoji">{level.emoji}</span>
-                <span className="level-btn-text">{level.name}</span>
-              </button>
-            ))}
-          </div>
 
           <div className="math-types-section">
             <p className="math-types-title">Thêm đặc tính độ khó (tùy chọn):</p>
@@ -643,6 +680,20 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
                 <span className="checkbox-label">➗ Toán chia</span>
               </label>
             </div>
+          </div>
+
+          <p className="game-subtitle">Chọn mức độ:</p>
+          <div className="level-buttons">
+            {LEVELS.map((level) => (
+              <button
+                key={level.level}
+                className="level-btn"
+                onClick={() => selectLevel(level)}
+              >
+                <span className="level-btn-emoji">{level.emoji}</span>
+                <span className="level-btn-text">{level.name}</span>
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -706,6 +757,62 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
         <button className="btn-restart" onClick={handleRestart}>
           🔄 Chơi lại
         </button>
+      </div>
+
+      {/* Leaderboard */}
+      <div className="leaderboard-section">
+        <h3 className="leaderboard-title">🏆 Bảng Xếp Hạng - {currentLevel.name}</h3>
+        {isLoadingLeaderboard ? (
+          <div className="leaderboard-loading">Đang tải bảng xếp hạng...</div>
+        ) : leaderboard.length > 0 ? (
+          <div className="leaderboard-table-container">
+            <table className="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Hạng</th>
+                  <th>Người chơi</th>
+                  <th>Thời gian</th>
+                  <th>Điểm</th>
+                  <th>Số lượt</th>
+                  <th>Tuỳ chọn</th>
+                  <th>Ngày</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaderboard.map((entry, idx) => {
+                  const mathSymbols = entry.math_types.map(type => {
+                    switch(type) {
+                      case 'addition': return '➕';
+                      case 'subtraction': return '➖';
+                      case 'multiplication': return '✖️';
+                      case 'division': return '➗';
+                      default: return '';
+                    }
+                  }).join(' ');
+
+                  return (
+                    <tr key={idx} className={idx < 3 ? `top-${idx + 1}` : ''}>
+                      <td className="rank-cell">
+                        {idx === 0 && '🥇'}
+                        {idx === 1 && '🥈'}
+                        {idx === 2 && '🥉'}
+                        {idx > 2 && entry.rank}
+                      </td>
+                      <td className="player-cell">{entry.username}</td>
+                      <td className="time-cell">{entry.time_seconds}s</td>
+                      <td className="score-cell">{entry.score}</td>
+                      <td className="moves-cell">{entry.moves}</td>
+                      <td className="options-cell">{mathSymbols || '—'}</td>
+                      <td className="date-cell">{new Date(entry.created_at).toLocaleDateString('vi-VN')}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="leaderboard-empty">Chưa có dữ liệu xếp hạng cho mức độ này.</div>
+        )}
       </div>
 
       {/* Game Board */}
