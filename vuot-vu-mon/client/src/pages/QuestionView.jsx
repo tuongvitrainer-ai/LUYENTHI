@@ -68,22 +68,42 @@ function QuestionView() {
     try {
       const timeSpent = Math.floor((Date.now() - startTime) / 1000);
 
+      // Check if answer is correct
+      const isCorrect = selectedAnswer === currentQuestion.correct_answer;
+      const score = isCorrect ? 100 : 0;
+
+      // Submit as exam-level result (V6 API format)
       const response = await gameAPI.submitResult({
-        question_id: currentQuestion.id,
-        user_answer: selectedAnswer,
-        time_spent: timeSpent
+        exam_type: 'quiz_race',
+        score: score,
+        details_json: {
+          question_id: currentQuestion.id,
+          user_answer: selectedAnswer,
+          correct_answer: currentQuestion.correct_answer,
+          time_spent: timeSpent,
+          subject: subject
+        }
       });
 
       if (response.data.success) {
         const resultData = response.data.data;
-        setResult(resultData);
+
+        // Set result for display
+        setResult({
+          is_correct: isCorrect,
+          correct_answer: currentQuestion.correct_answer,
+          explanation: currentQuestion.explanation,
+          points_earned: resultData.stars_earned || 0,
+          current_streak: resultData.streak_status?.current_streak || 0
+        });
 
         // Update user stats in context
         updateUser({
           ...user,
-          total_stars: resultData.new_total_stars,
-          current_streak: resultData.current_streak,
-          max_streak: resultData.max_streak
+          stars_balance: resultData.stars_balance,
+          current_streak: resultData.streak_status?.current_streak,
+          max_streak: resultData.streak_status?.max_streak,
+          freeze_streaks: resultData.streak_status?.freeze_remaining
         });
       }
     } catch (error) {
@@ -138,7 +158,7 @@ function QuestionView() {
           Câu {currentIndex + 1} / {questions.length}
         </div>
         <div className="header-right">
-          <div className="user-stars">⭐ {user?.total_stars || 0}</div>
+          <div className="user-stars">⭐ {user?.stars_balance || 0}</div>
           <UserAvatar />
         </div>
       </div>

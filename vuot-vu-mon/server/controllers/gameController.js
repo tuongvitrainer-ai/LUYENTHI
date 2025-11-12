@@ -1,6 +1,108 @@
 const { db } = require('../database/db');
 
 // ============================================
+// API: GET /api/game/questions
+// LẤY CÂU HỎI CHO GAME
+// ============================================
+/**
+ * Lấy câu hỏi ngẫu nhiên cho game
+ *
+ * Query params:
+ * - subject: "Toán", "Tiếng Việt", "Tiếng Anh" (optional)
+ * - limit: số lượng câu hỏi (default: 10, max: 50)
+ * - game_type: "quiz_race", etc. (optional)
+ */
+const getQuestions = (req, res) => {
+  try {
+    const { subject, limit = 10, game_type } = req.query;
+    const questionLimit = Math.min(parseInt(limit), 50);
+
+    console.log(`🎮 Fetching questions: subject=${subject}, limit=${questionLimit}, game_type=${game_type}`);
+
+    // Build query with filters
+    let query = `
+      SELECT DISTINCT
+        q.id,
+        q.content_json,
+        q.correct_answer,
+        q.type,
+        q.explanation,
+        q.is_premium,
+        q.created_at
+      FROM questions q
+    `;
+
+    const conditions = [];
+    const params = [];
+
+    // Filter by subject if provided
+    if (subject) {
+      query += ` JOIN question_tags qt ON q.id = qt.question_id`;
+      conditions.push(`qt.tag_key = 'môn_học' AND qt.tag_value = ?`);
+      params.push(subject);
+    }
+
+    // Filter by game_type if provided
+    if (game_type) {
+      if (!subject) {
+        query += ` JOIN question_tags qt ON q.id = qt.question_id`;
+      }
+      conditions.push(`qt.tag_key = 'game_type' AND qt.tag_value = ?`);
+      params.push(game_type);
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ` + conditions.join(' AND ');
+    }
+
+    query += ` ORDER BY RANDOM() LIMIT ?`;
+    params.push(questionLimit);
+
+    const questions = db.prepare(query).all(...params);
+
+    console.log(`   ✅ Found ${questions.length} questions`);
+
+    // Parse content_json and format response
+    const formattedQuestions = questions.map(q => {
+      const content = JSON.parse(q.content_json);
+      return {
+        id: q.id,
+        content: {
+          question_text: content.question,
+          options: content.options.map((opt, idx) => ({
+            id: String.fromCharCode(65 + idx), // A, B, C, D
+            text: opt
+          })),
+          question_type: 'multiple_choice'
+        },
+        correct_answer: q.correct_answer,
+        type: q.type,
+        explanation: q.explanation,
+        is_premium: q.is_premium,
+        difficulty_level: 1, // Default difficulty
+        points: 5 // Default points
+      };
+    });
+
+    res.json({
+      success: true,
+      data: {
+        questions: formattedQuestions,
+        count: formattedQuestions.length
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Get questions error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching questions',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// ============================================
 // API: POST /api/game/submit_result
 // CỐT LÕI HỆ THỐNG GAMIFICATION
 // ============================================
@@ -333,6 +435,7 @@ const getStats = (req, res) => {
 };
 
 module.exports = {
+  getQuestions,  // GET /api/game/questions
   submitResult,  // POST /api/game/submit_result
   getHistory,    // GET /api/game/history
   getStats       // GET /api/game/stats

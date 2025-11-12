@@ -59,13 +59,23 @@ api.interceptors.response.use(
 );
 
 // ============================================
-// AUTH API
+// AUTH API (V6 - Guest-First)
 // ============================================
 
 export const authAPI = {
+  // V6: Create guest user (Guest-First strategy)
+  createGuest: () => api.post('/auth/guest'),
+
+  // V6: Register (can upgrade guest to student)
   register: (userData) => api.post('/auth/register', userData),
+
+  // Login with email/password
   login: (credentials) => api.post('/auth/login', credentials),
+
+  // Logout
   logout: () => api.post('/auth/logout'),
+
+  // Get current user info
   getMe: () => api.get('/auth/me'),
 };
 

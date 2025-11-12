@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { authAPI } from '../services/api';
 
 /**
  * GuestRoute Component - Chiến lược "Guest-First"
@@ -10,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
  * - User có thể chơi game và tích lũy điểm/streak
  */
 function GuestRoute({ children }) {
-  const { isAuthenticated, loading, login } = useAuth();
+  const { isAuthenticated, loading, updateUser } = useAuth();
 
   useEffect(() => {
     // Nếu chưa login, tự động tạo guest user
@@ -23,19 +24,19 @@ function GuestRoute({ children }) {
     try {
       console.log('🎮 Tạo Guest User tự động...');
 
-      const response = await fetch('http://localhost:3000/api/auth/guest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const response = await authAPI.createGuest();
 
-      const data = await response.json();
+      if (response.data.success) {
+        const { user, token } = response.data.data;
 
-      if (data.success) {
-        // Lưu token vào localStorage
-        localStorage.setItem('token', data.data.token);
+        // Lưu token và user vào localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
 
-        // Cập nhật auth context (reload page để apply token)
-        window.location.reload();
+        // Cập nhật auth context
+        updateUser(user);
+
+        console.log('✅ Guest user created:', user.id);
       }
     } catch (error) {
       console.error('❌ Error creating guest:', error);
