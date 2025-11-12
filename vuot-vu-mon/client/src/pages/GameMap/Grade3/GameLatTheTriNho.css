@@ -994,6 +994,12 @@
   min-width: 120px;
 }
 
+.level-cell {
+  font-weight: 600;
+  color: var(--pastel-blue-dark);
+  min-width: 90px;
+}
+
 .time-cell {
   font-weight: 700;
   color: var(--pastel-purple-dark);
