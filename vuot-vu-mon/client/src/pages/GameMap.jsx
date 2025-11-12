@@ -45,7 +45,24 @@ function GameMap() {
           <div className="user-info">
             <span className="user-stars">⭐ {user?.stars_balance || 0}</span>
             <span className="user-streak">🔥 {user?.current_streak || 0}</span>
-            <UserAvatar />
+            {user?.is_anonymous ? (
+              <div className="auth-buttons">
+                <button
+                  className="btn-login"
+                  onClick={() => navigate('/login')}
+                >
+                  Đăng nhập
+                </button>
+                <button
+                  className="btn-register"
+                  onClick={() => navigate('/register')}
+                >
+                  Đăng ký
+                </button>
+              </div>
+            ) : (
+              <UserAvatar />
+            )}
           </div>
         </div>
       </header>

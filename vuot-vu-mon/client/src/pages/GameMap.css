@@ -119,6 +119,44 @@
   box-shadow: var(--shadow-md);
 }
 
+/* Auth Buttons for Guest Users */
+.auth-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.btn-login,
+.btn-register {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  color: #000000;
+}
+
+.btn-login {
+  background: var(--gradient-green-blue);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-register {
+  background: var(--gradient-yellow-orange);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-login:hover,
+.btn-register:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: var(--shadow-md);
+  animation: wiggle 0.5s ease;
+}
+
 /* Tablet Header */
 @media (min-width: 600px) {
   .header-content {

@@ -8,11 +8,10 @@ function RegisterPage() {
   const { register } = useAuth();
 
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
     password: '',
     confirmPassword: '',
-    display_name: '',
+    full_name: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -28,7 +27,7 @@ function RegisterPage() {
   };
 
   const validateForm = () => {
-    if (!formData.username || !formData.email || !formData.password) {
+    if (!formData.email || !formData.password) {
       setError('Vui lòng nhập đầy đủ thông tin bắt buộc');
       return false;
     }
@@ -68,6 +67,17 @@ function RegisterPage() {
     try {
       const { confirmPassword, ...registerData } = formData;
 
+      // Thêm guestToken nếu có (để nâng cấp guest → student)
+      const guestToken = localStorage.getItem('token');
+      const guestUser = localStorage.getItem('user');
+
+      if (guestToken && guestUser) {
+        const user = JSON.parse(guestUser);
+        if (user.is_anonymous === 1) {
+          registerData.guestToken = guestToken;
+        }
+      }
+
       const result = await register(registerData);
 
       if (result.success) {
@@ -99,22 +109,6 @@ function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="username">
-              Tên đăng nhập <span className="required">*</span>
-            </label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="Nhập tên đăng nhập"
-              disabled={loading}
-              autoComplete="username"
-            />
-          </div>
-
-          <div className="form-group">
             <label htmlFor="email">
               Email <span className="required">*</span>
             </label>
@@ -131,12 +125,12 @@ function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="display_name">Tên hiển thị</label>
+            <label htmlFor="full_name">Tên đầy đủ</label>
             <input
               type="text"
-              id="display_name"
-              name="display_name"
-              value={formData.display_name}
+              id="full_name"
+              name="full_name"
+              value={formData.full_name}
               onChange={handleChange}
               placeholder="Tên của bạn (tùy chọn)"
               disabled={loading}
