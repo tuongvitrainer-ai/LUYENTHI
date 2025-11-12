@@ -289,6 +289,79 @@
 }
 
 /* ============================================
+   VOLUME CONTROL - Nhạc nền
+   ============================================ */
+
+.volume-control-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.5rem 0.8rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--pastel-blue-light);
+}
+
+.volume-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.volume-slider {
+  width: 80px;
+  height: 6px;
+  border-radius: 5px;
+  background: #ddd;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--pastel-blue);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  background: var(--pastel-blue-dark);
+  transform: scale(1.2);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--pastel-blue);
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.volume-slider::-moz-range-thumb:hover {
+  background: var(--pastel-blue-dark);
+  transform: scale(1.2);
+}
+
+.volume-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: var(--font-display);
+  min-width: 35px;
+  text-align: right;
+}
+
+/* ============================================
    GAME BOARD - DYNAMIC SIZING BASED ON PAIRS
    ============================================ */
 
@@ -499,58 +572,36 @@
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
-}
-
-.card-type-badge {
-  font-size: 1.2rem;
-  margin-bottom: 0.2rem;
-}
-
-.game-board.pairs-12 .card-type-badge,
-.game-board.pairs-20 .card-type-badge {
-  font-size: 0.9rem;
-  margin-bottom: 0.1rem;
 }
 
 .card-text {
-  font-size: 0.95rem;
+  font-size: 1.5rem;
   font-weight: 700;
   text-align: center;
   word-wrap: break-word;
   color: #000000;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 0.4rem 0.6rem;
-  border-radius: var(--radius-sm);
   width: 100%;
-  min-height: 2.2rem;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
-  line-height: 1.2;
+  line-height: 1.3;
+  padding: 0.5rem;
 }
 
 /* Smaller text for many cards */
 .game-board.pairs-8 .card-text {
-  font-size: 0.85rem;
-  padding: 0.3rem 0.5rem;
-  min-height: 2rem;
+  font-size: 1.3rem;
 }
 
 .game-board.pairs-12 .card-text {
-  font-size: 0.75rem;
-  padding: 0.3rem 0.4rem;
-  min-height: 1.8rem;
+  font-size: 1.1rem;
 }
 
 .game-board.pairs-20 .card-text {
-  font-size: 0.65rem;
-  padding: 0.2rem 0.3rem;
-  min-height: 1.5rem;
+  font-size: 0.9rem;
 }
 
 /* ============================================
