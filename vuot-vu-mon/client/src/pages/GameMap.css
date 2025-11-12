@@ -36,7 +36,7 @@
 
 .header-content h1 {
   margin: 0;
-  color: var(--theme-text, var(--text-dark));
+  color: #000000;
   font-size: 1.6rem;
   font-family: var(--font-display);
   animation: bounce 1s ease;
@@ -51,7 +51,7 @@
 
 .user-name {
   font-weight: 700;
-  color: var(--text-dark);
+  color: #000000;
   font-size: 0.95rem;
   white-space: nowrap;
   padding: var(--spacing-xs) var(--spacing-sm);
@@ -87,7 +87,7 @@
 .btn-shop,
 .btn-logout {
   padding: var(--spacing-sm) var(--spacing-md);
-  color: var(--white);
+  color: #000000;
   border: none;
   border-radius: var(--radius-lg);
   cursor: pointer;
@@ -203,7 +203,7 @@
 ======================================== */
 .welcome-section {
   text-align: center;
-  color: var(--white);
+  color: #000000;
   margin-bottom: var(--spacing-2xl);
   animation: fadeIn 0.6s ease;
 }
@@ -212,15 +212,17 @@
   font-size: 1.8rem;
   margin: 0 0 var(--spacing-sm) 0;
   font-family: var(--font-display);
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
   animation: bounce 1s ease;
+  color: #000000;
 }
 
 .welcome-section p {
   font-size: 1.1rem;
-  opacity: 0.95;
+  opacity: 1;
   margin: 0;
   font-weight: 500;
+  color: #000000;
 }
 
 @media (min-width: 600px) {
@@ -333,7 +335,7 @@
   align-items: center;
   justify-content: center;
   font-size: 2.5rem;
-  color: var(--white);
+  color: #000000;
   box-shadow: var(--shadow-md);
   animation: float 3s ease-in-out infinite;
   position: relative;
@@ -370,7 +372,7 @@
 
 .subject-card h3 {
   margin: 0 0 var(--spacing-sm) 0;
-  color: var(--text-dark);
+  color: #000000;
   font-size: 1.4rem;
   font-family: var(--font-display);
   position: relative;
@@ -384,7 +386,7 @@
 }
 
 .subject-card p {
-  color: var(--text-light);
+  color: #000000;
   margin: 0 0 var(--spacing-lg) 0;
   font-size: 0.95rem;
   line-height: 1.5;
@@ -400,7 +402,7 @@
 
 .btn-play {
   padding: var(--spacing-md) var(--spacing-xl);
-  color: var(--white);
+  color: #000000;
   border: none;
   border-radius: var(--radius-lg);
   font-weight: 700;
@@ -459,13 +461,9 @@
 .stats-section h3 {
   text-align: center;
   margin: 0 0 var(--spacing-xl) 0;
-  color: var(--text-dark);
+  color: #000000;
   font-size: 1.6rem;
   font-family: var(--font-display);
-  background: var(--gradient-blue-pink);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 @media (min-width: 600px) {
@@ -494,7 +492,7 @@
 }
 
 .stat-card {
-  color: var(--white);
+  color: #000000;
   padding: var(--spacing-xl);
   border-radius: var(--radius-lg);
   text-align: center;
