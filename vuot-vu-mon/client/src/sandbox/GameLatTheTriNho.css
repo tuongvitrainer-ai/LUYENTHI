@@ -209,37 +209,83 @@
   transform: translateY(0);
 }
 
-.btn-differentiate {
-  background: var(--pastel-purple);
-  color: #000000;
-  border: none;
-  padding: 0.6rem 1.2rem;
+/* ============================================
+   TOGGLE SWITCH - Phân biệt mode
+   ============================================ */
+
+.differentiate-switch-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.5rem 0.8rem;
   border-radius: var(--radius-lg);
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: var(--font-display);
   box-shadow: var(--shadow-sm);
+  border: 2px solid var(--pastel-purple-light);
 }
 
-.btn-differentiate:hover {
-  background: var(--pastel-purple-dark);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+.switch-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: var(--font-display);
+  margin: 0;
 }
 
-.btn-differentiate.active {
-  background: var(--pastel-green);
-  border: 2px solid var(--pastel-green-dark);
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  margin: 0;
 }
 
-.btn-differentiate.active:hover {
-  background: var(--pastel-green-dark);
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
-.btn-differentiate:active {
-  transform: translateY(0);
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.switch input:checked + .slider {
+  background-color: var(--pastel-green);
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.switch-status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: var(--font-display);
+  min-width: 28px;
+  text-align: center;
 }
 
 /* ============================================
@@ -389,17 +435,8 @@
   transform: rotateY(0deg);
 }
 
-/* CHẾ ĐỘ ĐỒNG NHẤT - Tất cả thẻ giống nhau (mặc định) */
+/* Tất cả thẻ đều màu xanh da trời - chỉ khác icon khi bật phân biệt */
 .card-back-default {
-  background: linear-gradient(135deg, var(--pastel-blue) 0%, var(--pastel-blue-light) 100%);
-}
-
-/* CHẾ ĐỘ PHÂN BIỆT - Câu hỏi = Hồng, Trả lời = Xanh da trời */
-.card-back-question {
-  background: linear-gradient(135deg, var(--pastel-pink) 0%, var(--pastel-pink-light) 100%);
-}
-
-.card-back-answer {
   background: linear-gradient(135deg, var(--pastel-blue) 0%, var(--pastel-blue-light) 100%);
 }
 
@@ -407,6 +444,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 0.3rem;
 }
 
@@ -416,28 +454,10 @@
   font-weight: bold;
 }
 
-.card-back-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #000000;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-}
-
 /* Smaller icon for small cards */
 .game-board.pairs-12 .card-back-icon,
 .game-board.pairs-20 .card-back-icon {
   font-size: 1.8rem;
-}
-
-.game-board.pairs-12 .card-back-label,
-.game-board.pairs-20 .card-back-label {
-  font-size: 0.6rem;
-  padding: 0.15rem 0.4rem;
 }
 
 @keyframes float {
