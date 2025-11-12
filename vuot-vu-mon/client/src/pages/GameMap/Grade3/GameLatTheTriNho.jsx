@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { gameAPI } from '../../../services/api';
 import './GameLatTheTriNho.css';
 
 const GameLatTheTriNho = ({ pairs: propPairs }) => {
@@ -182,6 +183,8 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
     multiplication: false,
     division: false
   });
+  const [starsEarned, setStarsEarned] = useState(0);
+  const [isSubmittingResult, setIsSubmittingResult] = useState(false);
 
   // Background music ref
   const bgMusicRef = useRef(null);
@@ -325,6 +328,40 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
     setBgMusicVolume(newVolume);
     if (bgMusicRef.current) {
       bgMusicRef.current.volume = newVolume;
+    }
+  };
+
+  // ============================================
+  // SUBMIT GAME RESULT TO API
+  // ============================================
+  const submitGameResult = async (finalScore, playTime, accuracy) => {
+    try {
+      setIsSubmittingResult(true);
+
+      const response = await gameAPI.submitResult({
+        exam_type: 'memory_card',
+        score: finalScore,
+        details_json: {
+          level: currentLevel.level,
+          pairs: currentLevel.pairs,
+          moves: moves,
+          time_seconds: playTime,
+          accuracy_percent: accuracy,
+          math_types_selected: selectedMathTypes,
+          differentiate_mode: isDifferentiateMode
+        }
+      });
+
+      if (response.data && response.data.success) {
+        // Lưu số sao nhận được
+        setStarsEarned(response.data.data.stars_earned || 0);
+      }
+    } catch (error) {
+      console.error('Failed to submit game result:', error);
+      // Game vẫn hiển thị kết quả ngay cả khi API fail
+      setStarsEarned(0);
+    } finally {
+      setIsSubmittingResult(false);
     }
   };
 
@@ -476,11 +513,21 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
 
         // Check game complete
         if (newMatchedPairs.length === currentLevel.pairs) {
-          setTimeout(() => {
-            setEndTime(Date.now());
-            setGameComplete(true);
+          setTimeout(async () => {
+            const endTime = Date.now();
+            setEndTime(endTime);
             stopBackgroundMusic(); // Dừng nhạc nền
             playVictorySound(); // Phát nhạc chiến thắng
+
+            // Calculate final stats
+            const playTime = Math.floor((endTime - startTime) / 1000);
+            const accuracy = Math.round((currentLevel.pairs / (moves + 1)) * 100);
+
+            // Submit result to API
+            await submitGameResult(newScore, playTime, accuracy);
+
+            // Show completion popup
+            setGameComplete(true);
           }, 500);
         }
       }, 600);
@@ -722,7 +769,11 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
               </p>
             </div>
             <div className="popup-message">
-              <p>🌟 Xin chúc mừng, bạn nhận được <strong>5 Sao</strong>!</p>
+              {starsEarned > 0 ? (
+                <p>🌟 Xin chúc mừng, bạn nhận được <strong>{starsEarned} Sao</strong>!</p>
+              ) : (
+                <p>🎉 Xin chúc mừng, bạn đã hoàn thành!</p>
+              )}
               <p>Hãy đăng nhập để lưu điểm và đổi thưởng nhé ^^</p>
             </div>
             <div className="popup-buttons">
