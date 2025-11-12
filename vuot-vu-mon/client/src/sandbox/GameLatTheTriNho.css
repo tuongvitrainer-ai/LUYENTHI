@@ -209,6 +209,39 @@
   transform: translateY(0);
 }
 
+.btn-differentiate {
+  background: var(--pastel-purple);
+  color: #000000;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-display);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-differentiate:hover {
+  background: var(--pastel-purple-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-differentiate.active {
+  background: var(--pastel-green);
+  border: 2px solid var(--pastel-green-dark);
+}
+
+.btn-differentiate.active:hover {
+  background: var(--pastel-green-dark);
+}
+
+.btn-differentiate:active {
+  transform: translateY(0);
+}
+
 /* ============================================
    GAME BOARD - DYNAMIC SIZING BASED ON PAIRS
    ============================================ */
@@ -356,7 +389,12 @@
   transform: rotateY(0deg);
 }
 
-/* MÀU PHÂN BIỆT: Câu hỏi = Hồng, Trả lời = Xanh da trời */
+/* CHẾ ĐỘ ĐỒNG NHẤT - Tất cả thẻ giống nhau (mặc định) */
+.card-back-default {
+  background: linear-gradient(135deg, var(--pastel-blue) 0%, var(--pastel-blue-light) 100%);
+}
+
+/* CHẾ ĐỘ PHÂN BIỆT - Câu hỏi = Hồng, Trả lời = Xanh da trời */
 .card-back-question {
   background: linear-gradient(135deg, var(--pastel-pink) 0%, var(--pastel-pink-light) 100%);
 }

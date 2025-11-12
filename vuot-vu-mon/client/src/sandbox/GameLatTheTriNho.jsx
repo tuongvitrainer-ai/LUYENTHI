@@ -52,6 +52,7 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   const [isChecking, setIsChecking] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
+  const [isDifferentiateMode, setIsDifferentiateMode] = useState(false);
 
   // Background music ref
   const bgMusicRef = useRef(null);
@@ -414,6 +415,13 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
             <span className="stat-value">{matchedPairs.length}/{currentLevel.pairs}</span>
           </div>
         </div>
+        <button
+          className={`btn-differentiate ${isDifferentiateMode ? 'active' : ''}`}
+          onClick={() => setIsDifferentiateMode(!isDifferentiateMode)}
+          title={isDifferentiateMode ? "Tắt chế độ phân biệt" : "Bật chế độ phân biệt"}
+        >
+          {isDifferentiateMode ? '🎨 Phân biệt' : '🎨 Đồng nhất'}
+        </button>
         <button className="btn-restart" onClick={handleRestart}>
           🔄 Chơi lại
         </button>
@@ -432,15 +440,20 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
               onClick={() => handleCardClick(index)}
             >
               <div className="card-inner">
-                {/* Card Back - Phân biệt câu hỏi và trả lời */}
-                <div className={`card-back card-back-${card.type}`}>
+                {/* Card Back - Có thể bật/tắt chế độ phân biệt */}
+                <div className={`card-back ${isDifferentiateMode ? `card-back-${card.type}` : 'card-back-default'}`}>
                   <div className="card-back-content">
                     <span className="card-back-icon">
-                      {card.type === 'question' ? '❓' : '✓'}
+                      {isDifferentiateMode
+                        ? (card.type === 'question' ? '❓' : '✓')
+                        : '🎴'
+                      }
                     </span>
-                    <span className="card-back-label">
-                      {card.type === 'question' ? 'Câu hỏi' : 'Trả lời'}
-                    </span>
+                    {isDifferentiateMode && (
+                      <span className="card-back-label">
+                        {card.type === 'question' ? 'Câu hỏi' : 'Trả lời'}
+                      </span>
+                    )}
                   </div>
                 </div>
 
