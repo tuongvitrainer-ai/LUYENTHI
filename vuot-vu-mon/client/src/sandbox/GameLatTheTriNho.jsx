@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './GameLatTheTriNho.css';
 
 const GameLatTheTriNho = ({ pairs: propPairs }) => {
@@ -42,7 +42,7 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   // ============================================
   // STATE MANAGEMENT
   // ============================================
-  const [currentLevel, setCurrentLevel] = useState(null); // null = chưa chọn level
+  const [currentLevel, setCurrentLevel] = useState(null);
   const [cards, setCards] = useState([]);
   const [flippedIndices, setFlippedIndices] = useState([]);
   const [matchedPairs, setMatchedPairs] = useState([]);
@@ -52,47 +52,142 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   const [isChecking, setIsChecking] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
+  const [isDifferentiateMode, setIsDifferentiateMode] = useState(false);
+
+  // Background music ref
+  const bgMusicRef = useRef(null);
 
   // ============================================
-  // SOUND EFFECTS
+  // SOUND EFFECTS - IMPROVED
   // ============================================
-  const playSound = (type) => {
+
+  // Âm thanh "TING TING" khi đúng - 2 nốt cao vui vẻ
+  const playMatchSound = () => {
     try {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
 
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+      // Note 1: G5 (783.99 Hz) - "TING"
+      const osc1 = audioContext.createOscillator();
+      const gain1 = audioContext.createGain();
+      osc1.connect(gain1);
+      gain1.connect(audioContext.destination);
+      osc1.type = 'sine';
+      osc1.frequency.value = 783.99; // G5
+      gain1.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+      osc1.start(audioContext.currentTime);
+      osc1.stop(audioContext.currentTime + 0.15);
 
-      if (type === 'match') {
-        // Âm thanh vui nhộn khi đúng: C-E-G chord
-        oscillator.frequency.value = 523.25; // C5
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.3);
-
-        // Thêm harmonic
-        const osc2 = audioContext.createOscillator();
-        const gain2 = audioContext.createGain();
-        osc2.connect(gain2);
-        gain2.connect(audioContext.destination);
-        osc2.frequency.value = 659.25; // E5
-        gain2.gain.setValueAtTime(0.2, audioContext.currentTime);
-        gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-        osc2.start(audioContext.currentTime);
-        osc2.stop(audioContext.currentTime + 0.3);
-      } else {
-        // Âm thanh nhẹ nhàng khi sai
-        oscillator.frequency.value = 200; // G3
-        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.2);
-      }
+      // Note 2: C6 (1046.50 Hz) - "TING" (cao hơn)
+      const osc2 = audioContext.createOscillator();
+      const gain2 = audioContext.createGain();
+      osc2.connect(gain2);
+      gain2.connect(audioContext.destination);
+      osc2.type = 'sine';
+      osc2.frequency.value = 1046.50; // C6
+      gain2.gain.setValueAtTime(0.3, audioContext.currentTime + 0.1);
+      gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25);
+      osc2.start(audioContext.currentTime + 0.1);
+      osc2.stop(audioContext.currentTime + 0.25);
     } catch (error) {
       console.log('Audio not supported:', error);
+    }
+  };
+
+  // Âm thanh "BÚM BÙM" khi sai - 2 nốt thấp
+  const playNoMatchSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Note 1: E2 (82.41 Hz) - "BÚM"
+      const osc1 = audioContext.createOscillator();
+      const gain1 = audioContext.createGain();
+      osc1.connect(gain1);
+      gain1.connect(audioContext.destination);
+      osc1.type = 'triangle'; // Triangle wave cho âm ấm hơn
+      osc1.frequency.value = 82.41; // E2
+      gain1.gain.setValueAtTime(0.25, audioContext.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      osc1.start(audioContext.currentTime);
+      osc1.stop(audioContext.currentTime + 0.2);
+
+      // Note 2: C2 (65.41 Hz) - "BÙM" (thấp hơn)
+      const osc2 = audioContext.createOscillator();
+      const gain2 = audioContext.createGain();
+      osc2.connect(gain2);
+      gain2.connect(audioContext.destination);
+      osc2.type = 'triangle';
+      osc2.frequency.value = 65.41; // C2
+      gain2.gain.setValueAtTime(0.25, audioContext.currentTime + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.32);
+      osc2.start(audioContext.currentTime + 0.12);
+      osc2.stop(audioContext.currentTime + 0.32);
+    } catch (error) {
+      console.log('Audio not supported:', error);
+    }
+  };
+
+  // Âm thanh chiến thắng - Melody vui vẻ
+  const playVictorySound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Victory melody: C5-E5-G5-C6 (ascending happy tune)
+      const notes = [
+        { freq: 523.25, start: 0, duration: 0.15 },      // C5
+        { freq: 659.25, start: 0.15, duration: 0.15 },   // E5
+        { freq: 783.99, start: 0.3, duration: 0.15 },    // G5
+        { freq: 1046.50, start: 0.45, duration: 0.4 },   // C6 (longer)
+      ];
+
+      notes.forEach(note => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.type = 'sine';
+        osc.frequency.value = note.freq;
+
+        const startTime = audioContext.currentTime + note.start;
+        const endTime = startTime + note.duration;
+
+        gain.gain.setValueAtTime(0.35, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, endTime);
+        osc.start(startTime);
+        osc.stop(endTime);
+      });
+    } catch (error) {
+      console.log('Audio not supported:', error);
+    }
+  };
+
+  // ============================================
+  // BACKGROUND MUSIC
+  // ============================================
+
+  const startBackgroundMusic = () => {
+    try {
+      // Try to load background music from public/sounds/background.mp3
+      const audio = new Audio('/sounds/background.mp3');
+      audio.loop = true;
+      audio.volume = 0.3; // 30% volume
+
+      // Play with user interaction (required by browsers)
+      audio.play().catch(err => {
+        console.log('Background music autoplay blocked:', err);
+        console.log('📢 Hướng dẫn: Thêm file nhạc nền vào public/sounds/background.mp3');
+      });
+
+      bgMusicRef.current = audio;
+    } catch (error) {
+      console.log('Background music not available:', error);
+    }
+  };
+
+  const stopBackgroundMusic = () => {
+    if (bgMusicRef.current) {
+      bgMusicRef.current.pause();
+      bgMusicRef.current.currentTime = 0;
     }
   };
 
@@ -103,10 +198,10 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
     setCurrentLevel(levelConfig);
     setStartTime(Date.now());
     initializeGame(levelConfig.pairs);
+    startBackgroundMusic(); // Bắt đầu nhạc nền khi chọn level
   };
 
   const initializeGame = (pairCount) => {
-    // Lấy số cặp theo level (hoặc dùng propPairs nếu có)
     let gamePairs;
     if (propPairs) {
       gamePairs = propPairs.slice(0, pairCount);
@@ -114,7 +209,6 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
       gamePairs = allSamplePairs.slice(0, pairCount);
     }
 
-    // Tạo 2 thẻ cho mỗi cặp
     const newCards = [];
     gamePairs.forEach((pair) => {
       newCards.push({
@@ -133,7 +227,6 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
       });
     });
 
-    // Shuffle cards
     const shuffled = shuffleArray(newCards);
     setCards(shuffled);
     setFlippedIndices([]);
@@ -144,7 +237,6 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
     setEndTime(null);
   };
 
-  // Shuffle array using Fisher-Yates algorithm
   const shuffleArray = (array) => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -158,11 +250,6 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   // HANDLE CARD CLICK
   // ============================================
   const handleCardClick = (index) => {
-    // Prevent clicks nếu:
-    // - Đang check 2 thẻ
-    // - Thẻ đã được lật
-    // - Thẻ đã matched
-    // - Đã lật 2 thẻ rồi
     if (
       isChecking ||
       flippedIndices.includes(index) ||
@@ -175,7 +262,6 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
     const newFlipped = [...flippedIndices, index];
     setFlippedIndices(newFlipped);
 
-    // Nếu đã lật 2 thẻ → check match
     if (newFlipped.length === 2) {
       setMoves(moves + 1);
       checkMatch(newFlipped);
@@ -191,10 +277,9 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
     const card1 = cards[index1];
     const card2 = cards[index2];
 
-    // Check if same pairId
     if (card1.pairId === card2.pairId) {
-      // MATCH! Play success sound
-      playSound('match');
+      // MATCH! Play "TING TING"
+      playMatchSound();
 
       setTimeout(() => {
         const newCards = [...cards];
@@ -205,7 +290,6 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
         const newMatchedPairs = [...matchedPairs, card1.pairId];
         setMatchedPairs(newMatchedPairs);
 
-        // Tính điểm: 100 điểm cho mỗi cặp đúng
         const newScore = score + 100;
         setScore(newScore);
 
@@ -217,12 +301,14 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
           setTimeout(() => {
             setEndTime(Date.now());
             setGameComplete(true);
+            stopBackgroundMusic(); // Dừng nhạc nền
+            playVictorySound(); // Phát nhạc chiến thắng
           }, 500);
         }
       }, 600);
     } else {
-      // NO MATCH - Play fail sound and úp lại sau 1 giây
-      playSound('no-match');
+      // NO MATCH - Play "BÚM BÙM"
+      playNoMatchSound();
 
       setTimeout(() => {
         setFlippedIndices([]);
@@ -235,6 +321,7 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   // HANDLE BACK TO LEVEL SELECT
   // ============================================
   const backToLevelSelect = () => {
+    stopBackgroundMusic();
     setCurrentLevel(null);
     setCards([]);
     setFlippedIndices([]);
@@ -252,7 +339,17 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   const handleRestart = () => {
     setStartTime(Date.now());
     initializeGame(currentLevel.pairs);
+    startBackgroundMusic(); // Restart nhạc nền
   };
+
+  // ============================================
+  // CLEANUP ON UNMOUNT
+  // ============================================
+  useEffect(() => {
+    return () => {
+      stopBackgroundMusic();
+    };
+  }, []);
 
   // ============================================
   // CALCULATE TIME
@@ -260,7 +357,7 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   const getPlayTime = () => {
     if (!startTime) return 0;
     const end = endTime || Date.now();
-    return Math.floor((end - startTime) / 1000); // seconds
+    return Math.floor((end - startTime) / 1000);
   };
 
   // ============================================
@@ -318,6 +415,13 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
             <span className="stat-value">{matchedPairs.length}/{currentLevel.pairs}</span>
           </div>
         </div>
+        <button
+          className={`btn-differentiate ${isDifferentiateMode ? 'active' : ''}`}
+          onClick={() => setIsDifferentiateMode(!isDifferentiateMode)}
+          title={isDifferentiateMode ? "Tắt chế độ phân biệt" : "Bật chế độ phân biệt"}
+        >
+          {isDifferentiateMode ? '🎨 Phân biệt' : '🎨 Đồng nhất'}
+        </button>
         <button className="btn-restart" onClick={handleRestart}>
           🔄 Chơi lại
         </button>
@@ -336,10 +440,20 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
               onClick={() => handleCardClick(index)}
             >
               <div className="card-inner">
-                {/* Card Back */}
-                <div className="card-back">
+                {/* Card Back - Có thể bật/tắt chế độ phân biệt */}
+                <div className={`card-back ${isDifferentiateMode ? `card-back-${card.type}` : 'card-back-default'}`}>
                   <div className="card-back-content">
-                    <span className="card-back-icon">🎴</span>
+                    <span className="card-back-icon">
+                      {isDifferentiateMode
+                        ? (card.type === 'question' ? '❓' : '✓')
+                        : '🎴'
+                      }
+                    </span>
+                    {isDifferentiateMode && (
+                      <span className="card-back-label">
+                        {card.type === 'question' ? 'Câu hỏi' : 'Trả lời'}
+                      </span>
+                    )}
                   </div>
                 </div>
 
