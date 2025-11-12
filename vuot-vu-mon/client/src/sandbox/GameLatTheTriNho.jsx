@@ -3,30 +3,152 @@ import './GameLatTheTriNho.css';
 
 const GameLatTheTriNho = ({ pairs: propPairs }) => {
   // ============================================
-  // SAMPLE DATA - 20 cặp cho level tối đa
+  // VOCABULARY DATA - Từ vựng tiếng Anh lớp 3
   // ============================================
-  const allSamplePairs = [
-    { id: 1, q: "5 × 3", a: "15" },
-    { id: 2, q: "7 × 2", a: "14" },
-    { id: 3, q: "Cat", a: "Con mèo" },
-    { id: 4, q: "Dog", a: "Con chó" },
-    { id: 5, q: "9 × 2", a: "18" },
-    { id: 6, q: "Apple", a: "Quả táo" },
-    { id: 7, q: "4 × 4", a: "16" },
-    { id: 8, q: "Bird", a: "Con chim" },
-    { id: 9, q: "6 × 3", a: "18" },
-    { id: 10, q: "Fish", a: "Con cá" },
-    { id: 11, q: "8 × 2", a: "16" },
-    { id: 12, q: "Book", a: "Quyển sách" },
-    { id: 13, q: "3 × 5", a: "15" },
-    { id: 14, q: "Tree", a: "Cái cây" },
-    { id: 15, q: "9 × 3", a: "27" },
-    { id: 16, q: "Sun", a: "Mặt trời" },
-    { id: 17, q: "7 × 3", a: "21" },
-    { id: 18, q: "Moon", a: "Mặt trăng" },
-    { id: 19, q: "6 × 4", a: "24" },
-    { id: 20, q: "Star", a: "Ngôi sao" },
+  const vocabularyPool = [
+    { id: 'v1', q: "Cat", a: "Con mèo" },
+    { id: 'v2', q: "Dog", a: "Con chó" },
+    { id: 'v3', q: "Bird", a: "Con chim" },
+    { id: 'v4', q: "Fish", a: "Con cá" },
+    { id: 'v5', q: "Apple", a: "Quả táo" },
+    { id: 'v6', q: "Book", a: "Quyển sách" },
+    { id: 'v7', q: "Tree", a: "Cái cây" },
+    { id: 'v8', q: "Sun", a: "Mặt trời" },
+    { id: 'v9', q: "Moon", a: "Mặt trăng" },
+    { id: 'v10', q: "Star", a: "Ngôi sao" },
+    { id: 'v11', q: "Water", a: "Nước" },
+    { id: 'v12', q: "House", a: "Ngôi nhà" },
+    { id: 'v13', q: "Car", a: "Xe hơi" },
+    { id: 'v14', q: "Pen", a: "Bút viết" },
+    { id: 'v15', q: "Ball", a: "Quả bóng" },
+    { id: 'v16', q: "Red", a: "Màu đỏ" },
+    { id: 'v17', q: "Blue", a: "Màu xanh" },
+    { id: 'v18', q: "Green", a: "Màu xanh lá" },
+    { id: 'v19', q: "Yellow", a: "Màu vàng" },
+    { id: 'v20', q: "One", a: "Số một" },
+    { id: 'v21', q: "Two", a: "Số hai" },
+    { id: 'v22', q: "Three", a: "Số ba" },
+    { id: 'v23', q: "Four", a: "Số bốn" },
+    { id: 'v24', q: "Five", a: "Số năm" },
+    { id: 'v25', q: "Hand", a: "Bàn tay" },
+    { id: 'v26', q: "Foot", a: "Bàn chân" },
+    { id: 'v27', q: "Head", a: "Đầu" },
+    { id: 'v28', q: "Eye", a: "Mắt" },
+    { id: 'v29', q: "Ear", a: "Tai" },
+    { id: 'v30', q: "Nose", a: "Mũi" },
+    { id: 'v31', q: "Mouth", a: "Miệng" },
+    { id: 'v32', q: "Happy", a: "Vui vẻ" },
+    { id: 'v33', q: "Sad", a: "Buồn" },
+    { id: 'v34', q: "Big", a: "To" },
+    { id: 'v35', q: "Small", a: "Nhỏ" },
+    { id: 'v36', q: "Hot", a: "Nóng" },
+    { id: 'v37', q: "Cold", a: "Lạnh" },
+    { id: 'v38', q: "Good", a: "Tốt" },
+    { id: 'v39', q: "Bad", a: "Xấu" },
+    { id: 'v40', q: "Boy", a: "Con trai" },
+    { id: 'v41', q: "Girl", a: "Con gái" },
+    { id: 'v42', q: "Mother", a: "Mẹ" },
+    { id: 'v43', q: "Father", a: "Bố" },
+    { id: 'v44', q: "Teacher", a: "Giáo viên" },
+    { id: 'v45', q: "Student", a: "Học sinh" },
+    { id: 'v46', q: "Friend", a: "Bạn bè" },
+    { id: 'v47', q: "Flower", a: "Hoa" },
+    { id: 'v48', q: "Rain", a: "Mưa" },
+    { id: 'v49', q: "Wind", a: "Gió" },
+    { id: 'v50', q: "Cloud", a: "Mây" },
   ];
+
+  // ============================================
+  // MATH PROBLEM GENERATORS
+  // ============================================
+  const generateAdditionProblems = (count) => {
+    const problems = [];
+    const used = new Set();
+    let id = 1;
+
+    while (problems.length < count) {
+      const a = Math.floor(Math.random() * 11) + 10; // 10-20
+      const b = Math.floor(Math.random() * 10) + 1;   // 1-10
+      const key = `${a}+${b}`;
+
+      if (!used.has(key)) {
+        used.add(key);
+        problems.push({
+          id: `add${id++}`,
+          q: `${a} + ${b}`,
+          a: `${a + b}`
+        });
+      }
+    }
+    return problems;
+  };
+
+  const generateSubtractionProblems = (count) => {
+    const problems = [];
+    const used = new Set();
+    let id = 1;
+
+    while (problems.length < count) {
+      const a = Math.floor(Math.random() * 11) + 10; // 10-20
+      const b = Math.floor(Math.random() * a) + 1;   // 1 to a
+      const key = `${a}-${b}`;
+
+      if (!used.has(key)) {
+        used.add(key);
+        problems.push({
+          id: `sub${id++}`,
+          q: `${a} − ${b}`,
+          a: `${a - b}`
+        });
+      }
+    }
+    return problems;
+  };
+
+  const generateMultiplicationProblems = (count) => {
+    const problems = [];
+    const used = new Set();
+    let id = 1;
+
+    while (problems.length < count) {
+      const a = Math.floor(Math.random() * 10) + 1; // 1-10
+      const b = Math.floor(Math.random() * 10) + 1; // 1-10
+      const key = `${a}×${b}`;
+
+      if (!used.has(key)) {
+        used.add(key);
+        problems.push({
+          id: `mul${id++}`,
+          q: `${a} × ${b}`,
+          a: `${a * b}`
+        });
+      }
+    }
+    return problems;
+  };
+
+  const generateDivisionProblems = (count) => {
+    const problems = [];
+    const used = new Set();
+    let id = 1;
+
+    while (problems.length < count) {
+      const b = Math.floor(Math.random() * 9) + 2; // 2-10
+      const result = Math.floor(Math.random() * 10) + 1; // 1-10
+      const a = b * result;
+      const key = `${a}÷${b}`;
+
+      if (!used.has(key)) {
+        used.add(key);
+        problems.push({
+          id: `div${id++}`,
+          q: `${a} ÷ ${b}`,
+          a: `${result}`
+        });
+      }
+    }
+    return problems;
+  };
 
   // ============================================
   // LEVEL CONFIGURATION
@@ -54,6 +176,12 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   const [endTime, setEndTime] = useState(null);
   const [isDifferentiateMode, setIsDifferentiateMode] = useState(false);
   const [bgMusicVolume, setBgMusicVolume] = useState(0.3);
+  const [selectedMathTypes, setSelectedMathTypes] = useState({
+    addition: false,
+    subtraction: false,
+    multiplication: false,
+    division: false
+  });
 
   // Background music ref
   const bgMusicRef = useRef(null);
@@ -212,10 +340,51 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
 
   const initializeGame = (pairCount) => {
     let gamePairs;
+
     if (propPairs) {
       gamePairs = propPairs.slice(0, pairCount);
     } else {
-      gamePairs = allSamplePairs.slice(0, pairCount);
+      // Generate pairs based on selected math types
+      const mathTypes = [];
+      if (selectedMathTypes.addition) mathTypes.push('addition');
+      if (selectedMathTypes.subtraction) mathTypes.push('subtraction');
+      if (selectedMathTypes.multiplication) mathTypes.push('multiplication');
+      if (selectedMathTypes.division) mathTypes.push('division');
+
+      let allPairs = [];
+
+      // Nếu có chọn loại toán, mix vocab + math
+      if (mathTypes.length > 0) {
+        // Tính toán số lượng mỗi loại
+        const mathProblemsPerType = Math.ceil(pairCount / 2 / mathTypes.length);
+        const vocabCount = Math.max(2, pairCount - (mathProblemsPerType * mathTypes.length));
+
+        // Lấy từ vựng
+        const shuffledVocab = shuffleArray([...vocabularyPool]);
+        allPairs = shuffledVocab.slice(0, vocabCount);
+
+        // Thêm bài toán
+        mathTypes.forEach(type => {
+          if (type === 'addition') {
+            allPairs = allPairs.concat(generateAdditionProblems(mathProblemsPerType));
+          } else if (type === 'subtraction') {
+            allPairs = allPairs.concat(generateSubtractionProblems(mathProblemsPerType));
+          } else if (type === 'multiplication') {
+            allPairs = allPairs.concat(generateMultiplicationProblems(mathProblemsPerType));
+          } else if (type === 'division') {
+            allPairs = allPairs.concat(generateDivisionProblems(mathProblemsPerType));
+          }
+        });
+
+        // Shuffle và lấy đúng số lượng cần thiết
+        allPairs = shuffleArray(allPairs).slice(0, pairCount);
+      } else {
+        // Chỉ dùng từ vựng (mặc định)
+        const shuffledVocab = shuffleArray([...vocabularyPool]);
+        allPairs = shuffledVocab.slice(0, pairCount);
+      }
+
+      gamePairs = allPairs;
     }
 
     const newCards = [];
@@ -389,6 +558,44 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
                 <span className="level-btn-text">{level.name}</span>
               </button>
             ))}
+          </div>
+
+          <div className="math-types-section">
+            <p className="math-types-title">Thêm đặc tính độ khó (tùy chọn):</p>
+            <div className="math-types-checkboxes">
+              <label className="math-type-checkbox">
+                <input
+                  type="checkbox"
+                  checked={selectedMathTypes.addition}
+                  onChange={(e) => setSelectedMathTypes({...selectedMathTypes, addition: e.target.checked})}
+                />
+                <span className="checkbox-label">➕ Toán cộng</span>
+              </label>
+              <label className="math-type-checkbox">
+                <input
+                  type="checkbox"
+                  checked={selectedMathTypes.subtraction}
+                  onChange={(e) => setSelectedMathTypes({...selectedMathTypes, subtraction: e.target.checked})}
+                />
+                <span className="checkbox-label">➖ Toán trừ</span>
+              </label>
+              <label className="math-type-checkbox">
+                <input
+                  type="checkbox"
+                  checked={selectedMathTypes.multiplication}
+                  onChange={(e) => setSelectedMathTypes({...selectedMathTypes, multiplication: e.target.checked})}
+                />
+                <span className="checkbox-label">✖️ Toán nhân</span>
+              </label>
+              <label className="math-type-checkbox">
+                <input
+                  type="checkbox"
+                  checked={selectedMathTypes.division}
+                  onChange={(e) => setSelectedMathTypes({...selectedMathTypes, division: e.target.checked})}
+                />
+                <span className="checkbox-label">➗ Toán chia</span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
