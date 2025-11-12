@@ -1,8 +1,15 @@
 import axios from 'axios';
 
+// Get API base URL from environment variable
+// Development: /api (uses Vite proxy)
+// Production: Should be configured in .env.production (e.g., http://your-domain.com:3000/api)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
+console.log('🔧 API Base URL:', API_BASE_URL);
+
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: '/api', // Vite proxy will forward to http://localhost:3000/api
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
