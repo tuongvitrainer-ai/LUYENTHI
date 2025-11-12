@@ -183,6 +183,9 @@ function RegisterPage() {
             Đã có tài khoản?{' '}
             <Link to="/login">Đăng nhập ngay</Link>
           </p>
+          <p>
+            <Link to="/">← Trở về trang chủ</Link>
+          </p>
         </div>
       </div>
     </div>
