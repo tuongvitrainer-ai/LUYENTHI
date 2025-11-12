@@ -27,7 +27,7 @@ router.get('/auth/me', authenticateToken, authController.getMe);
 // ============================================
 
 // Get questions for game/practice (PUBLIC - Guest có thể gọi)
-router.get('/game/questions', adminController.getQuestions);
+router.get('/game/questions', gameController.getQuestions);
 
 // Submit answer (Requires auth)
 router.post('/game/submit_result', authenticateToken, gameController.submitResult);

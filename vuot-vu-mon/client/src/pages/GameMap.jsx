@@ -43,7 +43,7 @@ function GameMap() {
         <div className="header-content">
           <h1>Vượt Vũ Môn</h1>
           <div className="user-info">
-            <span className="user-stars">⭐ {user?.total_stars || 0}</span>
+            <span className="user-stars">⭐ {user?.stars_balance || 0}</span>
             <span className="user-streak">🔥 {user?.current_streak || 0}</span>
             <UserAvatar />
           </div>
@@ -87,7 +87,7 @@ function GameMap() {
           <div className="stats-grid">
             <div className="stat-card">
               <div className="stat-icon">⭐</div>
-              <div className="stat-value">{user?.total_stars || 0}</div>
+              <div className="stat-value">{user?.stars_balance || 0}</div>
               <div className="stat-label">Tổng sao</div>
             </div>
             <div className="stat-card">
