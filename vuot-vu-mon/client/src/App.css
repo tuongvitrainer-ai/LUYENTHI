@@ -115,7 +115,7 @@ html {
 
 body {
   font-family: var(--font-primary);
-  color: var(--text-dark);
+  color: #000000;
   background: var(--theme-background, var(--gradient-rainbow));
   min-height: 100vh;
   line-height: 1.6;
@@ -126,7 +126,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 1.2;
-  color: var(--text-dark);
+  color: #000000;
 }
 
 h1 {
@@ -187,13 +187,13 @@ button:disabled {
 
 /* Links */
 a {
-  color: var(--pastel-blue-dark);
+  color: #000000;
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 a:hover {
-  color: var(--pastel-purple-dark);
+  color: #000000;
 }
 
 /* Inputs */
@@ -234,7 +234,7 @@ input:focus, textarea:focus, select:focus {
 /* Selection */
 ::selection {
   background: var(--pastel-purple-light);
-  color: var(--text-dark);
+  color: #000000;
 }
 
 /* Animations */

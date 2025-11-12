@@ -17,7 +17,7 @@
 }
 
 .loading-spinner {
-  color: var(--white);
+  color: #000000;
   font-size: 1.5rem;
   font-weight: 700;
   font-family: var(--font-display);
@@ -40,7 +40,7 @@
 
 .btn-back {
   background: var(--white);
-  color: var(--pastel-purple-dark);
+  color: #000000;
   border: 3px solid var(--pastel-purple-light);
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-lg);
@@ -53,7 +53,7 @@
 
 .btn-back:hover {
   background: var(--gradient-pink-purple);
-  color: var(--white);
+  color: #000000;
   transform: translateX(-5px) scale(1.05);
   box-shadow: var(--shadow-md);
   animation: wiggle 0.5s ease;
@@ -64,7 +64,7 @@
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-full);
   font-weight: 700;
-  color: var(--text-dark);
+  color: #000000;
   border: 3px solid var(--pastel-blue-light);
   box-shadow: var(--shadow-sm);
   font-family: var(--font-display);
@@ -179,19 +179,19 @@
 
 .question-subject {
   background: var(--pastel-pink-light);
-  color: var(--text-dark);
+  color: #000000;
   border-color: var(--pastel-pink);
 }
 
 .question-difficulty {
   background: var(--pastel-purple-light);
-  color: var(--text-dark);
+  color: #000000;
   border-color: var(--pastel-purple);
 }
 
 .question-points {
   background: var(--pastel-yellow);
-  color: var(--text-dark);
+  color: #000000;
   border-color: var(--pastel-yellow-dark);
   animation: pulse 2s ease infinite;
 }
@@ -200,7 +200,7 @@
    QUESTION TEXT
 ======================================== */
 .question-text {
-  color: var(--text-dark);
+  color: #000000;
   font-size: 1.5rem;
   margin: 0 0 var(--spacing-2xl) 0;
   line-height: 1.6;
@@ -305,7 +305,7 @@
   align-items: center;
   justify-content: center;
   background: var(--gradient-blue-pink);
-  color: var(--white);
+  color: #000000;
   border-radius: 50%;
   font-weight: 700;
   flex-shrink: 0;
@@ -329,7 +329,7 @@
 .option-text {
   flex: 1;
   font-size: 1.1rem;
-  color: var(--text-dark);
+  color: #000000;
   font-weight: 600;
   position: relative;
   z-index: 1;
@@ -370,12 +370,12 @@
 
 .result-card.correct {
   background: var(--gradient-green-blue);
-  color: var(--white);
+  color: #000000;
 }
 
 .result-card.wrong {
   background: var(--gradient-pink-purple);
-  color: var(--white);
+  color: #000000;
 }
 
 .result-icon {
@@ -485,7 +485,7 @@
 
 .btn-primary {
   background: var(--gradient-pink-purple);
-  color: var(--white);
+  color: #000000;
 }
 
 .btn-primary:hover:not(:disabled) {

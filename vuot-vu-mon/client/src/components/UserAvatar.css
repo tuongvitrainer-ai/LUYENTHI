@@ -20,7 +20,7 @@
 .avatar-button:hover {
   transform: scale(1.1);
   box-shadow: 0 4px 12px var(--theme-shadow, rgba(0, 0, 0, 0.15));
-  border-color: var(--theme-primary, var(--pastel-blue));
+  border-color: #000000;
 }
 
 .avatar-button:active {
@@ -42,7 +42,7 @@
   font-size: 1.5rem;
   font-weight: bold;
   font-family: var(--font-display);
-  color: var(--theme-text, var(--text-primary));
+  color: #000000;
   background: var(--theme-primary, var(--pastel-blue));
 }
 
@@ -106,7 +106,7 @@
   font-size: 1.75rem;
   font-weight: bold;
   font-family: var(--font-display);
-  color: var(--theme-text, var(--text-primary));
+  color: #000000;
   background: var(--theme-secondary, var(--pastel-blue-light));
 }
 
@@ -119,7 +119,7 @@
   font-size: 1.1rem;
   font-weight: bold;
   font-family: var(--font-display);
-  color: var(--theme-text, var(--text-primary));
+  color: #000000;
   margin-bottom: var(--spacing-xs);
   white-space: nowrap;
   overflow: hidden;
@@ -130,7 +130,7 @@
   display: flex;
   gap: var(--spacing-md);
   font-size: 0.9rem;
-  color: var(--theme-text-light, var(--text-secondary));
+  color: #000000;
 }
 
 .dropdown-stats span {
@@ -155,7 +155,7 @@
   align-items: center;
   gap: var(--spacing-md);
   font-size: 1rem;
-  color: var(--theme-text, var(--text-primary));
+  color: #000000;
   transition: all 0.2s ease;
   text-align: left;
 }
@@ -183,7 +183,7 @@
 .menu-arrow {
   margin-left: auto;
   font-size: 0.8rem;
-  color: var(--theme-text-light, var(--text-secondary));
+  color: #000000;
   transition: transform 0.2s ease;
 }
 
@@ -234,7 +234,7 @@
   align-items: center;
   gap: var(--spacing-sm);
   font-size: 0.95rem;
-  color: var(--theme-text, var(--text-primary));
+  color: #000000;
   transition: all 0.2s ease;
   margin-bottom: var(--spacing-xs);
 }
@@ -251,7 +251,7 @@
 
 .theme-option.active {
   background: white;
-  border-color: var(--theme-primary, var(--pastel-blue));
+  border-color: #000000;
   font-weight: bold;
 }
 
@@ -266,7 +266,7 @@
 }
 
 .theme-check {
-  color: var(--theme-primary, var(--pastel-blue));
+  color: #000000;
   font-size: 1.1rem;
   font-weight: bold;
 }

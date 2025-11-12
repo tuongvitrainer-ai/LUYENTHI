@@ -67,7 +67,7 @@
 }
 
 .auth-header h1 {
-  color: var(--theme-text, var(--text-dark));
+  color: #000000;
   margin: 0 0 var(--spacing-sm) 0;
   font-size: 2rem;
   font-family: var(--font-display);
@@ -81,7 +81,7 @@
 }
 
 .auth-header p {
-  color: var(--text-light);
+  color: #000000;
   margin: 0;
   font-size: 1rem;
   animation: slideInRight 0.5s ease;
@@ -108,7 +108,7 @@
 }
 
 .form-group label {
-  color: var(--text-dark);
+  color: #000000;
   font-weight: 600;
   font-size: 0.95rem;
   display: flex;
@@ -117,7 +117,7 @@
 }
 
 .form-group .required {
-  color: var(--pastel-peach);
+  color: #FF0000;
   font-size: 1.2rem;
 }
 
@@ -178,7 +178,7 @@
 
 .btn-primary {
   background: var(--gradient-pink-purple);
-  color: var(--white);
+  color: #000000;
   box-shadow: var(--shadow-md);
 }
 
@@ -237,13 +237,13 @@
 }
 
 .auth-footer p {
-  color: var(--text-light);
+  color: #000000;
   font-size: 0.95rem;
   margin: 0;
 }
 
 .auth-footer a {
-  color: var(--pastel-purple-dark);
+  color: #000000;
   text-decoration: none;
   font-weight: 700;
   transition: all 0.3s ease;
@@ -251,7 +251,7 @@
 }
 
 .auth-footer a:hover {
-  color: var(--pastel-pink-dark);
+  color: #000000;
   transform: scale(1.05);
   text-decoration: underline;
 }
