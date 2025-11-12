@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import UserAvatar from '../components/UserAvatar';
 import './GameMap.css';
@@ -96,6 +96,19 @@ function GameMap() {
               </button>
             </div>
           ))}
+        </div>
+
+        {/* Mini Games Section - Lớp 3 */}
+        <div className="mini-games-section">
+          <h3>🎮 Mini Games - Lớp 3</h3>
+          <div className="mini-games-grid">
+            <Link to="/game/grade3/game-lat-the-tri-nho" className="mini-game-card">
+              <div className="mini-game-icon">🎴</div>
+              <h4>Lật Thẻ Trí Nhớ</h4>
+              <p>Luyện trí nhớ với từ vựng & toán học</p>
+              <span className="mini-game-badge">Mới</span>
+            </Link>
+          </div>
         </div>
 
         {/* Stats Section */}

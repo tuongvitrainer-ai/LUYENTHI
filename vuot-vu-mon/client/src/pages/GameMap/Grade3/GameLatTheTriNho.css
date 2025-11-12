@@ -1,0 +1,960 @@
+/* ============================================
+   GAME LẬT THẺ TRÍ NHỚ - ĐỒNG BỘ VỚI TRANG CHỦ
+   ============================================ */
+
+.game-lat-the-tri-nho {
+  min-height: 100vh;
+  background: var(--gradient-rainbow);
+  padding: 1.5rem;
+  font-family: var(--font-primary);
+}
+
+/* ============================================
+   LEVEL SELECT SCREEN - COMPACT BUTTONS
+   ============================================ */
+
+.level-select-screen {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.game-title {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #000000;
+  font-family: var(--font-display);
+  text-shadow: 2px 2px 4px rgba(168, 216, 234, 0.3);
+  animation: bounce 1s ease;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.game-subtitle {
+  font-size: 1.2rem;
+  color: #000000;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+/* COMPACT LEVEL BUTTONS IN ONE ROW */
+.level-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0 1rem;
+}
+
+.level-btn {
+  background: rgba(255, 255, 255, 0.95);
+  border: 3px solid var(--pastel-blue-light);
+  border-radius: var(--radius-lg);
+  padding: 0.8rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: #000000;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.level-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--pastel-pink);
+  background: rgba(255, 255, 255, 1);
+}
+
+.level-btn:active {
+  transform: translateY(-2px);
+}
+
+.level-btn-emoji {
+  font-size: 1.5rem;
+}
+
+.level-btn-text {
+  font-size: 1rem;
+}
+
+/* ============================================
+   MATH TYPES SELECTION - Checkboxes
+   ============================================ */
+
+.math-types-section {
+  margin-top: 2rem;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.math-types-title {
+  font-size: 1.1rem;
+  color: #000000;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.math-types-checkboxes {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.math-type-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--pastel-purple-light);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.math-type-checkbox:hover {
+  border-color: var(--pastel-purple);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.math-type-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--pastel-green);
+}
+
+.checkbox-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #000000;
+  font-family: var(--font-display);
+}
+
+.math-type-checkbox input[type="checkbox"]:checked + .checkbox-label {
+  color: var(--pastel-green-dark);
+}
+
+/* ============================================
+   GAME HEADER
+   ============================================ */
+
+.game-header {
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1rem;
+  border: 3px solid var(--pastel-pink-light);
+}
+
+.btn-back {
+  background: var(--pastel-blue);
+  color: #000000;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-display);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-back:hover {
+  background: var(--pastel-blue-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-back:active {
+  transform: translateY(0);
+}
+
+.game-level-info {
+  flex-grow: 1;
+  text-align: center;
+}
+
+.level-badge {
+  background: var(--pastel-yellow);
+  color: #000000;
+  padding: 0.5rem 1.2rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: var(--font-display);
+  box-shadow: var(--shadow-sm);
+  display: inline-block;
+}
+
+.game-stats {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.5rem 0.8rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border: 2px solid var(--pastel-blue-light);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: var(--font-display);
+}
+
+.btn-restart {
+  background: var(--pastel-pink);
+  color: #000000;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-display);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-restart:hover {
+  background: var(--pastel-pink-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-restart:active {
+  transform: translateY(0);
+}
+
+/* ============================================
+   TOGGLE SWITCH - Phân biệt mode
+   ============================================ */
+
+.differentiate-switch-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.5rem 0.8rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--pastel-purple-light);
+}
+
+.switch-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.switch input:checked + .slider {
+  background-color: var(--pastel-green);
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.switch-status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: var(--font-display);
+  min-width: 28px;
+  text-align: center;
+}
+
+/* ============================================
+   VOLUME CONTROL - Nhạc nền
+   ============================================ */
+
+.volume-control-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.5rem 0.8rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--pastel-blue-light);
+}
+
+.volume-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.volume-slider {
+  width: 80px;
+  height: 6px;
+  border-radius: 5px;
+  background: #ddd;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--pastel-blue);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  background: var(--pastel-blue-dark);
+  transform: scale(1.2);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--pastel-blue);
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.volume-slider::-moz-range-thumb:hover {
+  background: var(--pastel-blue-dark);
+  transform: scale(1.2);
+}
+
+.volume-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: var(--font-display);
+  min-width: 35px;
+  text-align: right;
+}
+
+/* ============================================
+   GAME BOARD - DYNAMIC SIZING BASED ON PAIRS
+   ============================================ */
+
+.game-board {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  gap: 0.8rem;
+  padding: 0.5rem;
+}
+
+/* 4 cặp = 8 thẻ - 4 cột */
+.game-board.pairs-4 {
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 800px;
+}
+
+/* 6 cặp = 12 thẻ - 4 cột (3 hàng) */
+.game-board.pairs-6 {
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 900px;
+}
+
+/* 8 cặp = 16 thẻ - 4 cột (4 hàng) - Giảm size */
+.game-board.pairs-8 {
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 800px;
+  gap: 0.6rem;
+}
+
+/* 12 cặp = 24 thẻ - 6 cột (4 hàng) */
+.game-board.pairs-12 {
+  grid-template-columns: repeat(6, 1fr);
+  max-width: 1000px;
+  gap: 0.6rem;
+}
+
+/* 20 cặp = 40 thẻ - 8 cột (5 hàng) */
+.game-board.pairs-20 {
+  grid-template-columns: repeat(8, 1fr);
+  max-width: 1400px;
+  gap: 0.5rem;
+}
+
+@media (max-width: 1200px) {
+  .game-board.pairs-20 {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .game-board.pairs-4,
+  .game-board.pairs-6 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .game-board.pairs-8,
+  .game-board.pairs-12 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .game-board.pairs-20 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .game-board.pairs-4,
+  .game-board.pairs-6,
+  .game-board.pairs-8 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .game-board.pairs-12,
+  .game-board.pairs-20 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+  }
+}
+
+/* ============================================
+   MEMORY CARD - RESPONSIVE SIZING
+   ============================================ */
+
+.memory-card {
+  aspect-ratio: 1;
+  cursor: pointer;
+  perspective: 1000px;
+  position: relative;
+  /* Max heights to fit screen without scrolling */
+  max-height: 200px;
+}
+
+/* Smaller cards for level 8 */
+.game-board.pairs-8 .memory-card {
+  max-height: 150px;
+}
+
+/* Even smaller for level 12 */
+.game-board.pairs-12 .memory-card {
+  max-height: 130px;
+}
+
+/* Tiny cards for level 20 */
+.game-board.pairs-20 .memory-card {
+  max-height: 100px;
+}
+
+.memory-card.matched {
+  cursor: default;
+}
+
+.card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease-in-out;
+}
+
+/* FLIP ANIMATION */
+.memory-card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+/* Card Back (úp) và Card Front (ngửa) */
+.card-back,
+.card-front {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+}
+
+.card-back {
+  transform: rotateY(0deg);
+}
+
+/* Tất cả thẻ đều màu xanh da trời - chỉ khác icon khi bật phân biệt */
+.card-back-default {
+  background: linear-gradient(135deg, var(--pastel-blue) 0%, var(--pastel-blue-light) 100%);
+}
+
+.card-back-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.card-back-icon {
+  font-size: 2.5rem;
+  animation: float 3s ease-in-out infinite;
+  font-weight: bold;
+}
+
+/* Smaller icon for small cards */
+.game-board.pairs-12 .card-back-icon,
+.game-board.pairs-20 .card-back-icon {
+  font-size: 1.8rem;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Card Front (ngửa) */
+.card-front {
+  background: linear-gradient(135deg, var(--pastel-pink) 0%, var(--pastel-pink-light) 100%);
+  transform: rotateY(180deg);
+  padding: 0.6rem;
+}
+
+.game-board.pairs-12 .card-front,
+.game-board.pairs-20 .card-front {
+  padding: 0.4rem;
+}
+
+.memory-card.matched .card-front {
+  background: linear-gradient(135deg, var(--pastel-green) 0%, var(--pastel-green-light) 100%);
+  animation: pulse 0.6s ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: rotateY(180deg) scale(1);
+  }
+  50% {
+    transform: rotateY(180deg) scale(1.05);
+  }
+}
+
+.card-front-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  word-wrap: break-word;
+  color: #000000;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.3;
+  padding: 0.5rem;
+}
+
+/* Smaller text for many cards */
+.game-board.pairs-8 .card-text {
+  font-size: 1.3rem;
+}
+
+.game-board.pairs-12 .card-text {
+  font-size: 1.1rem;
+}
+
+.game-board.pairs-20 .card-text {
+  font-size: 0.9rem;
+}
+
+/* ============================================
+   COMPLETE POPUP
+   ============================================ */
+
+.game-complete-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+  padding: 1rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.popup-content {
+  background: #ffffff;
+  padding: 2.5rem 2rem;
+  border-radius: var(--radius-xl);
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: slideUp 0.5s ease-out;
+  border: 4px solid var(--pastel-blue);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.popup-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: bounceIcon 1s ease-in-out infinite;
+}
+
+@keyframes bounceIcon {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.popup-content h2 {
+  font-size: 2.2rem;
+  color: #000000;
+  margin-bottom: 1rem;
+  font-family: var(--font-display);
+}
+
+.popup-level-badge {
+  background: var(--pastel-yellow);
+  color: #000000;
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  display: inline-block;
+  font-family: var(--font-display);
+}
+
+.popup-stats {
+  background: var(--light-gray);
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  border: 2px solid var(--pastel-blue-light);
+}
+
+.popup-stats p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #000000;
+  font-weight: 500;
+}
+
+.popup-stats strong {
+  color: #000000;
+  font-size: 1.3rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.popup-score,
+.popup-moves,
+.popup-time,
+.popup-accuracy {
+  color: #000000;
+}
+
+.popup-message {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--pastel-yellow-light);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--pastel-yellow);
+}
+
+.popup-message p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #000000;
+  font-weight: 500;
+}
+
+.popup-message strong {
+  color: #000000;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.popup-buttons {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-back-popup,
+.btn-restart-popup,
+.btn-login-popup {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  font-family: var(--font-display);
+}
+
+.btn-back-popup {
+  background: var(--pastel-purple);
+  color: #000000;
+}
+
+.btn-back-popup:hover {
+  background: var(--pastel-purple-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-restart-popup {
+  background: var(--pastel-blue);
+  color: #000000;
+}
+
+.btn-restart-popup:hover {
+  background: var(--pastel-blue-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-login-popup {
+  background: var(--pastel-green);
+  color: #000000;
+}
+
+.btn-login-popup:hover {
+  background: var(--pastel-green-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-back-popup:active,
+.btn-restart-popup:active,
+.btn-login-popup:active {
+  transform: translateY(0);
+}
+
+/* ============================================
+   RESPONSIVE - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .game-lat-the-tri-nho {
+    padding: 1rem;
+  }
+
+  .game-title {
+    font-size: 2rem;
+  }
+
+  .level-buttons {
+    gap: 0.8rem;
+  }
+
+  .level-btn {
+    padding: 0.7rem 1.2rem;
+    min-width: 100px;
+    font-size: 0.9rem;
+  }
+
+  .level-btn-emoji {
+    font-size: 1.3rem;
+  }
+
+  .game-header {
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.8rem;
+  }
+
+  .game-stats {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stat-item {
+    flex: 1;
+    min-width: 70px;
+  }
+
+  .game-board.pairs-8 .memory-card {
+    max-height: 120px;
+  }
+
+  .game-board.pairs-12 .memory-card {
+    max-height: 100px;
+  }
+
+  .game-board.pairs-20 .memory-card {
+    max-height: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-lat-the-tri-nho {
+    padding: 0.8rem;
+  }
+
+  .game-title {
+    font-size: 1.6rem;
+  }
+
+  .level-buttons {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .level-btn {
+    width: 100%;
+    max-width: 250px;
+  }
+
+  .popup-content {
+    padding: 2rem 1.5rem;
+  }
+
+  .popup-content h2 {
+    font-size: 1.8rem;
+  }
+
+  .popup-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn-back-popup,
+  .btn-restart-popup,
+  .btn-login-popup {
+    width: 100%;
+  }
+}
