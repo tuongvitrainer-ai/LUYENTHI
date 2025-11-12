@@ -3,7 +3,7 @@ import './GameLatTheTriNho.css';
 
 const GameLatTheTriNho = ({ pairs: propPairs }) => {
   // ============================================
-  // SAMPLE DATA - 12 cặp cho level tối đa
+  // SAMPLE DATA - 20 cặp cho level tối đa
   // ============================================
   const allSamplePairs = [
     { id: 1, q: "5 × 3", a: "15" },
@@ -18,17 +18,25 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
     { id: 10, q: "Fish", a: "Con cá" },
     { id: 11, q: "8 × 2", a: "16" },
     { id: 12, q: "Book", a: "Quyển sách" },
+    { id: 13, q: "3 × 5", a: "15" },
+    { id: 14, q: "Tree", a: "Cái cây" },
+    { id: 15, q: "9 × 3", a: "27" },
+    { id: 16, q: "Sun", a: "Mặt trời" },
+    { id: 17, q: "7 × 3", a: "21" },
+    { id: 18, q: "Moon", a: "Mặt trăng" },
+    { id: 19, q: "6 × 4", a: "24" },
+    { id: 20, q: "Star", a: "Ngôi sao" },
   ];
 
   // ============================================
   // LEVEL CONFIGURATION
   // ============================================
   const LEVELS = [
-    { level: 1, name: "Cực dễ", pairs: 4, emoji: "🌟" },
-    { level: 2, name: "Dễ", pairs: 6, emoji: "⭐" },
-    { level: 3, name: "Trung bình", pairs: 8, emoji: "🎯" },
-    { level: 4, name: "Khó", pairs: 10, emoji: "🔥" },
-    { level: 5, name: "Cực khó", pairs: 12, emoji: "💪" },
+    { level: 1, name: "Level 1", pairs: 4, emoji: "🌟" },
+    { level: 2, name: "Level 2", pairs: 6, emoji: "⭐" },
+    { level: 3, name: "Level 3", pairs: 8, emoji: "🎯" },
+    { level: 4, name: "Level 4", pairs: 12, emoji: "🔥" },
+    { level: 5, name: "Level 5", pairs: 20, emoji: "💪" },
   ];
 
   // ============================================
@@ -44,6 +52,49 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   const [isChecking, setIsChecking] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
+
+  // ============================================
+  // SOUND EFFECTS
+  // ============================================
+  const playSound = (type) => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      if (type === 'match') {
+        // Âm thanh vui nhộn khi đúng: C-E-G chord
+        oscillator.frequency.value = 523.25; // C5
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+
+        // Thêm harmonic
+        const osc2 = audioContext.createOscillator();
+        const gain2 = audioContext.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioContext.destination);
+        osc2.frequency.value = 659.25; // E5
+        gain2.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        osc2.start(audioContext.currentTime);
+        osc2.stop(audioContext.currentTime + 0.3);
+      } else {
+        // Âm thanh nhẹ nhàng khi sai
+        oscillator.frequency.value = 200; // G3
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+      }
+    } catch (error) {
+      console.log('Audio not supported:', error);
+    }
+  };
 
   // ============================================
   // SELECT LEVEL & INITIALIZE GAME
@@ -142,7 +193,9 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
 
     // Check if same pairId
     if (card1.pairId === card2.pairId) {
-      // MATCH!
+      // MATCH! Play success sound
+      playSound('match');
+
       setTimeout(() => {
         const newCards = [...cards];
         newCards[index1].isMatched = true;
@@ -168,7 +221,9 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
         }
       }, 600);
     } else {
-      // NO MATCH - úp lại sau 1 giây
+      // NO MATCH - Play fail sound and úp lại sau 1 giây
+      playSound('no-match');
+
       setTimeout(() => {
         setFlippedIndices([]);
         setIsChecking(false);
@@ -216,18 +271,16 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
       <div className="game-lat-the-tri-nho">
         <div className="level-select-screen">
           <h1 className="game-title">🎮 CÙNG CHƠI GAME NÀO!!</h1>
-          <p className="game-subtitle">Chọn mức độ để bắt đầu:</p>
-          <div className="level-grid">
+          <p className="game-subtitle">Chọn mức độ:</p>
+          <div className="level-buttons">
             {LEVELS.map((level) => (
               <button
                 key={level.level}
-                className="level-card"
+                className="level-btn"
                 onClick={() => selectLevel(level)}
               >
-                <div className="level-emoji">{level.emoji}</div>
-                <div className="level-name">Level {level.level}</div>
-                <div className="level-difficulty">{level.name}</div>
-                <div className="level-info">{level.pairs} cặp thẻ</div>
+                <span className="level-btn-emoji">{level.emoji}</span>
+                <span className="level-btn-text">{level.name}</span>
               </button>
             ))}
           </div>
@@ -244,11 +297,11 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
       {/* Header */}
       <div className="game-header">
         <button className="btn-back" onClick={backToLevelSelect}>
-          ← Về menu
+          ← Menu
         </button>
         <div className="game-level-info">
           <span className="level-badge">
-            {currentLevel.emoji} Level {currentLevel.level}
+            {currentLevel.emoji} {currentLevel.name}
           </span>
         </div>
         <div className="game-stats">
@@ -271,7 +324,7 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
       </div>
 
       {/* Game Board */}
-      <div className={`game-board grid-${currentLevel.pairs <= 6 ? 'small' : currentLevel.pairs <= 8 ? 'medium' : 'large'}`}>
+      <div className={`game-board pairs-${currentLevel.pairs}`}>
         {cards.map((card, index) => {
           const isFlipped = flippedIndices.includes(index) || card.isMatched;
           return (
@@ -312,7 +365,7 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
             <div className="popup-icon">🎉</div>
             <h2>Hoàn thành!</h2>
             <div className="popup-level-badge">
-              {currentLevel.emoji} Level {currentLevel.level} - {currentLevel.name}
+              {currentLevel.emoji} {currentLevel.name}
             </div>
             <div className="popup-stats">
               <p className="popup-score">
@@ -334,7 +387,7 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
             </div>
             <div className="popup-buttons">
               <button className="btn-back-popup" onClick={backToLevelSelect}>
-                ← Chọn level khác
+                ← Menu
               </button>
               <button className="btn-restart-popup" onClick={handleRestart}>
                 🔄 Chơi lại
