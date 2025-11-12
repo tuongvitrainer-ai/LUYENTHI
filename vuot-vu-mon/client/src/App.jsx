@@ -13,6 +13,7 @@ import Dashboard from './pages/admin/Dashboard';
 import QuestionBank from './pages/admin/QuestionBank';
 import QuestionForm from './pages/admin/QuestionForm';
 import UserManagement from './pages/admin/UserManagement';
+import GameLatTheTriNho from './sandbox/GameLatTheTriNho';
 import './App.css';
 
 // Protected Route Component
@@ -43,6 +44,9 @@ function App() {
             {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+
+            {/* Sandbox Routes - For testing */}
+            <Route path="/sandbox-game-lat-the-tri-nho" element={<GameLatTheTriNho />} />
 
             {/* Guest Routes - Tự động tạo guest user */}
             <Route
