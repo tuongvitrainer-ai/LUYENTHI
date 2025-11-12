@@ -8,7 +8,7 @@ function LoginPage() {
   const { login } = useAuth();
 
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: '',
   });
 
@@ -29,7 +29,7 @@ function LoginPage() {
     setError('');
 
     // Validation
-    if (!formData.username || !formData.password) {
+    if (!formData.email || !formData.password) {
       setError('Vui lòng nhập đầy đủ thông tin');
       return;
     }
@@ -72,16 +72,16 @@ function LoginPage() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="username">Tên đăng nhập hoặc Email</label>
+            <label htmlFor="email">Email</label>
             <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
-              placeholder="Nhập tên đăng nhập hoặc email"
+              placeholder="Nhập địa chỉ email"
               disabled={loading}
-              autoComplete="username"
+              autoComplete="email"
             />
           </div>
 
@@ -112,6 +112,9 @@ function LoginPage() {
           <p>
             Chưa có tài khoản?{' '}
             <Link to="/register">Đăng ký ngay</Link>
+          </p>
+          <p>
+            <Link to="/">← Trở về trang chủ</Link>
           </p>
         </div>
       </div>
