@@ -517,6 +517,9 @@ const BangCuuChuong1 = () => {
     setWrongAnswers(prev => prev + 1);
     setLastAnswer({ selected: 'Không chọn', correct: currentQ.answer });
 
+    // Play wrong sound effect
+    playWrongSound();
+
     if (selectedMode === 'survival') {
       const newLives = lives - 1;
       setLives(newLives);
