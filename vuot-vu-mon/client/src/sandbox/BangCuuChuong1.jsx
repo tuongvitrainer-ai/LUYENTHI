@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './BangCuuChuong1.css';
 
 const BangCuuChuong1 = () => {
+  const navigate = useNavigate();
+
   // ============================================
   // GAME STATES
   // ============================================
   const [gameState, setGameState] = useState('mode-select'); // mode-select, table-select, speed-select, playing, game-over
   const [selectedMode, setSelectedMode] = useState(null);
   const [selectedTable, setSelectedTable] = useState(null); // 2-9
-  const [selectedSpeed, setSelectedSpeed] = useState(8); // 1-10 (reversed: 10=slowest, 1=fastest)
+  const [selectedSpeed, setSelectedSpeed] = useState(1); // 1-10 (1=slowest, 10=fastest)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questions, setQuestions] = useState([]);
   const [balloons, setBalloons] = useState([]);
@@ -31,6 +34,7 @@ const BangCuuChuong1 = () => {
 
   const gameAreaRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const audioContextRef = useRef(null);
 
   // ============================================
   // GAME MODES CONFIGURATION
@@ -100,6 +104,97 @@ const BangCuuChuong1 = () => {
     ];
     setLeaderboard(mockLeaderboard);
   }, []);
+
+  // ============================================
+  // SOUND EFFECTS
+  // ============================================
+  const playCorrectSound = () => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      const audioContext = audioContextRef.current;
+
+      // First "ting" - higher pitch
+      const oscillator1 = audioContext.createOscillator();
+      const gainNode1 = audioContext.createGain();
+
+      oscillator1.type = 'sine';
+      oscillator1.frequency.setValueAtTime(800, audioContext.currentTime); // High C
+      gainNode1.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+      oscillator1.connect(gainNode1);
+      gainNode1.connect(audioContext.destination);
+
+      oscillator1.start(audioContext.currentTime);
+      oscillator1.stop(audioContext.currentTime + 0.1);
+
+      // Second "ting" - slightly higher pitch
+      setTimeout(() => {
+        const oscillator2 = audioContext.createOscillator();
+        const gainNode2 = audioContext.createGain();
+
+        oscillator2.type = 'sine';
+        oscillator2.frequency.setValueAtTime(1000, audioContext.currentTime); // Higher note
+        gainNode2.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+
+        oscillator2.connect(gainNode2);
+        gainNode2.connect(audioContext.destination);
+
+        oscillator2.start(audioContext.currentTime);
+        oscillator2.stop(audioContext.currentTime + 0.15);
+      }, 100);
+    } catch (error) {
+      console.error('Error playing correct sound:', error);
+    }
+  };
+
+  const playWrongSound = () => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      const audioContext = audioContextRef.current;
+
+      // First "boom" - lower pitch
+      const oscillator1 = audioContext.createOscillator();
+      const gainNode1 = audioContext.createGain();
+
+      oscillator1.type = 'sawtooth';
+      oscillator1.frequency.setValueAtTime(150, audioContext.currentTime); // Low note
+      gainNode1.gain.setValueAtTime(0.4, audioContext.currentTime);
+      gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+      oscillator1.connect(gainNode1);
+      gainNode1.connect(audioContext.destination);
+
+      oscillator1.start(audioContext.currentTime);
+      oscillator1.stop(audioContext.currentTime + 0.2);
+
+      // Second "boom" - even lower pitch
+      setTimeout(() => {
+        const oscillator2 = audioContext.createOscillator();
+        const gainNode2 = audioContext.createGain();
+
+        oscillator2.type = 'sawtooth';
+        oscillator2.frequency.setValueAtTime(100, audioContext.currentTime); // Even lower
+        gainNode2.gain.setValueAtTime(0.4, audioContext.currentTime);
+        gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25);
+
+        oscillator2.connect(gainNode2);
+        gainNode2.connect(audioContext.destination);
+
+        oscillator2.start(audioContext.currentTime);
+        oscillator2.stop(audioContext.currentTime + 0.25);
+      }, 120);
+    } catch (error) {
+      console.error('Error playing wrong sound:', error);
+    }
+  };
 
   // ============================================
   // CONFETTI EFFECT
@@ -248,9 +343,8 @@ const BangCuuChuong1 = () => {
     // Shuffle answers
     const shuffled = allAnswers.sort(() => Math.random() - 0.5);
 
-    // Reverse speed logic: 10 = slowest, 1 = fastest
-    // Speed 10 → 0.1, Speed 1 → 1.0
-    const balloonSpeed = (11 - selectedSpeed) * 0.1;
+    // Speed logic: 1 = slowest (0.1), 10 = fastest (1.0)
+    const balloonSpeed = selectedSpeed * 0.1;
 
     const newBalloons = shuffled.map((answer, index) => ({
       id: `balloon-${currentQuestionIndex}-${index}`,
@@ -358,6 +452,9 @@ const BangCuuChuong1 = () => {
     // Show confetti effect for correct answer! 🎉
     createConfetti();
 
+    // Play correct sound effect
+    playCorrectSound();
+
     // Award power-up after 3 correct in a row
     if (newCombo % 3 === 0 && newCombo > 0) {
       const randomPowerUp = POWER_UP_TYPES[Math.floor(Math.random() * POWER_UP_TYPES.length)];
@@ -382,6 +479,9 @@ const BangCuuChuong1 = () => {
     setCombo(0);
     setWrongAnswers(prev => prev + 1);
     setLastAnswer({ selected: selectedAnswer, correct: currentQ.answer });
+
+    // Play wrong sound effect
+    playWrongSound();
 
     // In practice mode, show explanation and pause game
     if (selectedMode === 'practice') {
@@ -416,6 +516,9 @@ const BangCuuChuong1 = () => {
     setCombo(0);
     setWrongAnswers(prev => prev + 1);
     setLastAnswer({ selected: 'Không chọn', correct: currentQ.answer });
+
+    // Play wrong sound effect
+    playWrongSound();
 
     if (selectedMode === 'survival') {
       const newLives = lives - 1;
@@ -518,6 +621,9 @@ const BangCuuChuong1 = () => {
     return (
       <div className="game-bay-len-toan-hoc">
         <div className="mode-select-screen">
+          <button className="btn-home-mode-select" onClick={() => navigate('/')}>
+            ← Trang chủ
+          </button>
           <div className="game-mascot">🎈</div>
           <h1 className="game-main-title">🎈 Bay Lên Toán Học 🎈</h1>
           <p className="game-subtitle">Chọn chế độ chơi để bắt đầu</p>
