@@ -1,4 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './BangCuuChuong1.css';
+
+const BangCuuChuong1 = () => {
+  const navigate = useNavigate();
+
 import './BangCuuChuong1.css';
 
 const BangCuuChuong1 = () => {
@@ -8,6 +14,7 @@ const BangCuuChuong1 = () => {
   const [gameState, setGameState] = useState('mode-select'); // mode-select, table-select, speed-select, playing, game-over
   const [selectedMode, setSelectedMode] = useState(null);
   const [selectedTable, setSelectedTable] = useState(null); // 2-9
+  const [selectedSpeed, setSelectedSpeed] = useState(1); // 1-10 (1=slowest 0.1, 10=fastest 1.0)
   const [selectedSpeed, setSelectedSpeed] = useState(8); // 1-10 (reversed: 10=slowest, 1=fastest)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questions, setQuestions] = useState([]);
@@ -100,6 +107,59 @@ const BangCuuChuong1 = () => {
     ];
     setLeaderboard(mockLeaderboard);
   }, []);
+
+  // ============================================
+  // SOUND EFFECTS
+  // ============================================
+  const playCorrectSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      // Play two high notes (ting ting)
+      [0, 0.15].forEach((delay) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 800; // High frequency for "ting" sound
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + delay);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + delay + 0.1);
+
+        oscillator.start(audioContext.currentTime + delay);
+        oscillator.stop(audioContext.currentTime + delay + 0.1);
+      });
+    } catch (error) {
+      console.log('Sound not supported');
+    }
+  };
+
+  const playWrongSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      // Play two low notes (boom boom)
+      [0, 0.15].forEach((delay) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 150; // Low frequency for "boom" sound
+        oscillator.type = 'sawtooth';
+
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime + delay);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + delay + 0.2);
+
+        oscillator.start(audioContext.currentTime + delay);
+        oscillator.stop(audioContext.currentTime + delay + 0.2);
+      });
+    } catch (error) {
+      console.log('Sound not supported');
+    }
+  };
 
   // ============================================
   // CONFETTI EFFECT
@@ -248,6 +308,8 @@ const BangCuuChuong1 = () => {
     // Shuffle answers
     const shuffled = allAnswers.sort(() => Math.random() - 0.5);
 
+    // Speed logic: 1 = slowest (0.1), 10 = fastest (1.0)
+    const balloonSpeed = selectedSpeed * 0.1;
     // Reverse speed logic: 10 = slowest, 1 = fastest
     // Speed 10 → 0.1, Speed 1 → 1.0
     const balloonSpeed = (11 - selectedSpeed) * 0.1;
@@ -358,6 +420,9 @@ const BangCuuChuong1 = () => {
     // Show confetti effect for correct answer! 🎉
     createConfetti();
 
+    // Play correct sound effect
+    playCorrectSound();
+
     // Award power-up after 3 correct in a row
     if (newCombo % 3 === 0 && newCombo > 0) {
       const randomPowerUp = POWER_UP_TYPES[Math.floor(Math.random() * POWER_UP_TYPES.length)];
@@ -382,6 +447,9 @@ const BangCuuChuong1 = () => {
     setCombo(0);
     setWrongAnswers(prev => prev + 1);
     setLastAnswer({ selected: selectedAnswer, correct: currentQ.answer });
+
+    // Play wrong sound effect
+    playWrongSound();
 
     // In practice mode, show explanation and pause game
     if (selectedMode === 'practice') {
@@ -416,6 +484,9 @@ const BangCuuChuong1 = () => {
     setCombo(0);
     setWrongAnswers(prev => prev + 1);
     setLastAnswer({ selected: 'Không chọn', correct: currentQ.answer });
+
+    // Play wrong sound effect
+    playWrongSound();
 
     if (selectedMode === 'survival') {
       const newLives = lives - 1;
@@ -518,6 +589,9 @@ const BangCuuChuong1 = () => {
     return (
       <div className="game-bay-len-toan-hoc">
         <div className="mode-select-screen">
+          <button className="btn-home" onClick={() => navigate('/')}>
+            🏠 Về Trang Chủ
+          </button>
           <div className="game-mascot">🎈</div>
           <h1 className="game-main-title">🎈 Bay Lên Toán Học 🎈</h1>
           <p className="game-subtitle">Chọn chế độ chơi để bắt đầu</p>
