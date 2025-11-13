@@ -8,7 +8,7 @@ const BangCuuChuong1 = () => {
   const [gameState, setGameState] = useState('mode-select'); // mode-select, table-select, speed-select, playing, game-over
   const [selectedMode, setSelectedMode] = useState(null);
   const [selectedTable, setSelectedTable] = useState(null); // 2-9
-  const [selectedSpeed, setSelectedSpeed] = useState(3); // 1-10
+  const [selectedSpeed, setSelectedSpeed] = useState(8); // 1-10 (reversed: 10=slowest, 1=fastest)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questions, setQuestions] = useState([]);
   const [balloons, setBalloons] = useState([]);
@@ -25,6 +25,9 @@ const BangCuuChuong1 = () => {
   const [questionStartTime, setQuestionStartTime] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [lastAnswer, setLastAnswer] = useState(null);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [confetti, setConfetti] = useState([]);
+  const [isPaused, setIsPaused] = useState(false);
 
   const gameAreaRef = useRef(null);
   const animationFrameRef = useRef(null);
@@ -77,6 +80,70 @@ const BangCuuChuong1 = () => {
     { id: 'eliminate', icon: '💣', name: 'Nổ Sai', description: 'Loại 2 đáp án sai' },
     { id: 'double', icon: '⭐', name: 'x2 Điểm', description: 'Nhân đôi điểm câu sau' }
   ];
+
+  // ============================================
+  // LEADERBOARD DATA (MOCK)
+  // ============================================
+  useEffect(() => {
+    // Mock leaderboard data - Top 10
+    const mockLeaderboard = [
+      { rank: 1, name: 'Minh Anh', speed: 8, score: 950, time: 45, date: '2024-01-15' },
+      { rank: 2, name: 'Tuấn Kiệt', speed: 9, score: 920, time: 52, date: '2024-01-14' },
+      { rank: 3, name: 'Bảo Ngọc', speed: 7, score: 890, time: 48, date: '2024-01-14' },
+      { rank: 4, name: 'Hương Giang', speed: 10, score: 870, time: 65, date: '2024-01-13' },
+      { rank: 5, name: 'Đức Anh', speed: 8, score: 850, time: 50, date: '2024-01-13' },
+      { rank: 6, name: 'Lan Phương', speed: 6, score: 830, time: 55, date: '2024-01-12' },
+      { rank: 7, name: 'Hoàng Long', speed: 9, score: 810, time: 58, date: '2024-01-12' },
+      { rank: 8, name: 'Thu Hà', speed: 7, score: 790, time: 60, date: '2024-01-11' },
+      { rank: 9, name: 'Quang Huy', speed: 8, score: 770, time: 62, date: '2024-01-11' },
+      { rank: 10, name: 'Mai Linh', speed: 6, score: 750, time: 68, date: '2024-01-10' }
+    ];
+    setLeaderboard(mockLeaderboard);
+  }, []);
+
+  // ============================================
+  // CONFETTI EFFECT
+  // ============================================
+  const createConfetti = () => {
+    const newConfetti = [];
+    const colors = ['#FFD700', '#FF6B9D', '#667eea', '#a8edea', '#fed6e3', '#FFFF00'];
+
+    for (let i = 0; i < 50; i++) {
+      newConfetti.push({
+        id: Date.now() + i,
+        x: Math.random() * 100,
+        y: -10,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        speedX: (Math.random() - 0.5) * 2,
+        speedY: Math.random() * 3 + 2
+      });
+    }
+
+    setConfetti(newConfetti);
+
+    // Clear confetti after 3 seconds
+    setTimeout(() => setConfetti([]), 3000);
+  };
+
+  // Animate confetti
+  useEffect(() => {
+    if (confetti.length > 0) {
+      const animateConfetti = () => {
+        setConfetti(prev =>
+          prev.map(c => ({
+            ...c,
+            y: c.y + c.speedY,
+            x: c.x + c.speedX,
+            rotation: c.rotation + 5
+          })).filter(c => c.y < 110) // Remove when off screen
+        );
+      };
+
+      const interval = setInterval(animateConfetti, 50);
+      return () => clearInterval(interval);
+    }
+  }, [confetti.length]);
 
   // ============================================
   // GENERATE QUESTIONS
@@ -181,13 +248,17 @@ const BangCuuChuong1 = () => {
     // Shuffle answers
     const shuffled = allAnswers.sort(() => Math.random() - 0.5);
 
+    // Reverse speed logic: 10 = slowest, 1 = fastest
+    // Speed 10 → 0.1, Speed 1 → 1.0
+    const balloonSpeed = (11 - selectedSpeed) * 0.1;
+
     const newBalloons = shuffled.map((answer, index) => ({
       id: `balloon-${currentQuestionIndex}-${index}`,
       answer,
       isCorrect: answer === correctAnswer,
       x: (100 / (balloonCount + 1)) * (index + 1), // Distribute evenly
       y: 100, // Start at bottom
-      speed: selectedSpeed * 0.5, // Base speed
+      speed: balloonSpeed,
       color: getRandomBalloonColor(),
       popped: false
     }));
@@ -208,7 +279,7 @@ const BangCuuChuong1 = () => {
   // BALLOON ANIMATION
   // ============================================
   useEffect(() => {
-    if (gameState === 'playing' && balloons.length > 0) {
+    if (gameState === 'playing' && balloons.length > 0 && !isPaused) {
       const animate = () => {
         setBalloons(prevBalloons => {
           const updated = prevBalloons.map(balloon => {
@@ -244,7 +315,7 @@ const BangCuuChuong1 = () => {
         }
       };
     }
-  }, [gameState, balloons.length, activePowerUp, selectedSpeed]);
+  }, [gameState, balloons.length, activePowerUp, selectedSpeed, isPaused]);
 
   // ============================================
   // HANDLE BALLOON CLICK
@@ -284,6 +355,9 @@ const BangCuuChuong1 = () => {
     setCombo(newCombo);
     setCorrectAnswers(prev => prev + 1);
 
+    // Show confetti effect for correct answer! 🎉
+    createConfetti();
+
     // Award power-up after 3 correct in a row
     if (newCombo % 3 === 0 && newCombo > 0) {
       const randomPowerUp = POWER_UP_TYPES[Math.floor(Math.random() * POWER_UP_TYPES.length)];
@@ -309,11 +383,13 @@ const BangCuuChuong1 = () => {
     setWrongAnswers(prev => prev + 1);
     setLastAnswer({ selected: selectedAnswer, correct: currentQ.answer });
 
-    // In practice mode, show explanation
+    // In practice mode, show explanation and pause game
     if (selectedMode === 'practice') {
+      setIsPaused(true); // Pause balloon animation
       setShowExplanation(true);
       setTimeout(() => {
         setShowExplanation(false);
+        setIsPaused(false); // Resume animation
         nextQuestion();
       }, 3000);
     } else {
@@ -465,6 +541,46 @@ const BangCuuChuong1 = () => {
                 </ul>
               </div>
             ))}
+          </div>
+
+          {/* Leaderboard Section */}
+          <div className="leaderboard-section-home">
+            <h2 className="leaderboard-home-title">🏆 Bảng Xếp Hạng Top 10</h2>
+            {leaderboard.length > 0 ? (
+              <div className="leaderboard-table-wrapper">
+                <table className="leaderboard-table-home">
+                  <thead>
+                    <tr>
+                      <th>Hạng</th>
+                      <th>Người chơi</th>
+                      <th>Tốc độ</th>
+                      <th>Điểm</th>
+                      <th>Thời gian</th>
+                      <th>Ngày</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {leaderboard.map((entry) => (
+                      <tr key={entry.rank} className={entry.rank <= 3 ? `rank-${entry.rank}` : ''}>
+                        <td className="rank-col">
+                          {entry.rank === 1 && '🥇'}
+                          {entry.rank === 2 && '🥈'}
+                          {entry.rank === 3 && '🥉'}
+                          {entry.rank > 3 && entry.rank}
+                        </td>
+                        <td className="name-col">{entry.name}</td>
+                        <td className="speed-col">Tốc độ {entry.speed}</td>
+                        <td className="score-col">{entry.score}</td>
+                        <td className="time-col">{entry.time}s</td>
+                        <td className="date-col">{entry.date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="leaderboard-empty">Chưa có dữ liệu xếp hạng</p>
+            )}
           </div>
         </div>
       </div>
@@ -643,6 +759,24 @@ const BangCuuChuong1 = () => {
               </div>
             ))}
           </div>
+
+          {/* Confetti Effect */}
+          {confetti.length > 0 && (
+            <div className="confetti-container">
+              {confetti.map(c => (
+                <div
+                  key={c.id}
+                  className="confetti-piece"
+                  style={{
+                    left: `${c.x}%`,
+                    top: `${c.y}%`,
+                    backgroundColor: c.color,
+                    transform: `rotate(${c.rotation}deg)`
+                  }}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Explanation (Practice Mode) */}
           {showExplanation && lastAnswer && (
