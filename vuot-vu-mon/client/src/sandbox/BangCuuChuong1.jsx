@@ -5,6 +5,9 @@ import './BangCuuChuong1.css';
 const BangCuuChuong1 = () => {
   const navigate = useNavigate();
 
+import './BangCuuChuong1.css';
+
+const BangCuuChuong1 = () => {
   // ============================================
   // GAME STATES
   // ============================================
@@ -12,6 +15,7 @@ const BangCuuChuong1 = () => {
   const [selectedMode, setSelectedMode] = useState(null);
   const [selectedTable, setSelectedTable] = useState(null); // 2-9
   const [selectedSpeed, setSelectedSpeed] = useState(1); // 1-10 (1=slowest 0.1, 10=fastest 1.0)
+  const [selectedSpeed, setSelectedSpeed] = useState(8); // 1-10 (reversed: 10=slowest, 1=fastest)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questions, setQuestions] = useState([]);
   const [balloons, setBalloons] = useState([]);
@@ -306,6 +310,9 @@ const BangCuuChuong1 = () => {
 
     // Speed logic: 1 = slowest (0.1), 10 = fastest (1.0)
     const balloonSpeed = selectedSpeed * 0.1;
+    // Reverse speed logic: 10 = slowest, 1 = fastest
+    // Speed 10 → 0.1, Speed 1 → 1.0
+    const balloonSpeed = (11 - selectedSpeed) * 0.1;
 
     const newBalloons = shuffled.map((answer, index) => ({
       id: `balloon-${currentQuestionIndex}-${index}`,
@@ -427,6 +434,7 @@ const BangCuuChuong1 = () => {
       setActivePowerUp(null);
     }
 
+    // Play sound (would be implemented with audio)
     console.log('✅ Correct! +' + points + ' points');
 
     // Move to next question

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import { gameAPI } from '../../../services/api';
 import './GameLatTheTriNho.css';
 
 const GameLatTheTriNho = ({ pairs: propPairs }) => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   // ============================================
   // VOCABULARY DATA - Từ vựng tiếng Anh lớp 3
   // ============================================
@@ -370,17 +372,18 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
   };
 
   // ============================================
-  // FETCH LEADERBOARD FOR LEVEL
+  // FETCH LEADERBOARD (ALL LEVELS)
   // ============================================
-  const fetchLeaderboard = async (level) => {
+  const fetchLeaderboard = async () => {
     try {
       setIsLoadingLeaderboard(true);
       // Giả lập dữ liệu leaderboard (sẽ thay bằng API call sau)
-      // TODO: Replace with actual API call
+      // TODO: Replace with actual API call - gameAPI.getLeaderboard('memory_card')
       const mockData = [
         {
           rank: 1,
           username: 'Player123',
+          level: 1,
           time_seconds: 45,
           score: 800,
           moves: 12,
@@ -390,13 +393,43 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
         {
           rank: 2,
           username: 'Alice',
+          level: 2,
           time_seconds: 52,
           score: 750,
           moves: 14,
           math_types: ['addition'],
           created_at: '2024-01-14'
         },
-        // Add more mock data as needed
+        {
+          rank: 3,
+          username: 'Bob',
+          level: 1,
+          time_seconds: 48,
+          score: 780,
+          moves: 13,
+          math_types: ['subtraction', 'addition'],
+          created_at: '2024-01-13'
+        },
+        {
+          rank: 4,
+          username: 'Charlie',
+          level: 3,
+          time_seconds: 65,
+          score: 720,
+          moves: 16,
+          math_types: ['multiplication'],
+          created_at: '2024-01-12'
+        },
+        {
+          rank: 5,
+          username: 'Diana',
+          level: 2,
+          time_seconds: 55,
+          score: 740,
+          moves: 15,
+          math_types: ['division', 'multiplication'],
+          created_at: '2024-01-11'
+        }
       ];
 
       // Simulate API delay
@@ -410,6 +443,45 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
     }
   };
 
+  // Load leaderboard on component mount
+  useEffect(() => {
+    fetchLeaderboard();
+  }, []);
+
+  // Submit pending game result after login
+  useEffect(() => {
+    const submitPendingResult = async () => {
+      if (isAuthenticated && user) {
+        const pendingResult = localStorage.getItem('pendingGameResult');
+        if (pendingResult) {
+          try {
+            const gameResult = JSON.parse(pendingResult);
+            // Check if result is not too old (within 1 hour)
+            const isRecent = Date.now() - gameResult.timestamp < 3600000;
+
+            if (isRecent) {
+              console.log('Submitting pending game result after login...');
+              const response = await gameAPI.submitResult(gameResult);
+
+              if (response.data && response.data.success) {
+                console.log('Pending result submitted successfully!');
+                // Refresh leaderboard to show new entry
+                await fetchLeaderboard();
+              }
+            }
+          } catch (error) {
+            console.error('Failed to submit pending game result:', error);
+          } finally {
+            // Remove pending result from localStorage
+            localStorage.removeItem('pendingGameResult');
+          }
+        }
+      }
+    };
+
+    submitPendingResult();
+  }, [isAuthenticated, user]);
+
   // ============================================
   // SELECT LEVEL & INITIALIZE GAME
   // ============================================
@@ -418,7 +490,6 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
     setStartTime(Date.now());
     initializeGame(levelConfig.pairs);
     startBackgroundMusic(); // Bắt đầu nhạc nền khi chọn level
-    fetchLeaderboard(levelConfig.level); // Load leaderboard for this level
   };
 
   const initializeGame = (pairCount) => {
@@ -695,6 +766,68 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
               </button>
             ))}
           </div>
+
+          {/* Leaderboard Section */}
+          <div className="leaderboard-section">
+            <h3 className="leaderboard-title">🏆 Bảng Xếp Hạng</h3>
+            {isLoadingLeaderboard ? (
+              <div className="leaderboard-loading">Đang tải bảng xếp hạng...</div>
+            ) : leaderboard.length > 0 ? (
+              <div className="leaderboard-table-container">
+                <table className="leaderboard-table">
+                  <thead>
+                    <tr>
+                      <th>Hạng</th>
+                      <th>Người chơi</th>
+                      <th>Level</th>
+                      <th>Thời gian</th>
+                      <th>Điểm</th>
+                      <th>Số lượt</th>
+                      <th>Tuỳ chọn</th>
+                      <th>Ngày</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {leaderboard.map((entry, idx) => {
+                      const mathSymbols = entry.math_types.map(type => {
+                        switch(type) {
+                          case 'addition': return '➕';
+                          case 'subtraction': return '➖';
+                          case 'multiplication': return '✖️';
+                          case 'division': return '➗';
+                          default: return '';
+                        }
+                      }).join(' ');
+
+                      // Get level emoji and name
+                      const levelInfo = LEVELS.find(l => l.level === entry.level);
+                      const levelDisplay = levelInfo ? `${levelInfo.emoji} Cấp ${entry.level}` : `Cấp ${entry.level}`;
+
+                      return (
+                        <tr key={idx} className={idx < 3 ? `top-${idx + 1}` : ''}>
+                          <td className="rank-cell">
+                            {idx === 0 && '🥇'}
+                            {idx === 1 && '🥈'}
+                            {idx === 2 && '🥉'}
+                            {idx > 2 && entry.rank}
+                          </td>
+                          <td className="player-cell">{entry.username}</td>
+                          <td className="level-cell">{levelDisplay}</td>
+                          <td className="time-cell">{entry.time_seconds}s</td>
+                          <td className="score-cell">{entry.score}</td>
+                          <td className="moves-cell">{entry.moves}</td>
+                          <td className="options-cell">{mathSymbols || '—'}</td>
+                          <td className="date-cell">{new Date(entry.created_at).toLocaleDateString('vi-VN')}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="leaderboard-empty">Chưa có dữ liệu xếp hạng.</div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -759,62 +892,6 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
         </button>
       </div>
 
-      {/* Leaderboard */}
-      <div className="leaderboard-section">
-        <h3 className="leaderboard-title">🏆 Bảng Xếp Hạng - {currentLevel.name}</h3>
-        {isLoadingLeaderboard ? (
-          <div className="leaderboard-loading">Đang tải bảng xếp hạng...</div>
-        ) : leaderboard.length > 0 ? (
-          <div className="leaderboard-table-container">
-            <table className="leaderboard-table">
-              <thead>
-                <tr>
-                  <th>Hạng</th>
-                  <th>Người chơi</th>
-                  <th>Thời gian</th>
-                  <th>Điểm</th>
-                  <th>Số lượt</th>
-                  <th>Tuỳ chọn</th>
-                  <th>Ngày</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.map((entry, idx) => {
-                  const mathSymbols = entry.math_types.map(type => {
-                    switch(type) {
-                      case 'addition': return '➕';
-                      case 'subtraction': return '➖';
-                      case 'multiplication': return '✖️';
-                      case 'division': return '➗';
-                      default: return '';
-                    }
-                  }).join(' ');
-
-                  return (
-                    <tr key={idx} className={idx < 3 ? `top-${idx + 1}` : ''}>
-                      <td className="rank-cell">
-                        {idx === 0 && '🥇'}
-                        {idx === 1 && '🥈'}
-                        {idx === 2 && '🥉'}
-                        {idx > 2 && entry.rank}
-                      </td>
-                      <td className="player-cell">{entry.username}</td>
-                      <td className="time-cell">{entry.time_seconds}s</td>
-                      <td className="score-cell">{entry.score}</td>
-                      <td className="moves-cell">{entry.moves}</td>
-                      <td className="options-cell">{mathSymbols || '—'}</td>
-                      <td className="date-cell">{new Date(entry.created_at).toLocaleDateString('vi-VN')}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="leaderboard-empty">Chưa có dữ liệu xếp hạng cho mức độ này.</div>
-        )}
-      </div>
-
       {/* Game Board */}
       <div className={`game-board pairs-${currentLevel.pairs}`}>
         {cards.map((card, index) => {
@@ -876,12 +953,21 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
               </p>
             </div>
             <div className="popup-message">
-              {starsEarned > 0 ? (
-                <p>🌟 Xin chúc mừng, bạn nhận được <strong>{starsEarned} Sao</strong>!</p>
+              {isAuthenticated ? (
+                <>
+                  {starsEarned > 0 ? (
+                    <p>🌟 Xin chúc mừng, bạn nhận được <strong>{starsEarned} Sao</strong>!</p>
+                  ) : (
+                    <p>🎉 Xin chúc mừng, bạn đã hoàn thành!</p>
+                  )}
+                  <p>Điểm số đã được ghi nhận vào Bảng xếp hạng!</p>
+                </>
               ) : (
-                <p>🎉 Xin chúc mừng, bạn đã hoàn thành!</p>
+                <>
+                  <p>🎉 Xin chúc mừng, bạn đã hoàn thành!</p>
+                  <p>Hãy đăng nhập để lưu điểm và đổi thưởng nhé ^^</p>
+                </>
               )}
-              <p>Hãy đăng nhập để lưu điểm và đổi thưởng nhé ^^</p>
             </div>
             <div className="popup-buttons">
               <button className="btn-back-popup" onClick={backToLevelSelect}>
@@ -890,9 +976,30 @@ const GameLatTheTriNho = ({ pairs: propPairs }) => {
               <button className="btn-restart-popup" onClick={handleRestart}>
                 🔄 Chơi lại
               </button>
-              <button className="btn-login-popup" onClick={() => alert('Chuyển đến trang đăng nhập')}>
-                🔐 Đăng nhập
-              </button>
+              {!isAuthenticated && (
+                <button className="btn-login-popup" onClick={() => {
+                  // Lưu kết quả game để submit sau khi đăng nhập
+                  const gameResult = {
+                    exam_type: 'memory_card',
+                    score: score,
+                    details_json: {
+                      level: currentLevel.level,
+                      pairs: currentLevel.pairs,
+                      moves: moves,
+                      time_seconds: getPlayTime(),
+                      accuracy_percent: Math.round((currentLevel.pairs / moves) * 100),
+                      math_types_selected: selectedMathTypes,
+                      differentiate_mode: isDifferentiateMode
+                    },
+                    timestamp: Date.now()
+                  };
+                  localStorage.setItem('pendingGameResult', JSON.stringify(gameResult));
+                  // Chuyển đến trang đăng nhập
+                  navigate('/login');
+                }}>
+                  🔐 Đăng nhập
+                </button>
+              )}
             </div>
           </div>
         </div>
