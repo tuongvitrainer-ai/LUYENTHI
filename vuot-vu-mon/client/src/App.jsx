@@ -14,7 +14,7 @@ import QuestionBank from './pages/admin/QuestionBank';
 import QuestionForm from './pages/admin/QuestionForm';
 import UserManagement from './pages/admin/UserManagement';
 import GameLatTheTriNho from './pages/GameMap/Grade3/GameLatTheTriNho';
-import BangCuuChuong1 from './sandbox/BangCuuChuong1';
+import BangCuuChuong1 from './pages/GameMap/Grade3/BangCuuChuong1';
 import './App.css';
 
 // Protected Route Component
@@ -74,8 +74,14 @@ function App() {
               }
             />
 
-            {/* Sandbox Routes - For Testing */}
-            <Route path="/sandbox-bangcuuchuong1" element={<BangCuuChuong1 />} />
+            <Route
+              path="/game/grade3/bang-cuu-chuong"
+              element={
+                <GuestRoute>
+                  <BangCuuChuong1 />
+                </GuestRoute>
+              }
+            />
 
             {/* Protected Routes - Cần đăng ký */}
 

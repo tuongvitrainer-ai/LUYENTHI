@@ -108,6 +108,12 @@ function GameMap() {
               <p>Luyện trí nhớ với từ vựng & toán học</p>
               <span className="mini-game-badge">Mới</span>
             </Link>
+            <Link to="/game/grade3/bang-cuu-chuong" className="mini-game-card">
+              <div className="mini-game-icon">🎈</div>
+              <h4>Bay Lên Toán Học</h4>
+              <p>Bắn bong bóng học bảng cửu chương</p>
+              <span className="mini-game-badge">Mới</span>
+            </Link>
           </div>
         </div>
 
