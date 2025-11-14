@@ -383,6 +383,16 @@
   margin-bottom: 2rem;
 }
 
+.question-display-bottom {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+}
+
 .question-box {
   background: rgba(255, 255, 255, 0.95);
   border: 5px solid #667eea;
@@ -404,7 +414,7 @@
 
 .finish-line {
   position: absolute;
-  top: 180px;
+  bottom: 80%;
   left: 0;
   right: 0;
   height: 5px;

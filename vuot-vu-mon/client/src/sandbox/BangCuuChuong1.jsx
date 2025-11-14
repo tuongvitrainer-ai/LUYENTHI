@@ -351,7 +351,7 @@ const BangCuuChuong1 = () => {
       answer,
       isCorrect: answer === correctAnswer,
       x: (100 / (balloonCount + 1)) * (index + 1), // Distribute evenly
-      y: 100, // Start at bottom
+      y: 5, // Start near bottom (just above question box)
       speed: balloonSpeed,
       color: getRandomBalloonColor(),
       popped: false
@@ -384,12 +384,12 @@ const BangCuuChuong1 = () => {
 
             return {
               ...balloon,
-              y: balloon.y - effectiveSpeed
+              y: balloon.y + effectiveSpeed
             };
           });
 
-          // Check if any balloon reached the finish line (y <= 20)
-          const reachedTop = updated.some(b => !b.popped && b.y <= 20);
+          // Check if any balloon reached the finish line (y >= 80)
+          const reachedTop = updated.some(b => !b.popped && b.y >= 80);
           if (reachedTop) {
             handleBalloonReachedTop();
             return updated.map(b => ({ ...b, popped: true }));
@@ -810,15 +810,6 @@ const BangCuuChuong1 = () => {
             </div>
           </div>
 
-          {/* Question Display */}
-          <div className="question-display">
-            <div className="question-box">
-              <span className="question-text">
-                {currentQ.multiplicand} × {currentQ.multiplier} = ?
-              </span>
-            </div>
-          </div>
-
           {/* Finish Line */}
           <div className="finish-line"></div>
 
@@ -897,6 +888,15 @@ const BangCuuChuong1 = () => {
               </div>
             </div>
           )}
+
+          {/* Question Display - At Bottom */}
+          <div className="question-display-bottom">
+            <div className="question-box">
+              <span className="question-text">
+                {currentQ.multiplicand} × {currentQ.multiplier} = ?
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     );
