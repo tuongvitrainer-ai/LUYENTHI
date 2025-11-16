@@ -1,40 +1,43 @@
-const { db } = require('../database/db');
+const { knex } = require('../database/db');
 
 /**
  * Get all shop items
  * GET /api/shop/items
  *
  * Query params:
- * - status: Filter by status (default: 'active')
- * - item_type: Filter by type
+ * - category: Filter by category
+ * - is_active: Filter by active status (default: true)
  */
-const getItems = (req, res) => {
+const getItems = async (req, res) => {
   try {
-    const { status = 'active', item_type } = req.query;
+    const { category, is_active = true } = req.query;
 
-    let query = `
-      SELECT id, item_name, item_description, item_type,
-             star_cost, stock_quantity, image_url, display_order
-      FROM shop_items
-      WHERE status = ?
-    `;
+    let query = knex('shop_items')
+      .select(
+        'id', 'name', 'description', 'category',
+        'price', 'stock', 'image_url', 'properties_json'
+      )
+      .where('is_active', is_active === 'true' || is_active === true);
 
-    const params = [status];
-
-    if (item_type) {
-      query += ' AND item_type = ?';
-      params.push(item_type);
+    if (category) {
+      query = query.where('category', category);
     }
 
-    query += ' ORDER BY display_order ASC, id ASC';
+    query = query.orderBy('category', 'asc').orderBy('id', 'asc');
 
-    const items = db.prepare(query).all(...params);
+    const items = await query;
+
+    // Parse properties_json for each item
+    const formattedItems = items.map(item => ({
+      ...item,
+      properties: item.properties_json ? JSON.parse(item.properties_json) : null
+    }));
 
     res.json({
       success: true,
       data: {
-        items,
-        count: items.length
+        items: formattedItems,
+        count: formattedItems.length
       }
     });
 
@@ -55,7 +58,7 @@ const getItems = (req, res) => {
  * - item_id: ID of the item to purchase
  * - quantity: Quantity (default: 1)
  */
-const purchase = (req, res) => {
+const purchase = async (req, res) => {
   try {
     const { item_id, quantity = 1 } = req.body;
     const user_id = req.user.id;
@@ -76,11 +79,10 @@ const purchase = (req, res) => {
     }
 
     // Get item
-    const item = db.prepare(`
-      SELECT id, item_name, star_cost, stock_quantity, status
-      FROM shop_items
-      WHERE id = ?
-    `).get(item_id);
+    const item = await knex('shop_items')
+      .select('id', 'name', 'price', 'stock', 'is_active')
+      .where('id', item_id)
+      .first();
 
     if (!item) {
       return res.status(404).json({
@@ -89,15 +91,15 @@ const purchase = (req, res) => {
       });
     }
 
-    if (item.status !== 'active') {
+    if (!item.is_active) {
       return res.status(400).json({
         success: false,
         message: 'Item is not available for purchase'
       });
     }
 
-    // Check stock (if stock_quantity is -1, unlimited)
-    if (item.stock_quantity !== -1 && item.stock_quantity < quantity) {
+    // Check stock (if stock is -1, unlimited)
+    if (item.stock !== -1 && item.stock < quantity) {
       return res.status(400).json({
         success: false,
         message: 'Insufficient stock'
@@ -105,75 +107,72 @@ const purchase = (req, res) => {
     }
 
     // Calculate total cost
-    const totalCost = item.star_cost * quantity;
+    const totalCost = item.price * quantity;
 
-    // Get user
-    const user = db.prepare(`
-      SELECT id, total_stars
-      FROM users
-      WHERE id = ?
-    `).get(user_id);
+    // Get user - FIX: Using stars_balance instead of deprecated total_stars
+    const user = await knex('users')
+      .select('id', 'stars_balance')
+      .where('id', user_id)
+      .first();
 
     // Check if user has enough stars
-    if (user.total_stars < totalCost) {
+    if (user.stars_balance < totalCost) {
       return res.status(400).json({
         success: false,
         message: 'Not enough stars',
         required: totalCost,
-        current: user.total_stars,
-        shortage: totalCost - user.total_stars
+        current: user.stars_balance,
+        shortage: totalCost - user.stars_balance
       });
     }
 
     // Use transaction for purchase
-    const transaction = db.transaction(() => {
-      // Deduct stars from user
-      db.prepare(`
-        UPDATE users
-        SET total_stars = total_stars - ?,
-            updated_at = datetime('now')
-        WHERE id = ?
-      `).run(totalCost, user_id);
+    const purchaseId = await knex.transaction(async (trx) => {
+      // Deduct stars from user - FIX: Using stars_balance
+      await trx('users')
+        .where('id', user_id)
+        .update({
+          stars_balance: knex.raw('stars_balance - ?', [totalCost]),
+          updated_at: trx.fn.now()
+        });
 
       // Update stock if not unlimited
-      if (item.stock_quantity !== -1) {
-        db.prepare(`
-          UPDATE shop_items
-          SET stock_quantity = stock_quantity - ?,
-              updated_at = datetime('now')
-          WHERE id = ?
-        `).run(quantity, item_id);
+      if (item.stock !== -1) {
+        await trx('shop_items')
+          .where('id', item_id)
+          .update({
+            stock: knex.raw('stock - ?', [quantity])
+          });
       }
 
       // Record purchase
-      const purchaseResult = db.prepare(`
-        INSERT INTO user_purchases
-        (user_id, shop_item_id, stars_spent, quantity, status)
-        VALUES (?, ?, ?, ?, 'completed')
-      `).run(user_id, item_id, totalCost, quantity);
+      const [result] = await trx('user_purchases')
+        .insert({
+          user_id: user_id,
+          item_id: item_id,
+          price_paid: totalCost,
+          is_equipped: false
+        })
+        .returning('id');
 
-      return purchaseResult.lastInsertRowid;
+      return result.id || result;
     });
 
-    // Execute transaction
-    const purchaseId = transaction();
-
     // Get updated user data
-    const updatedUser = db.prepare(`
-      SELECT total_stars
-      FROM users
-      WHERE id = ?
-    `).get(user_id);
+    const updatedUser = await knex('users')
+      .select('stars_balance')
+      .where('id', user_id)
+      .first();
 
     res.json({
       success: true,
       message: 'Purchase successful',
       data: {
         purchase_id: purchaseId,
-        item_name: item.item_name,
+        item_name: item.name,
         quantity: quantity,
         stars_spent: totalCost,
-        new_total_stars: updatedUser.total_stars
+        new_stars_balance: updatedUser.stars_balance
       }
     });
 
@@ -190,33 +189,33 @@ const purchase = (req, res) => {
  * Get user's purchase history
  * GET /api/shop/purchases
  */
-const getUserPurchases = (req, res) => {
+const getUserPurchases = async (req, res) => {
   try {
     const user_id = req.user.id;
     const { limit = 20, offset = 0 } = req.query;
 
-    const purchases = db.prepare(`
-      SELECT up.id, up.stars_spent, up.quantity, up.status, up.created_at,
-             si.item_name, si.item_description, si.item_type
-      FROM user_purchases up
-      INNER JOIN shop_items si ON up.shop_item_id = si.id
-      WHERE up.user_id = ?
-      ORDER BY up.created_at DESC
-      LIMIT ? OFFSET ?
-    `).all(user_id, parseInt(limit), parseInt(offset));
+    const purchases = await knex('user_purchases as up')
+      .select(
+        'up.id', 'up.price_paid', 'up.is_equipped', 'up.purchased_at',
+        'si.name as item_name', 'si.description as item_description', 'si.category'
+      )
+      .innerJoin('shop_items as si', 'up.item_id', 'si.id')
+      .where('up.user_id', user_id)
+      .orderBy('up.purchased_at', 'desc')
+      .limit(parseInt(limit))
+      .offset(parseInt(offset));
 
-    const totalPurchases = db.prepare(`
-      SELECT COUNT(*) as count
-      FROM user_purchases
-      WHERE user_id = ?
-    `).get(user_id);
+    const totalPurchases = await knex('user_purchases')
+      .where('user_id', user_id)
+      .count('* as count')
+      .first();
 
     res.json({
       success: true,
       data: {
         purchases,
         count: purchases.length,
-        total: totalPurchases.count
+        total: parseInt(totalPurchases.count)
       }
     });
 
@@ -233,20 +232,22 @@ const getUserPurchases = (req, res) => {
  * Get user's inventory (purchased items summary)
  * GET /api/shop/inventory
  */
-const getInventory = (req, res) => {
+const getInventory = async (req, res) => {
   try {
     const user_id = req.user.id;
 
-    const inventory = db.prepare(`
-      SELECT si.item_name, si.item_type, si.item_description,
-             SUM(up.quantity) as total_quantity,
-             COUNT(up.id) as purchase_count
-      FROM user_purchases up
-      INNER JOIN shop_items si ON up.shop_item_id = si.id
-      WHERE up.user_id = ? AND up.status = 'completed'
-      GROUP BY si.id
-      ORDER BY total_quantity DESC
-    `).all(user_id);
+    const inventory = await knex('user_purchases as up')
+      .select(
+        'si.name as item_name',
+        'si.category',
+        'si.description as item_description',
+        knex.raw('COUNT(up.id) as purchase_count'),
+        knex.raw('SUM(up.price_paid) as total_spent')
+      )
+      .innerJoin('shop_items as si', 'up.item_id', 'si.id')
+      .where('up.user_id', user_id)
+      .groupBy('si.id', 'si.name', 'si.category', 'si.description')
+      .orderBy('purchase_count', 'desc');
 
     res.json({
       success: true,
@@ -265,9 +266,68 @@ const getInventory = (req, res) => {
   }
 };
 
+/**
+ * Equip/Unequip an item
+ * POST /api/shop/equip
+ *
+ * Body:
+ * - purchase_id: ID of the purchase to equip/unequip
+ * - is_equipped: boolean
+ */
+const equipItem = async (req, res) => {
+  try {
+    const { purchase_id, is_equipped } = req.body;
+    const user_id = req.user.id;
+
+    if (!purchase_id || is_equipped === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'purchase_id and is_equipped are required'
+      });
+    }
+
+    // Verify ownership
+    const purchase = await knex('user_purchases')
+      .where({
+        id: purchase_id,
+        user_id: user_id
+      })
+      .first();
+
+    if (!purchase) {
+      return res.status(404).json({
+        success: false,
+        message: 'Purchase not found or not owned by user'
+      });
+    }
+
+    // Update equipped status
+    await knex('user_purchases')
+      .where('id', purchase_id)
+      .update({ is_equipped: is_equipped });
+
+    res.json({
+      success: true,
+      message: is_equipped ? 'Item equipped' : 'Item unequipped',
+      data: {
+        purchase_id: purchase_id,
+        is_equipped: is_equipped
+      }
+    });
+
+  } catch (error) {
+    console.error('Equip item error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating item equipment status'
+    });
+  }
+};
+
 module.exports = {
   getItems,
   purchase,
   getUserPurchases,
-  getInventory
+  getInventory,
+  equipItem
 };

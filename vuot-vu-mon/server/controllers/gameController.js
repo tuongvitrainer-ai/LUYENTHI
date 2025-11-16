@@ -1,4 +1,4 @@
-const { db } = require('../database/db');
+const { knex } = require('../database/db');
 
 // ============================================
 // API: GET /api/game/questions
@@ -12,53 +12,50 @@ const { db } = require('../database/db');
  * - limit: số lượng câu hỏi (default: 10, max: 50)
  * - game_type: "quiz_race", etc. (optional)
  */
-const getQuestions = (req, res) => {
+const getQuestions = async (req, res) => {
   try {
     const { subject, limit = 10, game_type } = req.query;
     const questionLimit = Math.min(parseInt(limit), 50);
 
     console.log(`🎮 Fetching questions: subject=${subject}, limit=${questionLimit}, game_type=${game_type}`);
 
-    // Build query with filters
-    let query = `
-      SELECT DISTINCT
-        q.id,
-        q.content_json,
-        q.correct_answer,
-        q.type,
-        q.explanation,
-        q.is_premium,
-        q.created_at
-      FROM questions q
-    `;
-
-    const conditions = [];
-    const params = [];
+    // Build query with Knex
+    let query = knex('questions as q')
+      .distinct()
+      .select(
+        'q.id',
+        'q.content_json',
+        'q.correct_answer',
+        'q.explanation',
+        'q.difficulty'
+      );
 
     // Filter by subject if provided
     if (subject) {
-      query += ` JOIN question_tags qt ON q.id = qt.question_id`;
-      conditions.push(`qt.tag_key = 'môn_học' AND qt.tag_value = ?`);
-      params.push(subject);
+      query = query
+        .join('question_tags as qt', 'q.id', 'qt.question_id')
+        .where('qt.tag_type', 'môn_học')
+        .where('qt.tag_value', subject);
     }
 
     // Filter by game_type if provided
-    if (game_type) {
-      if (!subject) {
-        query += ` JOIN question_tags qt ON q.id = qt.question_id`;
-      }
-      conditions.push(`qt.tag_key = 'game_type' AND qt.tag_value = ?`);
-      params.push(game_type);
+    if (game_type && !subject) {
+      query = query
+        .join('question_tags as qt', 'q.id', 'qt.question_id')
+        .where('qt.tag_type', 'game_type')
+        .where('qt.tag_value', game_type);
+    } else if (game_type && subject) {
+      query = query
+        .where('qt.tag_type', 'game_type')
+        .where('qt.tag_value', game_type);
     }
 
-    if (conditions.length > 0) {
-      query += ` WHERE ` + conditions.join(' AND ');
-    }
+    // Add randomization and limit
+    query = query
+      .orderByRaw('RANDOM()')
+      .limit(questionLimit);
 
-    query += ` ORDER BY RANDOM() LIMIT ?`;
-    params.push(questionLimit);
-
-    const questions = db.prepare(query).all(...params);
+    const questions = await query;
 
     console.log(`   ✅ Found ${questions.length} questions`);
 
@@ -82,10 +79,8 @@ const getQuestions = (req, res) => {
           question_type: 'multiple_choice'
         },
         correct_answer: correctAnswerId, // Trả về A, B, C, D thay vì text
-        type: q.type,
         explanation: q.explanation,
-        is_premium: q.is_premium,
-        difficulty_level: 1, // Default difficulty
+        difficulty_level: q.difficulty || 'medium',
         points: 5 // Default points
       };
     });
@@ -165,12 +160,16 @@ const submitResult = async (req, res) => {
       ? (typeof details_json === 'string' ? details_json : JSON.stringify(details_json))
       : null;
 
-    const resultInsert = db.prepare(`
-      INSERT INTO exam_results (user_id, exam_type, score, details_json)
-      VALUES (?, ?, ?, ?)
-    `).run(userId, exam_type, score, detailsJsonString);
+    const [resultInsert] = await knex('exam_results')
+      .insert({
+        user_id: userId,
+        exam_type: exam_type,
+        score: score,
+        details_json: detailsJsonString
+      })
+      .returning('id');
 
-    const examResultId = resultInsert.lastInsertRowid;
+    const examResultId = resultInsert.id || resultInsert;
 
     console.log(`   ✅ Lưu exam_result #${examResultId}`);
 
@@ -178,13 +177,13 @@ const submitResult = async (req, res) => {
     // 2. LẤY THÔNG TIN USER HIỆN TẠI
     // ============================================
 
-    const user = db.prepare(`
-      SELECT
-        id, stars_balance, current_streak, max_streak,
-        freeze_streaks, last_learnt_date
-      FROM users
-      WHERE id = ?
-    `).get(userId);
+    const user = await knex('users')
+      .select(
+        'id', 'stars_balance', 'current_streak', 'max_streak',
+        'freeze_streaks', 'last_activity_date'
+      )
+      .where('id', userId)
+      .first();
 
     let starsEarned = 0;
     let streakIncreased = false;
@@ -205,53 +204,60 @@ const submitResult = async (req, res) => {
     // ============================================
 
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const lastLearntDate = user.last_learnt_date;
+    const lastActivityDate = user.last_activity_date;
 
     let newCurrentStreak = user.current_streak;
     let newMaxStreak = user.max_streak;
     let newFreezeStreaks = user.freeze_streaks;
 
-    console.log(`   📅 Today: ${today}, Last learnt: ${lastLearntDate || 'Never'}`);
+    console.log(`   📅 Today: ${today}, Last activity: ${lastActivityDate || 'Never'}`);
 
-    if (!lastLearntDate) {
+    if (!lastActivityDate) {
       // Lần đầu tiên học
       newCurrentStreak = 1;
       newMaxStreak = Math.max(1, user.max_streak);
       console.log(`   🎯 Lần đầu học → streak = 1`);
-    } else if (today === lastLearntDate) {
-      // Đã học hôm nay rồi → Không tăng streak
-      console.log(`   ⏭️  Đã học hôm nay → Không tăng streak`);
     } else {
-      // Tính số ngày gap
-      const lastDate = new Date(lastLearntDate);
-      const currentDate = new Date(today);
-      const daysDiff = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
+      // Convert date for comparison
+      const lastDateStr = lastActivityDate instanceof Date
+        ? lastActivityDate.toISOString().split('T')[0]
+        : String(lastActivityDate).split('T')[0];
 
-      console.log(`   📊 Gap: ${daysDiff} ngày`);
+      if (today === lastDateStr) {
+        // Đã học hôm nay rồi → Không tăng streak
+        console.log(`   ⏭️  Đã học hôm nay → Không tăng streak`);
+      } else {
+        // Tính số ngày gap
+        const lastDate = new Date(lastDateStr);
+        const currentDate = new Date(today);
+        const daysDiff = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
 
-      if (daysDiff === 1) {
-        // Ngày liên tiếp → Tăng streak
-        newCurrentStreak = user.current_streak + 1;
-        newMaxStreak = Math.max(newCurrentStreak, user.max_streak);
-        streakIncreased = true;
-        console.log(`   🔥 Ngày liên tiếp → streak tăng lên ${newCurrentStreak}`);
-      } else if (daysDiff > 1) {
-        // Có gap → Kiểm tra freeze
-        const missedDays = daysDiff - 1; // Số ngày bỏ lỡ (không tính hôm nay)
+        console.log(`   📊 Gap: ${daysDiff} ngày`);
 
-        if (user.freeze_streaks >= missedDays) {
-          // Đủ freeze để bảo vệ streak
-          newFreezeStreaks = user.freeze_streaks - missedDays;
-          newCurrentStreak = user.current_streak + 1; // Vẫn tăng streak cho hôm nay
+        if (daysDiff === 1) {
+          // Ngày liên tiếp → Tăng streak
+          newCurrentStreak = user.current_streak + 1;
           newMaxStreak = Math.max(newCurrentStreak, user.max_streak);
-          streakFrozen = true;
-          freezeUsed = missedDays;
-          console.log(`   🛡️  Dùng ${missedDays} freeze → Giữ streak, tăng lên ${newCurrentStreak}`);
-        } else {
-          // Không đủ freeze → Reset streak
-          newCurrentStreak = 1;
-          streakFrozen = false;
-          console.log(`   ❄️  Không đủ freeze → Reset streak về 1`);
+          streakIncreased = true;
+          console.log(`   🔥 Ngày liên tiếp → streak tăng lên ${newCurrentStreak}`);
+        } else if (daysDiff > 1) {
+          // Có gap → Kiểm tra freeze
+          const missedDays = daysDiff - 1; // Số ngày bỏ lỡ (không tính hôm nay)
+
+          if (user.freeze_streaks >= missedDays) {
+            // Đủ freeze để bảo vệ streak
+            newFreezeStreaks = user.freeze_streaks - missedDays;
+            newCurrentStreak = user.current_streak + 1; // Vẫn tăng streak cho hôm nay
+            newMaxStreak = Math.max(newCurrentStreak, user.max_streak);
+            streakFrozen = true;
+            freezeUsed = missedDays;
+            console.log(`   🛡️  Dùng ${missedDays} freeze → Giữ streak, tăng lên ${newCurrentStreak}`);
+          } else {
+            // Không đủ freeze → Reset streak
+            newCurrentStreak = 1;
+            streakFrozen = false;
+            console.log(`   ❄️  Không đủ freeze → Reset streak về 1`);
+          }
         }
       }
     }
@@ -262,24 +268,16 @@ const submitResult = async (req, res) => {
 
     const newStarsBalance = user.stars_balance + starsEarned;
 
-    db.prepare(`
-      UPDATE users
-      SET
-        stars_balance = ?,
-        current_streak = ?,
-        max_streak = ?,
-        freeze_streaks = ?,
-        last_learnt_date = ?,
-        updated_at = datetime('now')
-      WHERE id = ?
-    `).run(
-      newStarsBalance,
-      newCurrentStreak,
-      newMaxStreak,
-      newFreezeStreaks,
-      today,
-      userId
-    );
+    await knex('users')
+      .where('id', userId)
+      .update({
+        stars_balance: newStarsBalance,
+        current_streak: newCurrentStreak,
+        max_streak: newMaxStreak,
+        freeze_streaks: newFreezeStreaks,
+        last_activity_date: today,
+        updated_at: knex.fn.now()
+      });
 
     console.log(`   💾 Cập nhật user: stars=${newStarsBalance}, streak=${newCurrentStreak}, freeze=${newFreezeStreaks}`);
 
@@ -313,7 +311,7 @@ const submitResult = async (req, res) => {
         current_streak: newCurrentStreak,
         max_streak: newMaxStreak,
         freeze_streaks: newFreezeStreaks,
-        last_learnt_date: today
+        last_activity_date: today
       }
     };
 
@@ -341,19 +339,17 @@ const submitResult = async (req, res) => {
 /**
  * Lấy lịch sử làm bài của user
  */
-const getHistory = (req, res) => {
+const getHistory = async (req, res) => {
   try {
     const userId = req.user.id;
     const { limit = 20, offset = 0 } = req.query;
 
-    const history = db.prepare(`
-      SELECT
-        id, exam_type, score, details_json, created_at
-      FROM exam_results
-      WHERE user_id = ?
-      ORDER BY created_at DESC
-      LIMIT ? OFFSET ?
-    `).all(userId, parseInt(limit), parseInt(offset));
+    const history = await knex('exam_results')
+      .select('id', 'exam_type', 'score', 'details_json', 'completed_at')
+      .where('user_id', userId)
+      .orderBy('completed_at', 'desc')
+      .limit(parseInt(limit))
+      .offset(parseInt(offset));
 
     const historyWithParsedDetails = history.map(h => ({
       ...h,
@@ -385,42 +381,41 @@ const getHistory = (req, res) => {
 /**
  * Lấy thống kê tổng quan của user
  */
-const getStats = (req, res) => {
+const getStats = async (req, res) => {
   try {
     const userId = req.user.id;
 
     // User info
-    const user = db.prepare(`
-      SELECT
-        stars_balance, current_streak, max_streak, freeze_streaks,
-        last_learnt_date, created_at
-      FROM users
-      WHERE id = ?
-    `).get(userId);
+    const user = await knex('users')
+      .select(
+        'stars_balance', 'current_streak', 'max_streak', 'freeze_streaks',
+        'last_activity_date', 'created_at'
+      )
+      .where('id', userId)
+      .first();
 
     // Exam stats
-    const examStats = db.prepare(`
-      SELECT
-        COUNT(DISTINCT id) as total_exams,
-        COALESCE(AVG(score), 0) as avg_score,
-        MAX(score) as max_score,
-        MIN(score) as min_score,
-        COUNT(DISTINCT DATE(created_at)) as days_active
-      FROM exam_results
-      WHERE user_id = ?
-    `).get(userId);
+    const examStats = await knex('exam_results')
+      .where('user_id', userId)
+      .select(
+        knex.raw('COUNT(DISTINCT id) as total_exams'),
+        knex.raw('COALESCE(AVG(score), 0) as avg_score'),
+        knex.raw('MAX(score) as max_score'),
+        knex.raw('MIN(score) as min_score'),
+        knex.raw('COUNT(DISTINCT DATE(completed_at)) as days_active')
+      )
+      .first();
 
     // Stats by exam type
-    const statsByType = db.prepare(`
-      SELECT
-        exam_type,
-        COUNT(*) as count,
-        AVG(score) as avg_score,
-        MAX(score) as max_score
-      FROM exam_results
-      WHERE user_id = ?
-      GROUP BY exam_type
-    `).all(userId);
+    const statsByType = await knex('exam_results')
+      .where('user_id', userId)
+      .select(
+        'exam_type',
+        knex.raw('COUNT(*) as count'),
+        knex.raw('AVG(score) as avg_score'),
+        knex.raw('MAX(score) as max_score')
+      )
+      .groupBy('exam_type');
 
     res.json({
       success: true,

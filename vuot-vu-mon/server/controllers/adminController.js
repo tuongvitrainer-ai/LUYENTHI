@@ -1,4 +1,4 @@
-const { db } = require('../database/db');
+const { knex } = require('../database/db');
 
 // ============================================
 // API 1: POST /api/admin/questions
@@ -11,13 +11,12 @@ const { db } = require('../database/db');
  * {
  *   "content_json": {"question": "5 x 3 = ?", "options": ["10", "15", "20"]},
  *   "correct_answer": "15",
- *   "type": "matching_pair" | "multiple_choice" | "true_false" | "fill_blank",
+ *   "difficulty": "easy" | "medium" | "hard",
  *   "explanation": "5 nhân 3 bằng 15",
- *   "is_premium": 0 | 1,
  *   "tags": [
- *     {"tag_key": "môn_học", "tag_value": "Toán"},
- *     {"tag_key": "lớp_nguồn", "tag_value": "3"},
- *     {"tag_key": "game_type", "tag_value": "matching_pairs_trang_chu"}
+ *     {"tag_type": "môn_học", "tag_value": "Toán"},
+ *     {"tag_type": "lớp_nguồn", "tag_value": "3"},
+ *     {"tag_type": "game_type", "tag_value": "matching_pairs_trang_chu"}
  *   ]
  * }
  *
@@ -26,16 +25,17 @@ const { db } = require('../database/db');
  * - Use transaction để insert vào cả questions và question_tags
  * - Trả về question vừa tạo
  */
-const createQuestion = (req, res) => {
+const createQuestion = async (req, res) => {
   try {
     const {
       content_json,
       correct_answer,
-      type,
+      difficulty = 'medium',
       explanation,
-      is_premium = 0,
       tags
     } = req.body;
+
+    const created_by = req.user.id;
 
     console.log('📝 Admin tạo câu hỏi mới...');
 
@@ -58,19 +58,12 @@ const createQuestion = (req, res) => {
       });
     }
 
-    if (!type) {
+    // Validate difficulty
+    const validDifficulties = ['easy', 'medium', 'hard'];
+    if (!validDifficulties.includes(difficulty)) {
       return res.status(400).json({
         success: false,
-        message: 'type is required (matching_pair, multiple_choice, true_false, fill_blank)'
-      });
-    }
-
-    // Validate type
-    const validTypes = ['matching_pair', 'multiple_choice', 'true_false', 'fill_blank'];
-    if (!validTypes.includes(type)) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid type. Must be one of: ${validTypes.join(', ')}`
+        message: `Invalid difficulty. Must be one of: ${validDifficulties.join(', ')}`
       });
     }
 
@@ -84,10 +77,10 @@ const createQuestion = (req, res) => {
 
     // Validate tags structure
     for (const tag of tags) {
-      if (!tag.tag_key || !tag.tag_value) {
+      if (!tag.tag_type || !tag.tag_value) {
         return res.status(400).json({
           success: false,
-          message: 'Each tag must have tag_key and tag_value'
+          message: 'Each tag must have tag_type and tag_value'
         });
       }
     }
@@ -112,64 +105,48 @@ const createQuestion = (req, res) => {
     // TRANSACTION: INSERT QUESTION + TAGS
     // ============================================
 
-    const transaction = db.transaction((contentJson, answer, qType, expl, premium, tagsArray) => {
+    const questionId = await knex.transaction(async (trx) => {
       // 1. Insert question
-      const insertQuestion = db.prepare(`
-        INSERT INTO questions (
-          content_json, correct_answer, type, explanation, is_premium
-        ) VALUES (?, ?, ?, ?, ?)
-      `);
+      const [result] = await trx('questions')
+        .insert({
+          content_json: contentJsonString,
+          correct_answer: correct_answer,
+          difficulty: difficulty,
+          explanation: explanation || null,
+          created_by: created_by,
+          is_active: true
+        })
+        .returning('id');
 
-      const questionResult = insertQuestion.run(
-        contentJson,
-        answer,
-        qType,
-        expl || null,
-        premium
-      );
-
-      const questionId = questionResult.lastInsertRowid;
+      const qId = result.id || result;
 
       // 2. Insert tags
-      const insertTag = db.prepare(`
-        INSERT INTO question_tags (question_id, tag_key, tag_value)
-        VALUES (?, ?, ?)
-      `);
+      const tagInserts = tags.map(tag => ({
+        question_id: qId,
+        tag_type: tag.tag_type,
+        tag_value: tag.tag_value
+      }));
 
-      for (const tag of tagsArray) {
-        insertTag.run(questionId, tag.tag_key, tag.tag_value);
-      }
+      await trx('question_tags').insert(tagInserts);
 
-      return questionId;
+      return qId;
     });
-
-    // Execute transaction
-    const questionId = transaction(
-      contentJsonString,
-      correct_answer,
-      type,
-      explanation,
-      is_premium,
-      tags
-    );
 
     // ============================================
     // FETCH CREATED QUESTION WITH TAGS
     // ============================================
 
-    const question = db.prepare(`
-      SELECT
-        id, content_json, correct_answer, type, explanation,
-        is_premium, created_at, updated_at
-      FROM questions
-      WHERE id = ?
-    `).get(questionId);
+    const question = await knex('questions')
+      .select(
+        'id', 'content_json', 'correct_answer', 'difficulty', 'explanation',
+        'is_active', 'created_by', 'created_at', 'updated_at'
+      )
+      .where('id', questionId)
+      .first();
 
-    const questionTags = db.prepare(`
-      SELECT tag_key, tag_value
-      FROM question_tags
-      WHERE question_id = ?
-    `).all(questionId);
+    const questionTags = await knex('question_tags')
+      .select('tag_type', 'tag_value')
+      .where('question_id', questionId);
 
     console.log(`✅ Question #${questionId} được tạo với ${questionTags.length} tags`);
 
@@ -196,143 +173,258 @@ const createQuestion = (req, res) => {
 };
 
 // ============================================
-// API 2: GET /api/game/questions
-// Lấy câu hỏi theo tag (Public, Guest có thể gọi)
+// API 2: GET /api/admin/questions/:id
+// Lấy một câu hỏi theo ID (Admin only)
 // ============================================
-/**
- * Lấy câu hỏi theo tag
- *
- * Query params:
- * - tag: tag_value để filter (VD: ?tag=matching_pairs_trang_chu)
- * - tag_key: tag_key để filter cùng với tag_value (VD: ?tag_key=game_type&tag=matching_pairs_trang_chu)
- * - limit: Số câu hỏi tối đa (default: 10)
- *
- * Response: Danh sách câu hỏi với tags
- */
-const getQuestions = (req, res) => {
+const getQuestionById = async (req, res) => {
   try {
-    const {
-      tag,           // tag_value
-      tag_key,       // tag_key (optional, để filter chính xác hơn)
-      limit = 10
-    } = req.query;
+    const { id } = req.params;
 
-    console.log(`🔍 Lấy câu hỏi theo filter: tag_key=${tag_key}, tag=${tag}, limit=${limit}`);
+    const question = await knex('questions')
+      .select(
+        'id', 'content_json', 'correct_answer', 'difficulty', 'explanation',
+        'is_active', 'created_by', 'created_at', 'updated_at'
+      )
+      .where('id', id)
+      .first();
 
-    let query = `
-      SELECT DISTINCT q.id, q.content_json, q.correct_answer, q.type,
-             q.explanation, q.is_premium, q.created_at
-      FROM questions q
-    `;
-
-    const conditions = [];
-    const params = [];
-
-    // Filter by tag
-    if (tag) {
-      query += ` INNER JOIN question_tags qt ON q.id = qt.question_id`;
-
-      if (tag_key) {
-        // Filter by both tag_key and tag_value
-        conditions.push('qt.tag_key = ?');
-        conditions.push('qt.tag_value = ?');
-        params.push(tag_key, tag);
-      } else {
-        // Filter by tag_value only
-        conditions.push('qt.tag_value = ?');
-        params.push(tag);
-      }
+    if (!question) {
+      return res.status(404).json({
+        success: false,
+        message: 'Question not found'
+      });
     }
 
-    // Add WHERE clause
-    if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
-    }
-
-    // Order by newest first
-    query += ' ORDER BY q.created_at DESC';
-
-    // Add limit
-    query += ' LIMIT ?';
-    params.push(parseInt(limit));
-
-    // Execute query
-    const questions = db.prepare(query).all(...params);
-
-    // Get tags for each question
-    const questionsWithTags = questions.map(q => {
-      const tags = db.prepare(`
-        SELECT tag_key, tag_value
-        FROM question_tags
-        WHERE question_id = ?
-      `).all(q.id);
-
-      return {
-        ...q,
-        content_json: JSON.parse(q.content_json),
-        tags
-      };
-    });
-
-    console.log(`✅ Tìm thấy ${questionsWithTags.length} câu hỏi`);
+    const tags = await knex('question_tags')
+      .select('tag_type', 'tag_value')
+      .where('question_id', id);
 
     res.json({
       success: true,
       data: {
-        questions: questionsWithTags,
-        count: questionsWithTags.length,
-        limit: parseInt(limit)
+        question: {
+          ...question,
+          content_json: JSON.parse(question.content_json),
+          tags
+        }
       }
     });
 
   } catch (error) {
-    console.error('❌ Get questions error:', error);
+    console.error('❌ Get question by ID error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching questions',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'Error fetching question'
     });
   }
 };
 
 // ============================================
-// API BỔ SUNG: GET ALL QUESTIONS (Admin)
+// API 3: PUT /api/admin/questions/:id
+// Cập nhật câu hỏi (Admin only)
 // ============================================
-/**
- * Lấy tất cả câu hỏi (Admin only)
- */
-const getAllQuestions = (req, res) => {
+const updateQuestion = async (req, res) => {
   try {
-    const { limit = 100, offset = 0 } = req.query;
+    const { id } = req.params;
+    const {
+      content_json,
+      correct_answer,
+      difficulty,
+      explanation,
+      is_active,
+      tags
+    } = req.body;
 
-    const questions = db.prepare(`
-      SELECT id, content_json, correct_answer, type, explanation,
-             is_premium, created_at, updated_at
-      FROM questions
-      ORDER BY created_at DESC
-      LIMIT ? OFFSET ?
-    `).all(parseInt(limit), parseInt(offset));
+    // Check if question exists
+    const existingQuestion = await knex('questions')
+      .where('id', id)
+      .first();
+
+    if (!existingQuestion) {
+      return res.status(404).json({
+        success: false,
+        message: 'Question not found'
+      });
+    }
+
+    // Build update object
+    const updateData = { updated_at: knex.fn.now() };
+
+    if (content_json !== undefined) {
+      updateData.content_json = typeof content_json === 'string'
+        ? content_json
+        : JSON.stringify(content_json);
+    }
+    if (correct_answer !== undefined) updateData.correct_answer = correct_answer;
+    if (difficulty !== undefined) updateData.difficulty = difficulty;
+    if (explanation !== undefined) updateData.explanation = explanation;
+    if (is_active !== undefined) updateData.is_active = is_active;
+
+    await knex.transaction(async (trx) => {
+      // Update question
+      await trx('questions')
+        .where('id', id)
+        .update(updateData);
+
+      // Update tags if provided
+      if (tags && Array.isArray(tags)) {
+        // Delete existing tags
+        await trx('question_tags')
+          .where('question_id', id)
+          .delete();
+
+        // Insert new tags
+        if (tags.length > 0) {
+          const tagInserts = tags.map(tag => ({
+            question_id: id,
+            tag_type: tag.tag_type,
+            tag_value: tag.tag_value
+          }));
+          await trx('question_tags').insert(tagInserts);
+        }
+      }
+    });
+
+    // Fetch updated question
+    const question = await knex('questions')
+      .where('id', id)
+      .first();
+
+    const questionTags = await knex('question_tags')
+      .select('tag_type', 'tag_value')
+      .where('question_id', id);
+
+    res.json({
+      success: true,
+      message: 'Question updated successfully',
+      data: {
+        question: {
+          ...question,
+          content_json: JSON.parse(question.content_json),
+          tags: questionTags
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Update question error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating question'
+    });
+  }
+};
+
+// ============================================
+// API 4: DELETE /api/admin/questions/:id
+// Xóa câu hỏi (Admin only)
+// ============================================
+const deleteQuestion = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await knex('questions')
+      .where('id', id)
+      .delete();
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: 'Question not found'
+      });
+    }
+
+    // Tags will be automatically deleted due to CASCADE
+
+    res.json({
+      success: true,
+      message: 'Question deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('❌ Delete question error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting question'
+    });
+  }
+};
+
+// ============================================
+// API 5: GET /api/admin/questions
+// Lấy tất cả câu hỏi với filters (Admin only)
+// ============================================
+const getAllQuestions = async (req, res) => {
+  try {
+    const {
+      limit = 100,
+      offset = 0,
+      difficulty,
+      tag_type,
+      tag_value,
+      is_active
+    } = req.query;
+
+    let query = knex('questions as q')
+      .distinct('q.id')
+      .select(
+        'q.id', 'q.content_json', 'q.correct_answer', 'q.difficulty',
+        'q.explanation', 'q.is_active', 'q.created_by', 'q.created_at', 'q.updated_at'
+      );
+
+    // Apply filters
+    if (difficulty) {
+      query = query.where('q.difficulty', difficulty);
+    }
+
+    if (is_active !== undefined) {
+      query = query.where('q.is_active', is_active === 'true' || is_active === true);
+    }
+
+    if (tag_type || tag_value) {
+      query = query.innerJoin('question_tags as qt', 'q.id', 'qt.question_id');
+
+      if (tag_type) {
+        query = query.where('qt.tag_type', tag_type);
+      }
+      if (tag_value) {
+        query = query.where('qt.tag_value', tag_value);
+      }
+    }
+
+    query = query
+      .orderBy('q.created_at', 'desc')
+      .limit(parseInt(limit))
+      .offset(parseInt(offset));
+
+    const questions = await query;
 
     // Get tags for each question
-    const questionsWithTags = questions.map(q => {
-      const tags = db.prepare(`
-        SELECT tag_key, tag_value
-        FROM question_tags
-        WHERE question_id = ?
-      `).all(q.id);
+    const questionsWithTags = await Promise.all(
+      questions.map(async (q) => {
+        const tags = await knex('question_tags')
+          .select('tag_type', 'tag_value')
+          .where('question_id', q.id);
 
-      return {
-        ...q,
-        content_json: JSON.parse(q.content_json),
-        tags
-      };
-    });
+        return {
+          ...q,
+          content_json: JSON.parse(q.content_json),
+          tags
+        };
+      })
+    );
+
+    // Get total count
+    const totalCount = await knex('questions')
+      .count('* as count')
+      .first();
 
     res.json({
       success: true,
       data: {
         questions: questionsWithTags,
         count: questionsWithTags.length,
+        total: parseInt(totalCount.count),
         limit: parseInt(limit),
         offset: parseInt(offset)
       }
@@ -347,8 +439,121 @@ const getAllQuestions = (req, res) => {
   }
 };
 
+// ============================================
+// API 6: GET /api/admin/users
+// Lấy danh sách users (Admin only)
+// ============================================
+const getAllUsers = async (req, res) => {
+  try {
+    const { limit = 50, offset = 0, role } = req.query;
+
+    let query = knex('users')
+      .select(
+        'id', 'username', 'email', 'full_name', 'role', 'is_anonymous',
+        'stars_balance', 'current_streak', 'max_streak', 'freeze_streaks',
+        'last_activity_date', 'is_active', 'created_at'
+      );
+
+    if (role) {
+      query = query.where('role', role);
+    }
+
+    query = query
+      .orderBy('created_at', 'desc')
+      .limit(parseInt(limit))
+      .offset(parseInt(offset));
+
+    const users = await query;
+
+    const totalCount = await knex('users')
+      .count('* as count')
+      .first();
+
+    res.json({
+      success: true,
+      data: {
+        users,
+        count: users.length,
+        total: parseInt(totalCount.count),
+        limit: parseInt(limit),
+        offset: parseInt(offset)
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Get all users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching users'
+    });
+  }
+};
+
+// ============================================
+// API 7: GET /api/admin/stats
+// Dashboard statistics (Admin only)
+// ============================================
+const getDashboardStats = async (req, res) => {
+  try {
+    // User stats
+    const userStats = await knex('users')
+      .select(
+        knex.raw('COUNT(*) as total_users'),
+        knex.raw('COUNT(CASE WHEN is_anonymous = true THEN 1 END) as guest_users'),
+        knex.raw('COUNT(CASE WHEN is_anonymous = false THEN 1 END) as registered_users'),
+        knex.raw('COUNT(CASE WHEN role = ? THEN 1 END) as admin_users', ['admin'])
+      )
+      .first();
+
+    // Question stats
+    const questionStats = await knex('questions')
+      .select(
+        knex.raw('COUNT(*) as total_questions'),
+        knex.raw('COUNT(CASE WHEN is_active = true THEN 1 END) as active_questions')
+      )
+      .first();
+
+    // Exam result stats
+    const examStats = await knex('exam_results')
+      .select(
+        knex.raw('COUNT(*) as total_exams'),
+        knex.raw('COALESCE(AVG(score), 0) as avg_score')
+      )
+      .first();
+
+    // Recent activity (last 7 days)
+    const recentActivity = await knex('exam_results')
+      .select(knex.raw('DATE(completed_at) as date'))
+      .select(knex.raw('COUNT(*) as exam_count'))
+      .where('completed_at', '>=', knex.raw("CURRENT_DATE - INTERVAL '7 days'"))
+      .groupByRaw('DATE(completed_at)')
+      .orderBy('date', 'desc');
+
+    res.json({
+      success: true,
+      data: {
+        user_stats: userStats,
+        question_stats: questionStats,
+        exam_stats: examStats,
+        recent_activity: recentActivity
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Get dashboard stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching dashboard statistics'
+    });
+  }
+};
+
 module.exports = {
-  createQuestion,    // POST /api/admin/questions
-  getQuestions,      // GET /api/game/questions (Public)
-  getAllQuestions    // GET /api/admin/questions (Admin only)
+  createQuestion,     // POST /api/admin/questions
+  getQuestionById,    // GET /api/admin/questions/:id
+  updateQuestion,     // PUT /api/admin/questions/:id
+  deleteQuestion,     // DELETE /api/admin/questions/:id
+  getAllQuestions,    // GET /api/admin/questions
+  getAllUsers,        // GET /api/admin/users
+  getDashboardStats   // GET /api/admin/stats
 };

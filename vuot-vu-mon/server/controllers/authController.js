@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { db } = require('../database/db');
+const { knex } = require('../database/db');
 
 /**
  * Generate JWT token for user
@@ -21,7 +21,7 @@ const generateToken = (userId) => {
  * Tạo tài khoản Guest để người dùng chơi ngay lập tức
  *
  * Logic:
- * - Tạo user mới với role='guest', is_anonymous=1
+ * - Tạo user mới với role='guest', is_anonymous=true
  * - Tặng sẵn 2 freeze_streaks (khiên bảo vệ)
  * - Trả về JWT token để lưu session
  *
@@ -31,29 +31,29 @@ const createGuestUser = async (req, res) => {
   try {
     console.log('📝 Tạo Guest User mới...');
 
-    // Tạo guest user mới
-    const result = db.prepare(`
-      INSERT INTO users (
-        role,
-        is_anonymous,
-        stars_balance,
-        freeze_streaks,
-        current_streak,
-        max_streak
-      ) VALUES ('guest', 1, 0, 2, 0, 0)
-    `).run();
+    // Tạo guest user mới - Knex với returning() cho PostgreSQL
+    const [result] = await knex('users')
+      .insert({
+        role: 'guest',
+        is_anonymous: true,
+        stars_balance: 0,
+        freeze_streaks: 2,
+        current_streak: 0,
+        max_streak: 0
+      })
+      .returning('id');
 
-    const userId = result.lastInsertRowid;
+    const userId = result.id || result; // PostgreSQL returns object, SQLite returns number
 
     // Lấy thông tin user vừa tạo
-    const user = db.prepare(`
-      SELECT
-        id, role, is_anonymous, stars_balance,
-        freeze_streaks, current_streak, max_streak,
-        created_at
-      FROM users
-      WHERE id = ?
-    `).get(userId);
+    const user = await knex('users')
+      .select(
+        'id', 'role', 'is_anonymous', 'stars_balance',
+        'freeze_streaks', 'current_streak', 'max_streak',
+        'created_at'
+      )
+      .where('id', userId)
+      .first();
 
     // Tạo JWT token
     const token = generateToken(userId);
@@ -123,9 +123,10 @@ const register = async (req, res) => {
     }
 
     // Check if email already exists
-    const existingUser = db.prepare(`
-      SELECT id FROM users WHERE email = ?
-    `).get(email);
+    const existingUser = await knex('users')
+      .select('id')
+      .where('email', email)
+      .first();
 
     if (existingUser) {
       return res.status(409).json({
@@ -148,25 +149,27 @@ const register = async (req, res) => {
         const guestUserId = decoded.userId;
 
         // Kiểm tra user có phải guest không
-        const guestUser = db.prepare(`
-          SELECT id, role, is_anonymous, stars_balance, current_streak, max_streak, freeze_streaks
-          FROM users
-          WHERE id = ? AND role = 'guest' AND is_anonymous = 1
-        `).get(guestUserId);
+        const guestUser = await knex('users')
+          .select('id', 'role', 'is_anonymous', 'stars_balance', 'current_streak', 'max_streak', 'freeze_streaks')
+          .where({
+            id: guestUserId,
+            role: 'guest',
+            is_anonymous: true
+          })
+          .first();
 
         if (guestUser) {
           // Nâng cấp Guest → Student (GIỮ NGUYÊN thành tích!)
-          db.prepare(`
-            UPDATE users
-            SET
-              email = ?,
-              password_hash = ?,
-              full_name = ?,
-              role = 'student',
-              is_anonymous = 0,
-              updated_at = datetime('now')
-            WHERE id = ?
-          `).run(email, password_hash, full_name || null, guestUserId);
+          await knex('users')
+            .where('id', guestUserId)
+            .update({
+              email: email,
+              password_hash: password_hash,
+              full_name: full_name || null,
+              role: 'student',
+              is_anonymous: false,
+              updated_at: knex.fn.now()
+            });
 
           userId = guestUserId;
           upgradeMode = true;
@@ -180,27 +183,33 @@ const register = async (req, res) => {
 
     // CASE 2: Tạo user mới (không có guestToken hoặc token không hợp lệ)
     if (!userId) {
-      const result = db.prepare(`
-        INSERT INTO users (
-          email, password_hash, full_name,
-          role, is_anonymous,
-          stars_balance, freeze_streaks, current_streak, max_streak
-        ) VALUES (?, ?, ?, 'student', 0, 0, 2, 0, 0)
-      `).run(email, password_hash, full_name || null);
+      const [result] = await knex('users')
+        .insert({
+          email: email,
+          password_hash: password_hash,
+          full_name: full_name || null,
+          role: 'student',
+          is_anonymous: false,
+          stars_balance: 0,
+          freeze_streaks: 2,
+          current_streak: 0,
+          max_streak: 0
+        })
+        .returning('id');
 
-      userId = result.lastInsertRowid;
+      userId = result.id || result;
       console.log(`✅ Tạo Student mới #${userId}`);
     }
 
     // Lấy thông tin user
-    const user = db.prepare(`
-      SELECT
-        id, email, full_name, role, is_anonymous,
-        stars_balance, current_streak, max_streak, freeze_streaks,
-        created_at
-      FROM users
-      WHERE id = ?
-    `).get(userId);
+    const user = await knex('users')
+      .select(
+        'id', 'email', 'full_name', 'role', 'is_anonymous',
+        'stars_balance', 'current_streak', 'max_streak', 'freeze_streaks',
+        'created_at'
+      )
+      .where('id', userId)
+      .first();
 
     // Generate token mới
     const token = generateToken(userId);
@@ -249,13 +258,16 @@ const login = async (req, res) => {
     }
 
     // Find user by email
-    const user = db.prepare(`
-      SELECT
-        id, email, password_hash, full_name, role, is_anonymous,
-        stars_balance, current_streak, max_streak, freeze_streaks
-      FROM users
-      WHERE email = ? AND is_anonymous = 0
-    `).get(email);
+    const user = await knex('users')
+      .select(
+        'id', 'email', 'password_hash', 'full_name', 'role', 'is_anonymous',
+        'stars_balance', 'current_streak', 'max_streak', 'freeze_streaks'
+      )
+      .where({
+        email: email,
+        is_anonymous: false
+      })
+      .first();
 
     if (!user) {
       return res.status(401).json({
@@ -308,18 +320,18 @@ const login = async (req, res) => {
  * Lấy thông tin user hiện tại (từ token)
  * Requires: authenticateToken middleware
  */
-const getMe = (req, res) => {
+const getMe = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const user = db.prepare(`
-      SELECT
-        id, email, full_name, avatar_url, role, is_anonymous,
-        stars_balance, current_streak, max_streak, freeze_streaks,
-        last_learnt_date, created_at
-      FROM users
-      WHERE id = ?
-    `).get(userId);
+    const user = await knex('users')
+      .select(
+        'id', 'email', 'full_name', 'role', 'is_anonymous',
+        'stars_balance', 'current_streak', 'max_streak', 'freeze_streaks',
+        'last_activity_date', 'created_at'
+      )
+      .where('id', userId)
+      .first();
 
     if (!user) {
       return res.status(404).json({
@@ -329,14 +341,14 @@ const getMe = (req, res) => {
     }
 
     // Get stats
-    const stats = db.prepare(`
-      SELECT
-        COUNT(DISTINCT id) as total_exams,
-        COALESCE(AVG(score), 0) as avg_score,
-        MAX(score) as max_score
-      FROM exam_results
-      WHERE user_id = ?
-    `).get(userId);
+    const stats = await knex('exam_results')
+      .where('user_id', userId)
+      .select(
+        knex.raw('COUNT(DISTINCT id) as total_exams'),
+        knex.raw('COALESCE(AVG(score), 0) as avg_score'),
+        knex.raw('MAX(score) as max_score')
+      )
+      .first();
 
     res.json({
       success: true,
