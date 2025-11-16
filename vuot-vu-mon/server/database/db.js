@@ -1,39 +1,111 @@
-const Database = require('better-sqlite3');
-const path = require('path');
+/**
+ * Database connection using Knex.js for PostgreSQL
+ * Supports both PostgreSQL and SQLite for development flexibility
+ */
 
-// °Ýng d«n ¿n file database
-const DB_PATH = path.join(__dirname, 'database.sqlite');
+require('dotenv').config();
+const knexConfig = require('../knexfile');
 
-// T¡o k¿t nÑi database
-let db = null;
+// Determine which configuration to use
+const environment = process.env.NODE_ENV || 'development';
 
-function getDatabase() {
-  if (!db) {
-    db = new Database(DB_PATH, {
-      verbose: process.env.NODE_ENV === 'development' ? console.log : null
-    });
-
-    // B­t foreign keys
-    db.pragma('foreign_keys = ON');
-
-    // TÑi °u hóa performance
-    db.pragma('journal_mode = WAL');
-  }
-
-  return db;
+// Use SQLite if explicitly set or if PostgreSQL is not available
+let config;
+if (process.env.USE_SQLITE === 'true') {
+  config = knexConfig.sqlite;
+  console.log('ðŸ“¦ Using SQLite database');
+} else if (environment === 'production') {
+  config = knexConfig.production;
+  console.log('ðŸ˜ Using PostgreSQL (production)');
+} else {
+  config = knexConfig.development;
+  console.log('ðŸ˜ Using PostgreSQL (development)');
 }
 
-function closeDatabase() {
-  if (db) {
-    db.close();
-    db = null;
+// Initialize Knex
+const knex = require('knex')(config);
+
+// Test database connection
+async function testConnection() {
+  try {
+    await knex.raw('SELECT 1');
+    console.log('âœ… Database connection successful');
+    return true;
+  } catch (error) {
+    console.error('âŒ Database connection failed:', error.message);
+    return false;
+  }
+}
+
+// Get database instance (for backward compatibility)
+function getDatabase() {
+  return knex;
+}
+
+// Close database connection
+async function closeDatabase() {
+  try {
+    await knex.destroy();
+    console.log('Database connection closed');
+  } catch (error) {
+    console.error('Error closing database:', error.message);
+  }
+}
+
+// Run pending migrations
+async function runMigrations() {
+  try {
+    console.log('Running database migrations...');
+    const [batch, log] = await knex.migrate.latest();
+    if (log.length === 0) {
+      console.log('Database is already up to date');
+    } else {
+      console.log(`Batch ${batch} run: ${log.length} migrations`);
+      log.forEach(file => console.log(`  - ${file}`));
+    }
+    return true;
+  } catch (error) {
+    console.error('Migration failed:', error.message);
+    return false;
+  }
+}
+
+// Rollback last migration
+async function rollbackMigration() {
+  try {
+    const [batch, log] = await knex.migrate.rollback();
+    console.log(`Batch ${batch} rolled back: ${log.length} migrations`);
+    return true;
+  } catch (error) {
+    console.error('Rollback failed:', error.message);
+    return false;
+  }
+}
+
+// Get migration status
+async function getMigrationStatus() {
+  try {
+    const [completed, pending] = await Promise.all([
+      knex.migrate.list().then(([_, list]) => list),
+      knex.migrate.list().then(([list]) => list)
+    ]);
+    return { completed, pending };
+  } catch (error) {
+    console.error('Error getting migration status:', error.message);
+    return null;
   }
 }
 
 module.exports = {
+  knex,
   getDatabase,
   closeDatabase,
+  testConnection,
+  runMigrations,
+  rollbackMigration,
+  getMigrationStatus,
+  // Backward compatibility - expose knex as db
   get db() {
-    return getDatabase();
+    return knex;
   }
 };
