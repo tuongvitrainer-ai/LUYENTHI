@@ -9,7 +9,7 @@
 ======================================== */
 :root {
   /* ===== MÀU NỀN CHÍNH (Background) ===== */
-  --bg-primary: #F0F8FF; /* Màu nền chính - Rất nhạt, gần trắng, sạch sẽ, dịu mắt */
+  --bg-primary: #87CEEB; /* Màu nền chính - Sky Blue, tươi mát, vui tươi */
   --bg-secondary: #FFFFFF; /* Màu nền phụ - Trắng tinh */
   --bg-card: #FFFFFF; /* Màu nền card - Trắng */
   --bg-overlay: rgba(255, 255, 255, 0.95); /* Overlay mờ */
@@ -45,7 +45,7 @@
   --theme-primary: #87CEEB;
   --theme-secondary: #4ECDC4;
   --theme-accent: #FFA07A;
-  --theme-background: #F0F8FF;
+  --theme-background: #87CEEB; /* Sky Blue background */
   --theme-card-bg: #FFFFFF;
   --theme-text: #000000;
   --theme-text-light: #666666;
