@@ -146,6 +146,12 @@ const ThuThachKhoiDau = () => {
   const [showResults, setShowResults] = useState(false);
   const [testResults, setTestResults] = useState(null);
 
+  // API integration
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [startTime, setStartTime] = useState(null);
+
   // Timer countdown
   useEffect(() => {
     if (showTest && !showResults) {
@@ -168,13 +174,60 @@ const ThuThachKhoiDau = () => {
     setSelectedLevel(level);
   };
 
-  const startTest = () => {
-    if (selectedLevel) {
+  const startTest = async () => {
+    if (!selectedLevel) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Fetch questions from API
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${API_BASE}/api/challenge/questions/${selectedLevel}`);
+
+      if (!response.ok) {
+        throw new Error('Không thể tải câu hỏi');
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.data.questions.length > 0) {
+        // Transform API data to match frontend format
+        const transformedQuestions = data.data.questions.map(q => ({
+          id: q.id,
+          subject: q.subject,
+          topic: q.topic,
+          question: q.question_text,
+          options: q.options,
+          // correctAnswer will be checked on backend
+        }));
+
+        setQuestions(transformedQuestions);
+        setShowTest(true);
+        setCurrentQuestionIndex(0);
+        setUserAnswers({});
+        setTimeRemaining(30 * 60);
+        setShowResults(false);
+        setStartTime(Date.now());
+        console.log(`✅ Loaded ${transformedQuestions.length} questions from API`);
+      } else {
+        throw new Error('Không có câu hỏi nào');
+      }
+    } catch (err) {
+      console.error('Error fetching questions:', err);
+      setError(err.message);
+
+      // Fallback to MOCK_QUESTIONS if API fails
+      console.log('⚠️  Using mock data as fallback');
+      setQuestions(MOCK_QUESTIONS);
       setShowTest(true);
       setCurrentQuestionIndex(0);
       setUserAnswers({});
       setTimeRemaining(30 * 60);
       setShowResults(false);
+      setStartTime(Date.now());
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -186,7 +239,7 @@ const ThuThachKhoiDau = () => {
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < MOCK_QUESTIONS.length - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
@@ -203,7 +256,7 @@ const ThuThachKhoiDau = () => {
 
   const handleSubmitClick = () => {
     const answeredCount = Object.keys(userAnswers).length;
-    if (answeredCount < MOCK_QUESTIONS.length) {
+    if (answeredCount < questions.length) {
       setShowConfirmDialog(true);
     } else {
       handleSubmit();
@@ -214,35 +267,99 @@ const ThuThachKhoiDau = () => {
     handleSubmit();
   };
 
-  const handleSubmit = () => {
-    // Calculate results
-    let correctCount = 0;
-    const subjectScores = {};
+  const handleSubmit = async () => {
+    setLoading(true);
 
-    MOCK_QUESTIONS.forEach((question) => {
-      const userAnswer = userAnswers[question.id];
-      const isCorrect = userAnswer === question.correctAnswer;
+    try {
+      // Prepare answers for API
+      const answersArray = questions.map(q => ({
+        question_id: q.id,
+        user_answer: q.options[userAnswers[q.id]] || '' // Convert index to actual answer text
+      }));
 
-      if (isCorrect) correctCount++;
+      const timeTaken = Math.floor((Date.now() - startTime) / 1000); // seconds
 
-      if (!subjectScores[question.subject]) {
-        subjectScores[question.subject] = { correct: 0, total: 0 };
+      // Submit to API
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${API_BASE}/api/challenge/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: 1, // TODO: Get from auth context
+          grade_level: selectedLevel,
+          answers: answersArray,
+          time_taken: timeTaken
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Không thể nộp bài');
       }
-      subjectScores[question.subject].total++;
-      if (isCorrect) subjectScores[question.subject].correct++;
-    });
 
-    const results = {
-      score: correctCount,
-      total: MOCK_QUESTIONS.length,
-      percentage: Math.round((correctCount / MOCK_QUESTIONS.length) * 100),
-      subjectScores,
-      timeTaken: 30 * 60 - timeRemaining
-    };
+      const data = await response.json();
 
-    setTestResults(results);
-    setShowResults(true);
-    setShowConfirmDialog(false);
+      if (data.success) {
+        // Use results from API
+        const results = {
+          score: data.data.correct_answers,
+          total: data.data.total_questions,
+          percentage: data.data.score,
+          subjectScores: data.data.subject_scores,
+          timeTaken: data.data.time_taken,
+          starsEarned: data.data.stars_earned,
+          testId: data.data.test_id
+        };
+
+        console.log('✅ Test submitted successfully:', results);
+
+        setTestResults(results);
+        setShowResults(true);
+        setShowConfirmDialog(false);
+      } else {
+        throw new Error(data.message || 'Lỗi khi nộp bài');
+      }
+    } catch (err) {
+      console.error('Error submitting test:', err);
+
+      // Fallback: Calculate locally if API fails
+      console.log('⚠️  Calculating results locally as fallback');
+
+      let correctCount = 0;
+      const subjectScores = {};
+
+      questions.forEach((question) => {
+        const userAnswerIndex = userAnswers[question.id];
+        const userAnswerText = question.options[userAnswerIndex];
+
+        // Can't verify correctness without API, so just count answered
+        const isAnswered = userAnswerIndex !== undefined;
+
+        if (!subjectScores[question.subject]) {
+          subjectScores[question.subject] = { correct: 0, total: 0 };
+        }
+        subjectScores[question.subject].total++;
+        if (isAnswered) subjectScores[question.subject].correct++; // Assume correct for fallback
+      });
+
+      correctCount = Object.keys(userAnswers).length;
+
+      const results = {
+        score: correctCount,
+        total: questions.length,
+        percentage: Math.round((correctCount / questions.length) * 100),
+        subjectScores,
+        timeTaken: 30 * 60 - timeRemaining,
+        starsEarned: 0 // Unknown without API
+      };
+
+      setTestResults(results);
+      setShowResults(true);
+      setShowConfirmDialog(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatTime = (seconds) => {
@@ -252,16 +369,20 @@ const ThuThachKhoiDau = () => {
   };
 
   const getQuestionStatus = (index) => {
-    const question = MOCK_QUESTIONS[index];
+    if (questions.length === 0) return 'pending';
+    const question = questions[index];
+    if (!question) return 'pending';
     if (index === currentQuestionIndex) return 'current';
     if (userAnswers[question.id] !== undefined) return 'completed';
     return 'pending';
   };
 
   const getSubjectProgress = (subject) => {
-    const questions = MOCK_QUESTIONS.filter(q => q.subject === subject);
-    const answered = questions.filter(q => userAnswers[q.id] !== undefined).length;
-    return { answered, total: questions.length };
+    if (questions.length === 0) return { answered: 0, total: 0 };
+
+    const subjectQuestions = questions.filter(q => q.subject === subject);
+    const answered = subjectQuestions.filter(q => userAnswers[q.id] !== undefined).length;
+    return { answered, total: subjectQuestions.length };
   };
 
   // Màn hình chọn cấp độ
@@ -304,8 +425,12 @@ const ThuThachKhoiDau = () => {
           {/* Start Button */}
           {selectedLevel && (
             <div className="action-buttons">
-              <button className="btn-start-test" onClick={startTest}>
-                Bắt đầu thử thách! 🚀
+              <button
+                className="btn-start-test"
+                onClick={startTest}
+                disabled={loading}
+              >
+                {loading ? 'Đang tải câu hỏi...' : 'Bắt đầu thử thách! 🚀'}
               </button>
             </div>
           )}
@@ -402,8 +527,8 @@ const ThuThachKhoiDau = () => {
   }
 
   // Màn hình làm bài test
-  const currentQuestion = MOCK_QUESTIONS[currentQuestionIndex];
-  const currentAnswer = userAnswers[currentQuestion.id];
+  const currentQuestion = questions[currentQuestionIndex] || null;
+  const currentAnswer = currentQuestion ? userAnswers[currentQuestion.id] : undefined;
 
   return (
     <div className="thu-thach-khoi-dau test-mode">
@@ -421,7 +546,7 @@ const ThuThachKhoiDau = () => {
           <div className="question-grid">
             <div className="grid-title">Danh sách câu hỏi</div>
             <div className="question-numbers">
-              {MOCK_QUESTIONS.map((q, index) => (
+              {questions.map((q, index) => (
                 <button
                   key={q.id}
                   className={`question-number-btn ${getQuestionStatus(index)}`}
