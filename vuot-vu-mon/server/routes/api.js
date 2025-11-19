@@ -21,6 +21,8 @@ router.post('/auth/login', authController.login);           // Đăng nhập th�
 
 // Protected routes (require authentication)
 router.get('/auth/me', authenticateToken, authController.getMe);
+router.put('/auth/profile', authenticateToken, authController.updateProfile);  // Update profile
+router.put('/auth/password', authenticateToken, authController.changePassword); // Change password
 
 // ============================================
 // GAME ROUTES (V6)

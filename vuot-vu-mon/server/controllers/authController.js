@@ -369,9 +369,198 @@ const getMe = async (req, res) => {
   }
 };
 
+// ============================================
+// API: UPDATE PROFILE
+// PUT /api/auth/profile
+// ============================================
+/**
+ * Cập nhật thông tin profile
+ * Requires: authenticateToken middleware
+ *
+ * Body: { display_name, birthday, gender, phone, bio }
+ */
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { display_name, birthday, gender, phone, bio } = req.body;
+
+    // Validate gender if provided
+    if (gender && !['male', 'female', 'other'].includes(gender)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Gender must be male, female, or other'
+      });
+    }
+
+    // Validate birthday if provided
+    if (birthday) {
+      const birthdayDate = new Date(birthday);
+      if (isNaN(birthdayDate.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid birthday format'
+        });
+      }
+
+      // Check if birthday is not in future
+      if (birthdayDate > new Date()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Birthday cannot be in the future'
+        });
+      }
+    }
+
+    // Validate phone if provided
+    if (phone && phone.length > 20) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone number too long'
+      });
+    }
+
+    // Build update object (only include fields that are provided)
+    const updateData = {
+      updated_at: knex.fn.now()
+    };
+
+    if (display_name !== undefined) updateData.display_name = display_name;
+    if (birthday !== undefined) updateData.birthday = birthday;
+    if (gender !== undefined) updateData.gender = gender;
+    if (phone !== undefined) updateData.phone = phone;
+    if (bio !== undefined) updateData.bio = bio;
+
+    // Update user
+    await knex('users')
+      .where('id', userId)
+      .update(updateData);
+
+    // Get updated user
+    const user = await knex('users')
+      .select(
+        'id', 'email', 'username', 'full_name', 'display_name',
+        'birthday', 'gender', 'phone', 'bio',
+        'role', 'stars_balance', 'current_streak', 'max_streak',
+        'freeze_streaks', 'created_at', 'updated_at'
+      )
+      .where('id', userId)
+      .first();
+
+    console.log(`✅ User #${userId} đã cập nhật profile`);
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: {
+        user
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Update profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating profile',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// ============================================
+// API: CHANGE PASSWORD
+// PUT /api/auth/password
+// ============================================
+/**
+ * Đổi mật khẩu
+ * Requires: authenticateToken middleware
+ *
+ * Body: { currentPassword, newPassword }
+ */
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    // Validate input
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password and new password are required'
+      });
+    }
+
+    // Validate new password length
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters'
+      });
+    }
+
+    // Get user's current password hash
+    const user = await knex('users')
+      .select('id', 'email', 'password_hash')
+      .where('id', userId)
+      .first();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if user has password (not guest user)
+    if (!user.password_hash) {
+      return res.status(400).json({
+        success: false,
+        message: 'Guest users cannot change password. Please register first.'
+      });
+    }
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password_hash);
+
+    if (!isValidPassword) {
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
+    // Hash new password
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await knex('users')
+      .where('id', userId)
+      .update({
+        password_hash: newPasswordHash,
+        updated_at: knex.fn.now()
+      });
+
+    console.log(`✅ User #${userId} đã đổi mật khẩu`);
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+
+  } catch (error) {
+    console.error('❌ Change password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error changing password',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 module.exports = {
   createGuestUser,  // POST /api/auth/guest
   register,         // POST /api/auth/register (với guest upgrade)
   login,            // POST /api/auth/login
-  getMe             // GET /api/auth/me
+  getMe,            // GET /api/auth/me
+  updateProfile,    // PUT /api/auth/profile
+  changePassword    // PUT /api/auth/password
 };
