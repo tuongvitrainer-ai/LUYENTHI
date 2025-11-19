@@ -1,53 +1,71 @@
 /* Google Fonts - Kid-friendly rounded fonts */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Quicksand:wght@300;400;500;600;700&display=swap');
 
-/* CSS Variables - Kid-First Color Palette */
+/* ========================================
+   BẢNG MÀU CHUNG - THIẾT KẾ CHO TRẺ EM
+   Kid-First Color Palette với màu pastel dễ chịu
+======================================== */
 :root {
-  /* Primary Colors - Pastel Sky Blue (Màu chủ đạo) */
-  --primary-color: #87CEEB; /* Pastel Sky Blue */
-  --primary-light: #B0E0F6; /* Lighter Sky Blue */
-  --primary-dark: #5EB8E5; /* Darker Sky Blue */
+  /* ===== MÀU NỀN CHÍNH (Background) ===== */
+  --bg-primary: #F0F8FF; /* Màu nền chính - Rất nhạt, gần trắng, sạch sẽ, dịu mắt */
+  --bg-secondary: #FFFFFF; /* Màu nền phụ - Trắng tinh */
+  --bg-card: #FFFFFF; /* Màu nền card - Trắng */
+  --bg-overlay: rgba(255, 255, 255, 0.95); /* Overlay mờ */
 
-  /* Secondary Colors - Playful and engaging */
-  --secondary-color: #4ECDC4;
+  /* ===== MÀU CHỦ ĐẠO (Primary Color) ===== */
+  --primary-color: #87CEEB; /* Pastel Sky Blue - Màu cho Sidebar, viền, khối chính */
+  --primary-light: #B0E0F6; /* Sky Blue nhạt hơn */
+  --primary-dark: #5EB8E5; /* Sky Blue đậm hơn */
+
+  /* ===== MÀU ĐIỂM NHẤN (Accent Color) ===== */
+  --accent-color: #FFA07A; /* Light Salmon/Cam nhạt - Nút bấm CTA, tạo sự nổi bật */
+  --accent-orange: #FFA07A; /* Alias cho accent-color */
+  --accent-light: #FFD0B3; /* Cam nhạt hơn */
+  --accent-dark: #FF8A5C; /* Cam đậm hơn */
+
+  /* ===== MÀU PHỤ (Secondary Colors) ===== */
+  --secondary-color: #4ECDC4; /* Teal - Màu phụ vui tươi */
   --secondary-light: #A8E6E3;
   --secondary-dark: #2BA89F;
 
-  /* Accent Colors - Fun and vibrant (Màu điểm nhấn) */
-  --accent-yellow: #FFD93D;
-  --accent-purple: #A78BFA;
-  --accent-orange: #FFA07A; /* Light Salmon - Màu CTA chính */
-  --accent-green: #6BCB77;
+  /* ===== MÀU PASTEL BỔ SUNG ===== */
+  --accent-yellow: #FFD93D; /* Vàng pastel */
+  --accent-purple: #A78BFA; /* Tím pastel */
+  --accent-green: #6BCB77; /* Xanh lá pastel */
+  --pastel-pink: #FFB3D9; /* Hồng pastel */
 
-  /* Background Colors - Soft pastel tones */
-  --bg-primary: #F0F8FF; /* Light blue pastel - Màu nền chính, sạch sẽ, dịu mắt */
-  --bg-secondary: #FFF9E6; /* Light cream pastel - warm and inviting */
-  --bg-card: #FFFFFF;
-  --bg-overlay: rgba(255, 255, 255, 0.95);
+  /* ===== MÀU CHỮ (Text Colors) ===== */
+  --text-primary: #000000; /* Màu chữ chính - Đen, rõ ràng, dễ đọc cho trẻ em */
+  --text-secondary: #666666; /* Màu chữ phụ - Xám đậm */
+  --text-light: #999999; /* Màu chữ nhạt - Xám nhạt */
+  --text-white: #FFFFFF; /* Màu chữ trắng */
 
-  /* Text Colors */
-  --text-primary: #000000; /* Đen - Màu chữ mặc định rõ ràng */
-  --text-secondary: #666666;
-  --text-light: #999999;
-  --text-white: #FFFFFF;
+  /* ===== BO GÓC (Border Radius) ===== */
+  /* Bo góc lớn tạo vẻ mềm mại, thân thiện cho trẻ em */
+  --border-radius-sm: 12px; /* Bo góc nhỏ */
+  --border-radius: 20px; /* Bo góc trung bình - Mặc định */
+  --border-radius-lg: 24px; /* Bo góc lớn - Sidebar, Cards */
+  --border-radius-xl: 32px; /* Bo góc rất lớn */
+  --border-radius-full: 9999px; /* Bo góc tròn hoàn toàn */
 
-  /* Border and Shadow - Bo góc lớn, mềm mại */
-  --border-radius: 20px; /* Bo góc lớn cho khối chính */
-  --border-radius-sm: 12px; /* Bo góc vừa */
-  --border-radius-lg: 24px; /* Bo góc rất lớn cho Sidebar, Cards */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08); /* Đổ bóng nhẹ */
+  /* ===== ĐỔ BÓNG (Box Shadow) ===== */
+  /* Đổ bóng nhẹ, tạo cảm giác nổi lên nhưng không quá nặng nề */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08); /* Đổ bóng nhẹ nhất */
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10); /* Đổ bóng vừa */
-  --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.12); /* Đổ bóng mạnh nhưng vẫn nhẹ nhàng */
+  --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.12); /* Đổ bóng lớn */
+  --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.14); /* Đổ bóng rất lớn */
 
-  /* Spacing */
+  /* ===== KHOẢNG CÁCH (Spacing) ===== */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
   --spacing-xl: 32px;
+  --spacing-2xl: 48px;
 
-  /* Typography */
-  --font-family-primary: 'Nunito', 'Quicksand', 'Arial Rounded MT Bold', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* ===== FONT CHỮ (Typography) ===== */
+  /* Sans-serif tròn trịa, rõ ràng, dễ đọc cho trẻ em */
+  --font-family-primary: 'Nunito', 'Quicksand', 'Arial Rounded MT Bold', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-family-secondary: 'Quicksand', 'Nunito', sans-serif;
 
   /* Font Sizes */
@@ -60,7 +78,7 @@
   --font-size-3xl: 2rem;
   --font-size-4xl: 2.5rem;
 
-  /* Transitions */
+  /* ===== TRANSITIONS ===== */
   --transition-fast: 0.15s ease;
   --transition-base: 0.25s ease;
   --transition-slow: 0.4s ease;
@@ -197,25 +215,30 @@ button:disabled {
 /* Button Variants - Màu điểm nhấn cho CTA */
 button.btn-accent,
 .btn-accent {
-  background-color: var(--accent-orange);
+  background-color: var(--accent-orange); /* Light Salmon #FFA07A - Nút CTA nổi bật */
   color: var(--text-white);
+  font-weight: 600;
 }
 
 button.btn-accent:hover,
 .btn-accent:hover {
-  background-color: #FF8A5C; /* Darker salmon on hover */
+  background-color: var(--accent-dark); /* Darker salmon #FF8A5C khi hover */
   transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--shadow-lg);
 }
 
 button.btn-primary,
 .btn-primary {
-  background-color: var(--primary-color);
-  color: var(--text-primary);
+  background-color: var(--primary-color); /* Sky Blue #87CEEB */
+  color: var(--text-white);
+  font-weight: 600;
 }
 
 button.btn-primary:hover,
 .btn-primary:hover {
-  background-color: var(--primary-dark);
+  background-color: var(--primary-dark); /* Darker Sky Blue khi hover */
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 /* Form Elements */
@@ -240,17 +263,17 @@ select:focus {
   box-shadow: 0 0 0 3px var(--primary-light);
 }
 
-/* Cards */
+/* Cards - Bo góc lớn, đổ bóng nhẹ */
 .card {
-  background-color: var(--bg-card);
-  border-radius: var(--border-radius);
+  background-color: var(--bg-card); /* Nền trắng */
+  border-radius: var(--border-radius-lg); /* Bo góc lớn 24px */
   padding: var(--spacing-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md); /* Đổ bóng nhẹ */
   transition: box-shadow var(--transition-base), transform var(--transition-base);
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg); /* Đổ bóng lớn hơn khi hover */
   transform: translateY(-4px);
 }
 
@@ -313,17 +336,19 @@ select:focus {
 
 /* Container Utilities */
 .container-soft {
-  background-color: var(--bg-card);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
+  background-color: var(--bg-card); /* Nền trắng */
+  border-radius: var(--border-radius-lg); /* Bo góc lớn 24px */
+  box-shadow: var(--shadow-sm); /* Đổ bóng nhẹ */
   padding: var(--spacing-lg);
 }
 
+/* Sidebar Style - Sky Blue với bo góc lớn */
 .sidebar-style {
-  background-color: var(--primary-color);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-md);
+  background-color: var(--primary-color); /* Sky Blue #87CEEB */
+  border-radius: var(--border-radius-lg); /* Bo góc lớn 24px */
+  box-shadow: var(--shadow-md); /* Đổ bóng vừa */
   padding: var(--spacing-lg);
+  color: var(--text-white); /* Chữ trắng trên nền xanh */
 }
 
 /* Scrollbar Customization - Kid-friendly */

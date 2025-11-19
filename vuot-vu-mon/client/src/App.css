@@ -4,103 +4,118 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Quicksand:wght@300;400;500;600;700&display=swap');
 
 /* ========================================
-   PASTEL COLOR PALETTE FOR KIDS (flyer.vn style)
+   BẢNG MÀU CHUNG - KID-FRIENDLY DESIGN
+   Thiết kế dành cho trẻ em với màu pastel nhẹ nhàng, dễ chịu
 ======================================== */
 :root {
-  /* Theme Variables (can be overridden by ThemeContext) */
-  --theme-primary: #FF6B9D;
+  /* ===== MÀU NỀN CHÍNH (Background) ===== */
+  --bg-primary: #F0F8FF; /* Màu nền chính - Rất nhạt, gần trắng, sạch sẽ, dịu mắt */
+  --bg-secondary: #FFFFFF; /* Màu nền phụ - Trắng tinh */
+  --bg-card: #FFFFFF; /* Màu nền card - Trắng */
+  --bg-overlay: rgba(255, 255, 255, 0.95); /* Overlay mờ */
+
+  /* ===== MÀU CHỦ ĐẠO (Primary Color) ===== */
+  --primary-color: #87CEEB; /* Pastel Sky Blue - Màu cho Sidebar, viền, khối chính */
+  --primary-light: #B0E0F6; /* Sky Blue nhạt hơn */
+  --primary-dark: #5EB8E5; /* Sky Blue đậm hơn */
+
+  /* ===== MÀU ĐIỂM NHẤN (Accent Color) ===== */
+  --accent-color: #FFA07A; /* Light Salmon/Cam nhạt - Nút bấm CTA, tạo sự nổi bật */
+  --accent-light: #FFD0B3; /* Cam nhạt hơn */
+  --accent-dark: #FF8A5C; /* Cam đậm hơn */
+
+  /* ===== MÀU PHỤ (Secondary Colors) ===== */
+  --secondary-color: #4ECDC4; /* Teal - Màu phụ vui tươi */
+  --secondary-light: #A8E6E3;
+  --secondary-dark: #2BA89F;
+
+  /* ===== MÀU PASTEL BỔ SUNG ===== */
+  --pastel-yellow: #FFD93D; /* Vàng pastel */
+  --pastel-purple: #A78BFA; /* Tím pastel */
+  --pastel-green: #6BCB77; /* Xanh lá pastel */
+  --pastel-pink: #FFB3D9; /* Hồng pastel */
+
+  /* ===== MÀU CHỮ (Text Colors) ===== */
+  --text-primary: #000000; /* Màu chữ chính - Đen, rõ ràng, dễ đọc */
+  --text-secondary: #666666; /* Màu chữ phụ - Xám đậm */
+  --text-light: #999999; /* Màu chữ nhạt - Xám nhạt */
+  --text-white: #FFFFFF; /* Màu chữ trắng */
+
+  /* Theme Variables (có thể bị override bởi ThemeContext) */
+  --theme-primary: #87CEEB;
   --theme-secondary: #4ECDC4;
-  --theme-accent: #FFD93D;
-  --theme-background: linear-gradient(135deg, #F0F8FF 0%, #FFF5F8 50%, #FFFDF5 100%);
-  --theme-card-bg: rgba(255, 255, 255, 0.95);
-  --theme-text: #333333;
+  --theme-accent: #FFA07A;
+  --theme-background: #F0F8FF;
+  --theme-card-bg: #FFFFFF;
+  --theme-text: #000000;
   --theme-text-light: #666666;
-  --theme-border: #FF6B9D;
-  --theme-shadow: rgba(255, 107, 157, 0.15);
+  --theme-border: #87CEEB;
+  --theme-shadow: rgba(0, 0, 0, 0.10);
 
-  /* Text Colors - Dark for Better Readability */
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --text-muted: #999999;
+  /* ===== BO GÓC (Border Radius) ===== */
+  /* Bo góc lớn tạo vẻ mềm mại, thân thiện cho trẻ em */
+  --border-radius-sm: 12px; /* Bo góc nhỏ */
+  --border-radius: 20px; /* Bo góc trung bình - Mặc định */
+  --border-radius-lg: 24px; /* Bo góc lớn - Sidebar, Cards */
+  --border-radius-xl: 32px; /* Bo góc rất lớn */
+  --border-radius-full: 9999px; /* Bo góc tròn hoàn toàn */
 
-  /* Primary Pastel Colors - Bright & Cheerful (flyer.vn style) */
-  --pastel-blue: #4ECDC4;
-  --pastel-blue-light: #A8E6E3;
-  --pastel-blue-dark: #2BA89F;
-
-  --pastel-pink: #FF6B9D;
-  --pastel-pink-light: #FFB3D9;
-  --pastel-pink-dark: #E63977;
-
-  --pastel-purple: #A78BFA;
-  --pastel-purple-light: #C4B5FD;
-  --pastel-purple-dark: #7C3AED;
-
-  --pastel-green: #6BCB77;
-  --pastel-green-light: #A8E6A3;
-  --pastel-green-dark: #4CAF50;
-
-  --pastel-yellow: #FFD93D;
-  --pastel-yellow-light: #FFEB99;
-  --pastel-yellow-dark: #FFC107;
-
-  --pastel-orange: #FFA07A;
-  --pastel-orange-light: #FFD0B3;
-  --pastel-orange-dark: #FF8C4F;
-
-  --pastel-peach: #FFB3BA;
-  --pastel-mint: #BFFCC6;
-  --pastel-lavender: #C9A6F9;
-
-  /* Gradient Backgrounds - Bright & Eye-friendly (flyer.vn style) */
-  --gradient-rainbow: linear-gradient(135deg, #F0F8FF 0%, #FFF5F8 50%, #FFFDF5 100%);
-  --gradient-blue-pink: linear-gradient(135deg, #E0F7FF 0%, #FFE5F0 100%);
-  --gradient-pink-purple: linear-gradient(135deg, #FFE5F0 0%, #F3E5FF 100%);
-  --gradient-green-blue: linear-gradient(135deg, #E5FFF0 0%, #E0F7FF 100%);
-  --gradient-yellow-orange: linear-gradient(135deg, #FFF8E5 0%, #FFEEE0 100%);
-
-  /* Subject Colors - Vibrant & Clear */
-  --color-math: #4ECDC4;        /* Bright Teal for Math */
-  --color-vietnamese: #FF6B9D;  /* Bright Pink for Vietnamese */
-  --color-english: #6BCB77;     /* Bright Green for English */
-
-  /* Neutral Colors */
-  --white: #FFFFFF;
-  --light-gray: #F8F9FA;
-  --gray: #E9ECEF;
-  --dark-gray: #333333;
-  --text-dark: #333333;
-  --text-light: #666666;
-
-  /* Semantic Colors - Kid-friendly */
-  --success: #6BCB77;
-  --error: #FF6B9D;
-  --warning: #FFD93D;
-  --info: #4ECDC4;
-
-  /* Shadows - Softer */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
-
-  /* Border Radius - More Rounded (flyer.vn style) */
+  /* Alias cho compatibility */
   --radius-sm: 12px;
-  --radius-md: 16px;
+  --radius-md: 20px;
   --radius-lg: 24px;
   --radius-xl: 32px;
   --radius-full: 9999px;
 
-  /* Spacing */
-  --spacing-xs: 8px;
-  --spacing-sm: 12px;
+  /* ===== ĐỔ BÓNG (Box Shadow) ===== */
+  /* Đổ bóng nhẹ, tạo cảm giác nổi lên nhưng không quá nặng nề */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08); /* Đổ bóng nhẹ nhất */
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10); /* Đổ bóng vừa */
+  --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.12); /* Đổ bóng lớn */
+  --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.14); /* Đổ bóng rất lớn */
+
+  /* ===== KHOẢNG CÁCH (Spacing) ===== */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
   --spacing-xl: 32px;
   --spacing-2xl: 48px;
 
-  /* Font Families - Nunito & Quicksand (flyer.vn style) */
-  --font-primary: 'Nunito', 'Quicksand', 'Arial Rounded MT Bold', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Quicksand', 'Nunito', 'Arial Rounded MT Bold', cursive, sans-serif;
+  /* ===== FONT CHỮ (Typography) ===== */
+  /* Sans-serif tròn trịa, rõ ràng, dễ đọc cho trẻ em */
+  --font-primary: 'Nunito', 'Quicksand', 'Arial Rounded MT Bold', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Quicksand', 'Nunito', 'Arial Rounded MT Bold', sans-serif;
+  --font-family-primary: 'Nunito', 'Quicksand', sans-serif;
+  --font-family-secondary: 'Quicksand', 'Nunito', sans-serif;
+
+  /* ===== MÀU THEO MÔN HỌC ===== */
+  --color-math: #87CEEB; /* Toán - Sky Blue */
+  --color-vietnamese: #FFA07A; /* Tiếng Việt - Salmon */
+  --color-english: #6BCB77; /* Tiếng Anh - Green */
+
+  /* ===== MÀU SEMANTIC ===== */
+  --success: #6BCB77; /* Thành công - Xanh lá */
+  --error: #FF6B9D; /* Lỗi - Hồng */
+  --warning: #FFD93D; /* Cảnh báo - Vàng */
+  --info: #87CEEB; /* Thông tin - Sky Blue */
+
+  /* ===== MÀU NEUTRAL ===== */
+  --white: #FFFFFF;
+  --light-gray: #F8F9FA;
+  --gray: #E9ECEF;
+  --dark-gray: #333333;
+
+  /* ===== GRADIENT BACKGROUNDS ===== */
+  --gradient-main: linear-gradient(135deg, #F0F8FF 0%, #E6F4FF 100%);
+  --gradient-blue: linear-gradient(135deg, #E0F7FF 0%, #B0E0F6 100%);
+  --gradient-orange: linear-gradient(135deg, #FFEEE0 0%, #FFD0B3 100%);
+  --gradient-rainbow: linear-gradient(135deg, #F0F8FF 0%, #FFF5F8 50%, #FFFDF5 100%);
+
+  /* ===== TRANSITIONS ===== */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.25s ease;
+  --transition-slow: 0.4s ease;
 }
 
 /* ========================================
@@ -121,7 +136,7 @@ html {
 body {
   font-family: var(--font-primary);
   color: var(--text-primary);
-  background: var(--theme-background, var(--gradient-rainbow));
+  background-color: var(--bg-primary); /* Nền #F0F8FF - Sạch sẽ, dịu mắt */
   min-height: 100vh;
   line-height: 1.6;
   font-weight: 400;
@@ -215,33 +230,33 @@ input, textarea, select {
 
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: var(--pastel-blue);
-  box-shadow: 0 0 0 3px rgba(168, 216, 234, 0.2);
+  border-color: var(--primary-color); /* Sky Blue */
+  box-shadow: 0 0 0 3px var(--primary-light); /* Glow Sky Blue nhạt */
 }
 
-/* Scrollbar */
+/* Scrollbar - Màu Sky Blue */
 ::-webkit-scrollbar {
   width: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--pastel-blue-light);
+  background: var(--primary-light); /* Sky Blue nhạt */
   border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--pastel-pink);
+  background: var(--primary-color); /* Sky Blue */
   border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--pastel-pink-dark);
+  background: var(--primary-dark); /* Sky Blue đậm */
 }
 
-/* Selection */
+/* Selection - Màu Sky Blue khi bôi đen text */
 ::selection {
-  background: var(--pastel-pink-light);
-  color: var(--text-primary);
+  background: var(--primary-light); /* Sky Blue nhạt */
+  color: var(--text-primary); /* Chữ đen */
 }
 
 /* Animations */
@@ -368,17 +383,17 @@ input:focus, textarea:focus, select:focus {
   }
 }
 
-/* Card Styles */
+/* Card Styles - Bo góc lớn, đổ bóng nhẹ */
 .card {
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  background: var(--bg-card); /* Nền trắng sạch */
+  border-radius: var(--border-radius-lg); /* Bo góc lớn 24px */
+  box-shadow: var(--shadow-md); /* Đổ bóng nhẹ */
   padding: var(--spacing-lg);
   transition: all 0.3s ease;
 }
 
 .card:hover {
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-lg); /* Đổ bóng lớn hơn khi hover */
   transform: translateY(-4px);
 }
 
