@@ -1,0 +1,365 @@
+/* ========================================
+   THỬ THÁCH KHỞI ĐẦU - MINIMALIST DESIGN
+======================================== */
+
+.thu-thach-khoi-dau {
+  min-height: 100vh;
+  background-color: var(--bg-primary, #87CEEB); /* Sky Blue */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-lg, 20px);
+  font-family: var(--font-display, 'Nunito', 'Quicksand', sans-serif);
+}
+
+.game-container {
+  max-width: 900px;
+  width: 100%;
+  background: white;
+  border-radius: var(--border-radius-lg, 24px);
+  padding: var(--spacing-2xl, 40px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  animation: fadeInUp 0.6s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   HEADER
+======================================== */
+.game-header {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl, 40px);
+}
+
+.game-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--primary-color, #87CEEB);
+  margin: 0 0 var(--spacing-md, 16px) 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.game-subtitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+}
+
+/* ========================================
+   LEVEL SELECTION
+======================================== */
+.level-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-xl, 24px);
+  margin-bottom: var(--spacing-2xl, 40px);
+}
+
+.level-card {
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8f4f8 100%);
+  border: 4px solid transparent;
+  border-radius: var(--border-radius-lg, 24px);
+  padding: var(--spacing-xl, 32px);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.level-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(135, 206, 235, 0.1) 0%, rgba(255, 160, 122, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.level-card:hover::before {
+  opacity: 1;
+}
+
+.level-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-color, #87CEEB);
+}
+
+.level-card.selected {
+  border-color: var(--accent-color, #FFA07A);
+  background: linear-gradient(135deg, #fff8dc 0%, #ffe4e1 100%);
+  box-shadow: 0 8px 16px rgba(255, 160, 122, 0.3);
+  transform: scale(1.05);
+}
+
+.level-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: var(--accent-color, #FFA07A);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.level-icon {
+  font-size: 3.5rem;
+  margin-bottom: var(--spacing-md, 16px);
+  animation: bounce 2s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.level-number {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #000000;
+  margin-bottom: var(--spacing-sm, 8px);
+  position: relative;
+  z-index: 1;
+}
+
+.level-description {
+  font-size: 1rem;
+  color: #666;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+
+/* ========================================
+   ACTION BUTTONS
+======================================== */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing-xl, 24px);
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.btn-start-test {
+  padding: var(--spacing-md, 16px) var(--spacing-2xl, 48px);
+  background: linear-gradient(135deg, var(--accent-color, #FFA07A) 0%, #ff8c69 100%);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-lg, 24px);
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(255, 160, 122, 0.4);
+  font-family: var(--font-display, 'Nunito', sans-serif);
+}
+
+.btn-start-test:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(255, 160, 122, 0.6);
+  filter: brightness(1.1);
+}
+
+.btn-start-test:active {
+  transform: translateY(-1px);
+}
+
+/* ========================================
+   BACK SECTION
+======================================== */
+.back-section {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--spacing-lg, 20px);
+  border-top: 2px solid #e0e0e0;
+}
+
+.btn-back {
+  padding: var(--spacing-sm, 12px) var(--spacing-xl, 32px);
+  background: #f0f0f0;
+  color: #000000;
+  border: none;
+  border-radius: var(--border-radius-lg, 24px);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-display, 'Nunito', sans-serif);
+}
+
+.btn-back:hover {
+  background: #e0e0e0;
+  transform: translateX(-5px);
+}
+
+/* ========================================
+   TEST SCREEN (Tạm thời)
+======================================== */
+.test-screen {
+  text-align: center;
+  padding: var(--spacing-2xl, 40px) 0;
+}
+
+.test-screen h2 {
+  font-size: 2.5rem;
+  color: var(--primary-color, #87CEEB);
+  margin-bottom: var(--spacing-lg, 20px);
+}
+
+.test-screen p {
+  font-size: 1.3rem;
+  color: #000000;
+  margin-bottom: var(--spacing-md, 16px);
+}
+
+.test-screen strong {
+  color: var(--accent-color, #FFA07A);
+  font-weight: 800;
+}
+
+.coming-soon {
+  font-style: italic;
+  color: #666;
+  margin-top: var(--spacing-xl, 24px);
+  padding: var(--spacing-lg, 20px);
+  background: #f9f9f9;
+  border-radius: var(--border-radius-lg, 24px);
+  border: 2px dashed #ccc;
+}
+
+.btn-back-to-select {
+  margin-top: var(--spacing-xl, 32px);
+  padding: var(--spacing-md, 16px) var(--spacing-2xl, 48px);
+  background: var(--primary-color, #87CEEB);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-lg, 24px);
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(135, 206, 235, 0.4);
+  font-family: var(--font-display, 'Nunito', sans-serif);
+}
+
+.btn-back-to-select:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(135, 206, 235, 0.6);
+  filter: brightness(1.1);
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+@media (max-width: 768px) {
+  .game-container {
+    padding: var(--spacing-xl, 24px);
+  }
+
+  .game-title {
+    font-size: 2rem;
+  }
+
+  .game-subtitle {
+    font-size: 1.2rem;
+  }
+
+  .level-selection {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg, 20px);
+  }
+
+  .level-icon {
+    font-size: 3rem;
+  }
+
+  .level-number {
+    font-size: 1.4rem;
+  }
+
+  .btn-start-test {
+    font-size: 1.1rem;
+    padding: var(--spacing-md, 14px) var(--spacing-xl, 36px);
+  }
+
+  .test-screen h2 {
+    font-size: 2rem;
+  }
+
+  .test-screen p {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-container {
+    padding: var(--spacing-lg, 20px);
+  }
+
+  .game-title {
+    font-size: 1.6rem;
+  }
+
+  .game-subtitle {
+    font-size: 1rem;
+  }
+
+  .level-card {
+    padding: var(--spacing-lg, 20px);
+  }
+
+  .btn-start-test,
+  .btn-back-to-select {
+    width: 100%;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
