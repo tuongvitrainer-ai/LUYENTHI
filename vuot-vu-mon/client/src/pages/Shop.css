@@ -4,7 +4,7 @@
 
 .shop-page {
   min-height: 100vh;
-  background: var(--gradient-rainbow);
+  background-color: var(--bg-primary); /* Sky Blue #87CEEB */
   position: relative;
 }
 

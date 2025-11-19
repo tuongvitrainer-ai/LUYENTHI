@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gradient-rainbow);
+  background-color: var(--bg-primary); /* Sky Blue #87CEEB */
   padding: var(--spacing-lg);
   position: relative;
   overflow: hidden;
