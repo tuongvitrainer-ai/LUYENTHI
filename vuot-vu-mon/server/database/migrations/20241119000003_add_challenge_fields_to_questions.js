@@ -5,6 +5,9 @@
 
 exports.up = function(knex) {
   return knex.schema.table('questions', table => {
+    // Make content_json nullable (cũ là NOT NULL, giờ có structure mới không cần nữa)
+    table.text('content_json').nullable().alter();
+
     // Môn học: math, vietnamese, english, logic
     table.string('subject', 50);
 
