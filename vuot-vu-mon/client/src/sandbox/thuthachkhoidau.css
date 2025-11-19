@@ -296,19 +296,19 @@
 .question-numbers {
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 3 ô mỗi dòng */
-  gap: var(--spacing-xs, 4px); /* Giảm gap */
+  gap: var(--spacing-sm, 10px); /* Tăng gap để đầy đặn */
 }
 
 .question-number-btn {
   aspect-ratio: 1;
-  width: 40px; /* Cố định kích thước nhỏ */
-  height: 40px;
+  width: 50px; /* Tăng kích thước để đầy đặn */
+  height: 50px;
   border: 2px solid #e0e0e0;
   border-radius: 50%; /* Hình tròn */
   background: #f5f5f5;
   color: #000000;
   font-weight: 700;
-  font-size: 0.85rem; /* Giảm font size */
+  font-size: 0.95rem; /* Tăng font */
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: var(--font-display, 'Nunito', sans-serif);
@@ -343,8 +343,10 @@
 
 /* Subject Progress Box */
 .subject-progress-box {
-  /* Bỏ background, border, shadow - chỉ giữ padding */
+  background: white; /* Giữ lại background */
+  border-radius: var(--border-radius-lg, 24px); /* Giữ lại border-radius */
   padding: var(--spacing-md, 12px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); /* Giữ lại shadow */
 }
 
 .progress-title {
@@ -352,16 +354,16 @@
   font-weight: 700;
   color: #000000;
   margin-bottom: var(--spacing-sm, 10px);
-  text-align: left;
+  text-align: center; /* Center lại */
 }
 
 .subject-item {
-  /* Bỏ background, padding phức tạp - chỉ giữ text đơn giản */
   margin-bottom: var(--spacing-xs, 6px);
   font-size: 0.85rem;
   font-weight: 600;
   color: #000000;
   line-height: 1.6;
+  text-align: left;
 }
 
 .subject-item:hover {
@@ -415,12 +417,12 @@
 }
 
 .topic-icon {
-  font-size: 1rem; /* Giảm từ 1.2rem */
+  font-size: 1.3rem; /* Tăng lên */
 }
 
 .topic-text {
-  font-size: 0.9rem; /* Giảm từ 1rem */
-  font-weight: 600;
+  font-size: 1.3rem; /* Tăng tương đương H2 */
+  font-weight: 700; /* Đậm hơn */
   color: #666;
 }
 
@@ -572,11 +574,11 @@
    MÀN HÌNH 3: KẾT QUẢ
 ======================================== */
 .results-container {
-  max-width: 800px;
+  max-width: 1000px; /* Rộng hơn để hiển thị thông số */
   width: 100%;
   background: white;
   border-radius: var(--border-radius-lg, 24px);
-  padding: var(--spacing-2xl, 40px);
+  padding: var(--spacing-xl, 32px); /* Gọn lại */
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   animation: fadeInUp 0.6s ease;
 }
@@ -681,7 +683,7 @@
 }
 
 .subject-header .subject-icon {
-  font-size: 1.5rem;
+  display: none; /* Ẩn icon trong kết quả */
 }
 
 .subject-header .subject-name {
@@ -706,8 +708,8 @@
 .progress-fill {
   height: 100%;
   background: var(--primary-color, #87CEEB);
-  transition: width 0.6s ease;
   border-radius: 12px;
+  /* Bỏ transition animation */
 }
 
 .progress-text {
@@ -882,19 +884,63 @@
 @media (max-width: 1024px) {
   .test-container {
     flex-direction: column;
+    height: auto; /* Bỏ 100vh để scroll được */
   }
 
   .test-navigation {
     width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: row; /* Nằm ngang 1 hàng */
+    flex-wrap: nowrap; /* Không wrap, gom 1 hàng */
+    gap: var(--spacing-xs, 6px);
+    overflow-x: auto; /* Scroll ngang nếu cần */
   }
 
   .timer-box,
   .question-grid,
   .subject-progress-box {
+    flex: 0 0 auto; /* Không grow, giữ kích thước */
+    min-width: 180px; /* Thu nhỏ lại */
+    max-width: 220px;
+    padding: var(--spacing-sm, 8px); /* Giảm padding */
+  }
+
+  .timer-icon {
+    font-size: 1.2rem;
+  }
+
+  .timer-value {
+    font-size: 1.5rem;
+  }
+
+  .timer-label {
+    font-size: 0.7rem;
+  }
+
+  .grid-title,
+  .progress-title {
+    font-size: 0.8rem;
+    margin-bottom: var(--spacing-xs, 6px);
+  }
+
+  .question-numbers {
+    gap: var(--spacing-xs, 4px);
+  }
+
+  .question-number-btn {
+    width: 35px; /* Thu nhỏ */
+    height: 35px;
+    font-size: 0.8rem;
+  }
+
+  .subject-item {
+    font-size: 0.75rem;
+    margin-bottom: var(--spacing-xs, 4px);
+  }
+
+  /* Ưu tiên Question Content */
+  .test-content {
     flex: 1;
-    min-width: 250px;
+    min-height: 60vh; /* Đảm bảo có không gian */
   }
 }
 
