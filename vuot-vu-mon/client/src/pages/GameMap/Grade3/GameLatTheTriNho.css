@@ -4,7 +4,7 @@
 
 .game-lat-the-tri-nho {
   min-height: 100vh;
-  background: var(--gradient-rainbow);
+  background-color: var(--bg-primary); /* Sky Blue #87CEEB */
   padding: 1.5rem;
   font-family: var(--font-primary);
 }

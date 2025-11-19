@@ -4,7 +4,7 @@
 
 .game-bay-len-toan-hoc {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background-color: var(--bg-primary); /* Sky Blue #87CEEB */
   font-family: 'Nunito', 'Arial', sans-serif;
   padding: 1rem;
   overflow: hidden;
