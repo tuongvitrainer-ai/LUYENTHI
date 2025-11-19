@@ -1,0 +1,116 @@
+/* ========================================
+   LAYOUT CONTAINER
+======================================== */
+
+.layout-container {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ========================================
+   MAIN CONTENT AREA
+======================================== */
+
+.layout-content {
+  flex: 1;
+  margin-left: 280px; /* Width của sidebar */
+  min-height: 100vh;
+  position: relative;
+  transition: margin-left 0.3s ease;
+}
+
+.page-content {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* ========================================
+   MOBILE TOGGLE BUTTON
+======================================== */
+
+.sidebar-toggle-btn {
+  display: none; /* Ẩn trên desktop */
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1001;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #87CEEB; /* Sky Blue */
+  color: #FFFFFF;
+  border: none;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.sidebar-toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.toggle-icon {
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========================================
+   RESPONSIVE - TABLET
+======================================== */
+
+@media (max-width: 1024px) {
+  .layout-content {
+    margin-left: 240px; /* Thu nhỏ margin theo sidebar */
+  }
+}
+
+/* ========================================
+   RESPONSIVE - MOBILE
+======================================== */
+
+@media (max-width: 768px) {
+  .layout-content {
+    margin-left: 0; /* Bỏ margin trên mobile */
+  }
+
+  .sidebar-toggle-btn {
+    display: flex; /* Hiện toggle button trên mobile */
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ========================================
+   SIDEBAR OVERLAY (Mobile)
+======================================== */
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: none;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.show {
+  display: block;
+}
+
+@media (min-width: 769px) {
+  .sidebar-overlay {
+    display: none !important; /* Không hiện overlay trên desktop */
+  }
+}

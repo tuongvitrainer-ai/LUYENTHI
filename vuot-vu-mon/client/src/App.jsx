@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import GameMap from './pages/GameMap';
@@ -46,12 +47,25 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
-            {/* Guest Routes - Tự động tạo guest user */}
+            {/* Guest Routes - Tự động tạo guest user + Sidebar */}
             <Route
               path="/"
               element={
                 <GuestRoute>
-                  <GameMap />
+                  <Layout>
+                    <GameMap />
+                  </Layout>
+                </GuestRoute>
+              }
+            />
+
+            <Route
+              path="/game-map"
+              element={
+                <GuestRoute>
+                  <Layout>
+                    <GameMap />
+                  </Layout>
                 </GuestRoute>
               }
             />
@@ -60,7 +74,9 @@ function App() {
               path="/game/play"
               element={
                 <GuestRoute>
-                  <QuestionView />
+                  <Layout>
+                    <QuestionView />
+                  </Layout>
                 </GuestRoute>
               }
             />
@@ -69,7 +85,9 @@ function App() {
               path="/game/grade3/game-lat-the-tri-nho"
               element={
                 <GuestRoute>
-                  <GameLatTheTriNho />
+                  <Layout>
+                    <GameLatTheTriNho />
+                  </Layout>
                 </GuestRoute>
               }
             />
@@ -78,18 +96,22 @@ function App() {
               path="/game/grade3/bang-cuu-chuong"
               element={
                 <GuestRoute>
-                  <BangCuuChuong1 />
+                  <Layout>
+                    <BangCuuChuong1 />
+                  </Layout>
                 </GuestRoute>
               }
             />
 
-            {/* Protected Routes - Cần đăng ký */}
+            {/* Protected Routes - Cần đăng ký + Sidebar */}
 
             <Route
               path="/shop"
               element={
                 <ProtectedRoute>
-                  <Shop />
+                  <Layout>
+                    <Shop />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
@@ -98,7 +120,9 @@ function App() {
               path="/profile"
               element={
                 <ProtectedRoute>
-                  <Profile />
+                  <Layout>
+                    <Profile />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
