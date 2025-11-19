@@ -272,9 +272,6 @@ const ThuThachKhoiDau = () => {
           {/* Header */}
           <div className="game-header">
             <h1 className="game-title">THỬ THÁCH KHỞI ĐẦU</h1>
-            <h2 className="game-subtitle">
-              Bé đang học lớp mấy nhỉ ^^
-            </h2>
           </div>
 
           {/* Level Selection */}
