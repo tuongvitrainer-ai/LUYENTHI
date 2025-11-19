@@ -9,15 +9,46 @@ function Profile() {
   const navigate = useNavigate();
   const { user, updateUser } = useAuth();
 
+  // State cho inventory
   const [inventory, setInventory] = useState([]);
   const [loadingInventory, setLoadingInventory] = useState(true);
+
+  // State cho edit profile
   const [editMode, setEditMode] = useState(false);
-  const [displayName, setDisplayName] = useState(user?.display_name || '');
   const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    display_name: user?.display_name || '',
+    birthday: user?.birthday || '',
+    gender: user?.gender || '',
+    phone: user?.phone || '',
+    bio: user?.bio || ''
+  });
+
+  // State cho change password
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     loadInventory();
   }, []);
+
+  useEffect(() => {
+    // Update form data khi user thay đổi
+    if (user) {
+      setFormData({
+        display_name: user.display_name || '',
+        birthday: user.birthday || '',
+        gender: user.gender || '',
+        phone: user.phone || '',
+        bio: user.bio || ''
+      });
+    }
+  }, [user]);
 
   const loadInventory = async () => {
     try {
@@ -34,8 +65,16 @@ function Profile() {
     }
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleSaveProfile = async () => {
-    if (!displayName.trim()) {
+    if (!formData.display_name.trim()) {
       alert('Vui lòng nhập tên hiển thị!');
       return;
     }
@@ -48,7 +87,7 @@ function Profile() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ display_name: displayName })
+        body: JSON.stringify(formData)
       });
 
       const data = await response.json();
@@ -56,21 +95,81 @@ function Profile() {
       if (data.success) {
         updateUser(data.data.user);
         setEditMode(false);
-        alert('Cập nhật thông tin thành công! ✓');
+        alert('✅ Cập nhật thông tin thành công!');
       } else {
-        alert(data.message || 'Lỗi khi cập nhật thông tin');
+        alert('❌ ' + (data.message || 'Lỗi khi cập nhật thông tin'));
       }
     } catch (error) {
       console.error('Save profile error:', error);
-      alert('Lỗi khi cập nhật thông tin');
+      alert('❌ Lỗi khi cập nhật thông tin');
     } finally {
       setSaving(false);
     }
   };
 
   const handleCancel = () => {
-    setDisplayName(user?.display_name || '');
+    setFormData({
+      display_name: user?.display_name || '',
+      birthday: user?.birthday || '',
+      gender: user?.gender || '',
+      phone: user?.phone || '',
+      bio: user?.bio || ''
+    });
     setEditMode(false);
+  };
+
+  const handleChangePassword = async () => {
+    const { currentPassword, newPassword, confirmPassword } = passwordData;
+
+    // Validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert('⚠️ Vui lòng điền đầy đủ thông tin!');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      alert('⚠️ Mật khẩu mới phải có ít nhất 6 ký tự!');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert('⚠️ Mật khẩu mới và xác nhận không khớp!');
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('✅ Đổi mật khẩu thành công!');
+        setShowPasswordModal(false);
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+      } else {
+        alert('❌ ' + (data.message || 'Lỗi khi đổi mật khẩu'));
+      }
+    } catch (error) {
+      console.error('Change password error:', error);
+      alert('❌ Lỗi khi đổi mật khẩu');
+    } finally {
+      setChangingPassword(false);
+    }
   };
 
   const getCategoryIcon = (type) => {
@@ -104,18 +203,66 @@ function Profile() {
 
   return (
     <div className="profile-page">
-      {/* Header */}
-      <header className="profile-header">
-        <div className="header-content">
-          <button onClick={() => navigate('/')} className="btn-back">
-            ← Về trang chủ
-          </button>
-          <h1>🎯 Hồ Sơ Của Tôi</h1>
-          <div className="header-right">
-            <UserAvatar />
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>🔑 Đổi Mật Khẩu</h2>
+              <button className="modal-close" onClick={() => setShowPasswordModal(false)}>✕</button>
+            </div>
+
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Mật khẩu hiện tại:</label>
+                <input
+                  type="password"
+                  value={passwordData.currentPassword}
+                  onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                  placeholder="Nhập mật khẩu hiện tại"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Mật khẩu mới:</label>
+                <input
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                  placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Xác nhận mật khẩu mới:</label>
+                <input
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  placeholder="Nhập lại mật khẩu mới"
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                className="btn-primary-action"
+                onClick={handleChangePassword}
+                disabled={changingPassword}
+              >
+                {changingPassword ? '⏳ Đang xử lý...' : '✓ Đổi mật khẩu'}
+              </button>
+              <button
+                className="btn-secondary-action"
+                onClick={() => setShowPasswordModal(false)}
+                disabled={changingPassword}
+              >
+                Hủy
+              </button>
+            </div>
           </div>
         </div>
-      </header>
+      )}
 
       <div className="profile-container">
         {/* User Info Card */}
@@ -133,24 +280,121 @@ function Profile() {
           <div className="user-details">
             {!editMode ? (
               <>
-                <h2>{user?.display_name || user?.username}</h2>
-                <p className="user-email">{user?.email}</p>
-                <button className="btn-edit" onClick={() => setEditMode(true)}>
-                  ✏️ Chỉnh sửa thông tin
-                </button>
+                <h2>{user?.display_name || user?.username || 'Chưa đặt tên'}</h2>
+                <p className="user-email">{user?.email || 'Khách'}</p>
+
+                {/* Display user info */}
+                <div className="user-info-display">
+                  {user?.birthday && (
+                    <p><strong>🎂 Sinh nhật:</strong> {new Date(user.birthday).toLocaleDateString('vi-VN')}</p>
+                  )}
+                  {user?.gender && (
+                    <p><strong>👤 Giới tính:</strong> {user.gender === 'male' ? 'Nam' : user.gender === 'female' ? 'Nữ' : 'Khác'}</p>
+                  )}
+                  {user?.phone && (
+                    <p><strong>📱 Số điện thoại:</strong> {user.phone}</p>
+                  )}
+                  {user?.bio && (
+                    <p><strong>✏️ Giới thiệu:</strong> {user.bio}</p>
+                  )}
+                </div>
+
+                <div className="profile-actions">
+                  <button className="btn-edit" onClick={() => setEditMode(true)}>
+                    ✏️ Chỉnh sửa thông tin
+                  </button>
+                  <button className="btn-change-password" onClick={() => setShowPasswordModal(true)}>
+                    🔑 Đổi mật khẩu
+                  </button>
+                </div>
               </>
             ) : (
               <div className="edit-form">
+                <h3>📝 Chỉnh Sửa Thông Tin</h3>
+
                 <div className="form-group">
-                  <label>Tên hiển thị:</label>
+                  <label>Tên hiển thị: *</label>
                   <input
                     type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
+                    name="display_name"
+                    value={formData.display_name}
+                    onChange={handleInputChange}
                     placeholder="Nhập tên hiển thị"
-                    maxLength={50}
+                    maxLength={100}
                   />
                 </div>
+
+                <div className="form-group">
+                  <label>Ngày sinh nhật:</label>
+                  <input
+                    type="date"
+                    name="birthday"
+                    value={formData.birthday}
+                    onChange={handleInputChange}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Giới tính:</label>
+                  <div className="radio-group">
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value="male"
+                        checked={formData.gender === 'male'}
+                        onChange={handleInputChange}
+                      />
+                      <span>Nam</span>
+                    </label>
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value="female"
+                        checked={formData.gender === 'female'}
+                        onChange={handleInputChange}
+                      />
+                      <span>Nữ</span>
+                    </label>
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value="other"
+                        checked={formData.gender === 'other'}
+                        onChange={handleInputChange}
+                      />
+                      <span>Khác</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Số điện thoại:</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="Nhập số điện thoại"
+                    maxLength={20}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Giới thiệu bản thân:</label>
+                  <textarea
+                    name="bio"
+                    value={formData.bio}
+                    onChange={handleInputChange}
+                    placeholder="Viết vài dòng về bạn..."
+                    rows={4}
+                    maxLength={500}
+                  />
+                </div>
+
                 <div className="edit-actions">
                   <button
                     className="btn-save"
@@ -174,7 +418,7 @@ function Profile() {
           <div className="user-stats-grid">
             <div className="stat-box">
               <div className="stat-icon">⭐</div>
-              <div className="stat-value">{user?.total_stars || 0}</div>
+              <div className="stat-value">{user?.stars_balance || 0}</div>
               <div className="stat-label">Tổng sao</div>
             </div>
             <div className="stat-box">
