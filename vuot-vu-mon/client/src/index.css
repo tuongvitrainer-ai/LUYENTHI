@@ -3,41 +3,41 @@
 
 /* CSS Variables - Kid-First Color Palette */
 :root {
-  /* Primary Colors - Bright and cheerful */
-  --primary-color: #FF6B9D;
-  --primary-light: #FFB3D9;
-  --primary-dark: #E63977;
+  /* Primary Colors - Pastel Sky Blue (Màu chủ đạo) */
+  --primary-color: #87CEEB; /* Pastel Sky Blue */
+  --primary-light: #B0E0F6; /* Lighter Sky Blue */
+  --primary-dark: #5EB8E5; /* Darker Sky Blue */
 
   /* Secondary Colors - Playful and engaging */
   --secondary-color: #4ECDC4;
   --secondary-light: #A8E6E3;
   --secondary-dark: #2BA89F;
 
-  /* Accent Colors - Fun and vibrant */
+  /* Accent Colors - Fun and vibrant (Màu điểm nhấn) */
   --accent-yellow: #FFD93D;
   --accent-purple: #A78BFA;
-  --accent-orange: #FFA07A;
+  --accent-orange: #FFA07A; /* Light Salmon - Màu CTA chính */
   --accent-green: #6BCB77;
 
   /* Background Colors - Soft pastel tones */
-  --bg-primary: #F0F8FF; /* Light blue pastel - easy on the eyes */
+  --bg-primary: #F0F8FF; /* Light blue pastel - Màu nền chính, sạch sẽ, dịu mắt */
   --bg-secondary: #FFF9E6; /* Light cream pastel - warm and inviting */
   --bg-card: #FFFFFF;
   --bg-overlay: rgba(255, 255, 255, 0.95);
 
   /* Text Colors */
-  --text-primary: #333333; /* Dark gray for readability */
+  --text-primary: #000000; /* Đen - Màu chữ mặc định rõ ràng */
   --text-secondary: #666666;
   --text-light: #999999;
   --text-white: #FFFFFF;
 
-  /* Border and Shadow */
-  --border-radius: 16px;
-  --border-radius-sm: 8px;
-  --border-radius-lg: 24px;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+  /* Border and Shadow - Bo góc lớn, mềm mại */
+  --border-radius: 20px; /* Bo góc lớn cho khối chính */
+  --border-radius-sm: 12px; /* Bo góc vừa */
+  --border-radius-lg: 24px; /* Bo góc rất lớn cho Sidebar, Cards */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08); /* Đổ bóng nhẹ */
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10); /* Đổ bóng vừa */
+  --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.12); /* Đổ bóng mạnh nhưng vẫn nhẹ nhàng */
 
   /* Spacing */
   --spacing-xs: 4px;
@@ -194,6 +194,30 @@ button:disabled {
   transform: none;
 }
 
+/* Button Variants - Màu điểm nhấn cho CTA */
+button.btn-accent,
+.btn-accent {
+  background-color: var(--accent-orange);
+  color: var(--text-white);
+}
+
+button.btn-accent:hover,
+.btn-accent:hover {
+  background-color: #FF8A5C; /* Darker salmon on hover */
+  transform: translateY(-2px) scale(1.02);
+}
+
+button.btn-primary,
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--text-primary);
+}
+
+button.btn-primary:hover,
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+}
+
 /* Form Elements */
 input,
 textarea,
@@ -243,12 +267,24 @@ select:focus {
   color: var(--secondary-color);
 }
 
+.text-accent {
+  color: var(--accent-orange);
+}
+
 .bg-primary {
   background-color: var(--primary-color);
 }
 
 .bg-secondary {
   background-color: var(--secondary-color);
+}
+
+.bg-accent {
+  background-color: var(--accent-orange);
+}
+
+.bg-white {
+  background-color: var(--bg-card);
 }
 
 .rounded {
@@ -273,6 +309,21 @@ select:focus {
 
 .shadow-lg {
   box-shadow: var(--shadow-lg);
+}
+
+/* Container Utilities */
+.container-soft {
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-lg);
+}
+
+.sidebar-style {
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-lg);
 }
 
 /* Scrollbar Customization - Kid-friendly */
