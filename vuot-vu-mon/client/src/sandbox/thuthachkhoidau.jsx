@@ -315,6 +315,8 @@ const ThuThachKhoiDau = () => {
         };
 
         console.log('✅ Test submitted successfully:', results);
+        console.log('📋 Review questions received:', data.data.review_questions);
+        console.log('📊 Review questions count:', data.data.review_questions?.length || 0);
 
         setTestResults(results);
         setReviewQuestions(data.data.review_questions || []); // Store detailed review
@@ -530,12 +532,12 @@ const ThuThachKhoiDau = () => {
             </div>
 
             {/* Detailed Review */}
-            {reviewQuestions.length > 0 && (
-              <div className="detailed-review">
-                <h3 className="review-title">Chi tiết bài làm</h3>
+            <div className="detailed-review">
+              <h3 className="review-title">Chi tiết bài làm</h3>
+              {reviewQuestions.length > 0 ? (
                 <div className="review-questions">
                   {reviewQuestions.map((review, index) => (
-                    <div key={review.question_id} className={`review-item ${review.is_correct ? 'correct' : 'incorrect'}`}>
+                    <div key={review.question_id || index} className={`review-item ${review.is_correct ? 'correct' : 'incorrect'}`}>
                       <div className="review-header">
                         <span className="review-number">Câu {index + 1}</span>
                         <span className={`review-badge ${review.is_correct ? 'correct' : 'incorrect'}`}>
@@ -543,10 +545,10 @@ const ThuThachKhoiDau = () => {
                         </span>
                       </div>
                       <div className="review-question-text">
-                        <span className="subject-tag" style={{ backgroundColor: SUBJECT_CONFIG[review.subject]?.color }}>
-                          {SUBJECT_CONFIG[review.subject]?.name || review.subject}
+                        <span className="subject-tag" style={{ backgroundColor: SUBJECT_CONFIG[review.subject]?.color || '#87CEEB' }}>
+                          {SUBJECT_CONFIG[review.subject]?.name || review.subject || 'Chưa xác định'}
                         </span>
-                        {review.question_text}
+                        {review.question_text || 'Không có nội dung câu hỏi'}
                       </div>
                       <div className="review-answers">
                         <div className="review-answer">
@@ -558,7 +560,7 @@ const ThuThachKhoiDau = () => {
                         {!review.is_correct && (
                           <div className="review-answer">
                             <strong>Đáp án đúng:</strong>{' '}
-                            <span className="answer-correct">{review.correct_answer}</span>
+                            <span className="answer-correct">{review.correct_answer || 'N/A'}</span>
                           </div>
                         )}
                       </div>
@@ -570,8 +572,21 @@ const ThuThachKhoiDau = () => {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="review-placeholder" style={{
+                  textAlign: 'center',
+                  padding: '40px',
+                  background: '#f9f9f9',
+                  borderRadius: '12px',
+                  color: '#666'
+                }}>
+                  <p>⚠️ Không có chi tiết bài làm. Vui lòng thử lại hoặc liên hệ quản trị viên.</p>
+                  <p style={{ fontSize: '0.9rem', marginTop: '10px' }}>
+                    (Backend chưa trả về review_questions)
+                  </p>
+                </div>
+              )}
+            </div>
 
             {/* Action Buttons */}
             <div className="results-actions">
@@ -602,6 +617,20 @@ const ThuThachKhoiDau = () => {
   // Màn hình làm bài test
   const currentQuestion = questions[currentQuestionIndex] || null;
   const currentAnswer = currentQuestion ? userAnswers[currentQuestion.id] : undefined;
+
+  // Guard: Nếu không có câu hỏi, hiển thị loading
+  if (questions.length === 0 || !currentQuestion) {
+    return (
+      <div className="thu-thach-khoi-dau test-mode">
+        <div className="test-container">
+          <div className="test-content" style={{ width: '100%', textAlign: 'center', padding: '40px' }}>
+            <h2>⏳ Đang tải câu hỏi...</h2>
+            <p>Vui lòng đợi trong giây lát</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="thu-thach-khoi-dau test-mode">
