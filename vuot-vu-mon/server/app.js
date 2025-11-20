@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 require('dotenv').config();
 
 // Initialize Express app
@@ -11,8 +12,10 @@ const app = express();
 // MIDDLEWARE
 // ============================================
 
-// Security headers
-app.use(helmet());
+// Security headers - với CSP cho phép inline scripts từ Vite
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP for development with Vite
+}));
 
 // CORS configuration
 app.use(cors({
@@ -30,23 +33,19 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 // ============================================
-// ROUTES
+// STATIC FILES (Production)
 // ============================================
 
-// Welcome page
-app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Vuot Vu Mon - Quiz Platform API',
-    version: '1.0.0',
-    status: 'running',
-    endpoints: {
-      health: '/health',
-      api: '/api/*'
-    },
-    timestamp: new Date().toISOString()
-  });
-});
+// Serve static files from client/dist in production
+if (process.env.NODE_ENV === 'production') {
+  const clientDistPath = path.join(__dirname, '..', 'client', 'dist');
+  app.use(express.static(clientDistPath));
+  console.log('📁 Serving static files from:', clientDistPath);
+}
+
+// ============================================
+// ROUTES
+// ============================================
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -61,16 +60,33 @@ app.get('/health', (req, res) => {
 app.use('/api', require('./routes/api'));
 
 // ============================================
-// ERROR HANDLING
+// SPA FALLBACK (Production)
 // ============================================
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Endpoint not found'
+// Serve index.html for all non-API routes in production (SPA fallback)
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    // If the request is for an API endpoint, continue to next middleware
+    if (req.path.startsWith('/api') || req.path === '/health') {
+      return next();
+    }
+    // Otherwise, serve the index.html file (SPA fallback)
+    const clientDistPath = path.join(__dirname, '..', 'client', 'dist', 'index.html');
+    res.sendFile(clientDistPath);
   });
-});
+} else {
+  // 404 handler for non-production
+  app.use((req, res) => {
+    res.status(404).json({
+      success: false,
+      message: 'Endpoint not found'
+    });
+  });
+}
+
+// ============================================
+// ERROR HANDLING
+// ============================================
 
 // Global error handler
 app.use((err, req, res, next) => {
