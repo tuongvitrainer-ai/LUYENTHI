@@ -138,6 +138,7 @@ const SUBJECT_CONFIG = {
 
 const ThuThachKhoiDau = () => {
   const [selectedLevel, setSelectedLevel] = useState(null);
+  const [questionCount, setQuestionCount] = useState(15); // NEW: Số câu hỏi
   const [showTest, setShowTest] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
@@ -151,6 +152,7 @@ const ThuThachKhoiDau = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [startTime, setStartTime] = useState(null);
+  const [reviewQuestions, setReviewQuestions] = useState([]); // NEW: Detailed review
 
   // Timer countdown
   useEffect(() => {
@@ -183,7 +185,7 @@ const ThuThachKhoiDau = () => {
     try {
       // Fetch questions from API
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const response = await fetch(`${API_BASE}/api/challenge/questions/${selectedLevel}`);
+      const response = await fetch(`${API_BASE}/api/challenge/questions/${selectedLevel}?count=${questionCount}`);
 
       if (!response.ok) {
         throw new Error('Không thể tải câu hỏi');
@@ -315,6 +317,7 @@ const ThuThachKhoiDau = () => {
         console.log('✅ Test submitted successfully:', results);
 
         setTestResults(results);
+        setReviewQuestions(data.data.review_questions || []); // Store detailed review
         setShowResults(true);
         setShowConfirmDialog(false);
       } else {
@@ -385,6 +388,13 @@ const ThuThachKhoiDau = () => {
     return { answered, total: subjectQuestions.length };
   };
 
+  const getGridColumns = () => {
+    const count = questions.length;
+    if (count <= 15) return 3;
+    if (count <= 24) return 4;
+    return 5; // 30, 45 questions
+  };
+
   // Màn hình chọn cấp độ
   if (!showTest) {
     return (
@@ -421,6 +431,24 @@ const ThuThachKhoiDau = () => {
               <div className="level-number">Lớp 5</div>
             </div>
           </div>
+
+          {/* Question Count Selection */}
+          {selectedLevel && (
+            <div className="question-count-selection">
+              <div className="count-label">Chọn số lượng câu hỏi:</div>
+              <div className="count-options">
+                {[15, 24, 30, 45].map(count => (
+                  <button
+                    key={count}
+                    className={`count-option ${questionCount === count ? 'selected' : ''}`}
+                    onClick={() => setQuestionCount(count)}
+                  >
+                    {count} câu
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Start Button */}
           {selectedLevel && (
@@ -501,6 +529,50 @@ const ThuThachKhoiDau = () => {
               ⏱️ Thời gian làm bài: {formatTime(testResults.timeTaken)}
             </div>
 
+            {/* Detailed Review */}
+            {reviewQuestions.length > 0 && (
+              <div className="detailed-review">
+                <h3 className="review-title">Chi tiết bài làm</h3>
+                <div className="review-questions">
+                  {reviewQuestions.map((review, index) => (
+                    <div key={review.question_id} className={`review-item ${review.is_correct ? 'correct' : 'incorrect'}`}>
+                      <div className="review-header">
+                        <span className="review-number">Câu {index + 1}</span>
+                        <span className={`review-badge ${review.is_correct ? 'correct' : 'incorrect'}`}>
+                          {review.is_correct ? '✓ Đúng' : '✗ Sai'}
+                        </span>
+                      </div>
+                      <div className="review-question-text">
+                        <span className="subject-tag" style={{ backgroundColor: SUBJECT_CONFIG[review.subject]?.color }}>
+                          {SUBJECT_CONFIG[review.subject]?.name || review.subject}
+                        </span>
+                        {review.question_text}
+                      </div>
+                      <div className="review-answers">
+                        <div className="review-answer">
+                          <strong>Đáp án của bạn:</strong>{' '}
+                          <span className={review.is_correct ? 'answer-correct' : 'answer-wrong'}>
+                            {review.user_answer || '(Chưa trả lời)'}
+                          </span>
+                        </div>
+                        {!review.is_correct && (
+                          <div className="review-answer">
+                            <strong>Đáp án đúng:</strong>{' '}
+                            <span className="answer-correct">{review.correct_answer}</span>
+                          </div>
+                        )}
+                      </div>
+                      {review.explanation && (
+                        <div className="review-explanation">
+                          <strong>💡 Giải thích:</strong> {review.explanation}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="results-actions">
               <button
@@ -509,6 +581,7 @@ const ThuThachKhoiDau = () => {
                   setShowTest(false);
                   setShowResults(false);
                   setSelectedLevel(null);
+                  setReviewQuestions([]);
                 }}
               >
                 Làm lại bài test
@@ -545,7 +618,10 @@ const ThuThachKhoiDau = () => {
           {/* Question Grid */}
           <div className="question-grid">
             <div className="grid-title">Danh sách câu hỏi</div>
-            <div className="question-numbers">
+            <div
+              className="question-numbers"
+              style={{ gridTemplateColumns: `repeat(${getGridColumns()}, 1fr)` }}
+            >
               {questions.map((q, index) => (
                 <button
                   key={q.id}
@@ -629,7 +705,7 @@ const ThuThachKhoiDau = () => {
             <button
               className="btn-nav btn-next"
               onClick={handleNextQuestion}
-              disabled={currentQuestionIndex === MOCK_QUESTIONS.length - 1}
+              disabled={currentQuestionIndex === questions.length - 1}
             >
               Câu sau →
             </button>
@@ -645,7 +721,7 @@ const ThuThachKhoiDau = () => {
               <h2>⚠️ Xác nhận nộp bài</h2>
             </div>
             <div className="modal-body">
-              <p>Bé vẫn còn <strong>{MOCK_QUESTIONS.length - Object.keys(userAnswers).length}</strong> câu chưa làm.</p>
+              <p>Bé vẫn còn <strong>{questions.length - Object.keys(userAnswers).length}</strong> câu chưa làm.</p>
               <p>Bé có chắc chắn muốn nộp bài không?</p>
             </div>
             <div className="modal-footer">

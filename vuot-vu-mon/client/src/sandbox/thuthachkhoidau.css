@@ -158,6 +158,53 @@
   z-index: 1;
 }
 
+/* Question Count Selection */
+.question-count-selection {
+  margin-bottom: var(--spacing-xl, 24px);
+  text-align: center;
+  animation: fadeIn 0.5s ease;
+}
+
+.count-label {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: var(--spacing-md, 16px);
+}
+
+.count-options {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md, 16px);
+  flex-wrap: wrap;
+}
+
+.count-option {
+  padding: var(--spacing-sm, 12px) var(--spacing-xl, 32px);
+  background: #f5f5f5;
+  color: #000000;
+  border: 3px solid #e0e0e0;
+  border-radius: var(--border-radius-lg, 24px);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-display, 'Nunito', sans-serif);
+}
+
+.count-option:hover {
+  background: #e8f4f8;
+  border-color: var(--primary-color, #87CEEB);
+  transform: translateY(-3px);
+}
+
+.count-option.selected {
+  background: var(--primary-color, #87CEEB);
+  color: white;
+  border-color: var(--primary-color, #87CEEB);
+  box-shadow: 0 4px 16px rgba(135, 206, 235, 0.4);
+}
+
 /* Action Buttons */
 .action-buttons {
   display: flex;
@@ -728,6 +775,151 @@
   padding: var(--spacing-md, 16px);
   background: #f9f9f9;
   border-radius: var(--radius-md, 12px);
+}
+
+/* Detailed Review */
+.detailed-review {
+  padding: var(--spacing-xl, 24px);
+  background: #f9f9f9;
+  border-radius: var(--radius-lg, 16px);
+  margin-top: var(--spacing-lg, 20px);
+}
+
+.review-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 var(--spacing-lg, 20px) 0;
+  text-align: center;
+  border-bottom: 3px solid #e0e0e0;
+  padding-bottom: var(--spacing-md, 12px);
+}
+
+.review-questions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: var(--spacing-sm, 8px);
+}
+
+.review-item {
+  background: white;
+  border-radius: var(--radius-md, 12px);
+  padding: var(--spacing-lg, 20px);
+  border-left: 5px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.review-item:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.review-item.correct {
+  border-left-color: #51CF66;
+  background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
+}
+
+.review-item.incorrect {
+  border-left-color: #FF6B6B;
+  background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md, 12px);
+}
+
+.review-number {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #666;
+}
+
+.review-badge {
+  padding: var(--spacing-xs, 6px) var(--spacing-md, 16px);
+  border-radius: var(--radius-md, 12px);
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+}
+
+.review-badge.correct {
+  background: #51CF66;
+  color: white;
+}
+
+.review-badge.incorrect {
+  background: #FF6B6B;
+  color: white;
+}
+
+.review-question-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #000000;
+  line-height: 1.6;
+  margin-bottom: var(--spacing-md, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.subject-tag {
+  display: inline-block;
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 12px);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  align-self: flex-start;
+}
+
+.review-answers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+  padding: var(--spacing-md, 12px);
+  background: #f9f9f9;
+  border-radius: var(--radius-md, 12px);
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+.review-answer {
+  font-size: 1rem;
+  color: #000000;
+  line-height: 1.6;
+}
+
+.answer-correct {
+  color: #51CF66;
+  font-weight: 700;
+}
+
+.answer-wrong {
+  color: #FF6B6B;
+  font-weight: 700;
+}
+
+.review-explanation {
+  padding: var(--spacing-md, 12px);
+  background: linear-gradient(135deg, #FFF9E6 0%, #FFF4D6 100%);
+  border-radius: var(--radius-md, 12px);
+  border-left: 4px solid #FFD700;
+  font-size: 1rem;
+  color: #000000;
+  line-height: 1.6;
+}
+
+.review-explanation strong {
+  color: #87CEEB;
 }
 
 /* Results Actions */
