@@ -25,7 +25,7 @@ class TestResult {
       stars_earned = 0
     } = resultData;
 
-    const [id] = await knex('test_results').insert({
+    const result = await knex('test_results').insert({
       user_id,
       grade_level,
       total_questions,
@@ -40,7 +40,14 @@ class TestResult {
       created_at: knex.fn.now()
     }).returning('id');
 
-    return this.getById(id);
+    // Extract ID properly (handle both array and object responses)
+    const insertedId = Array.isArray(result)
+      ? (typeof result[0] === 'object' ? result[0].id : result[0])
+      : (typeof result === 'object' ? result.id : result);
+
+    console.log(`   💾 Inserted test result with ID: ${insertedId} (type: ${typeof insertedId})`);
+
+    return this.getById(insertedId);
   }
 
   /**
@@ -49,8 +56,17 @@ class TestResult {
    * @returns {Promise<Object>} Test result object
    */
   static async getById(id) {
+    // Ensure id is a number
+    const numericId = typeof id === 'object' && id.id ? id.id : id;
+    const parsedId = parseInt(numericId);
+
+    if (isNaN(parsedId)) {
+      console.error(`   ❌ Invalid ID passed to getById:`, id);
+      throw new Error(`Invalid test result ID: ${JSON.stringify(id)}`);
+    }
+
     const result = await knex('test_results')
-      .where({ id })
+      .where({ id: parsedId })
       .first();
 
     if (!result) {
