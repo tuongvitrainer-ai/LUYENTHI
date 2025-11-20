@@ -28,15 +28,15 @@ module.exports = {
   sqlite: {
     client: 'better-sqlite3',
     connection: {
-      filename: './database/database.sqlite'
+      filename: process.env.DB_PATH || './database/database.sqlite'
     },
     useNullAsDefault: true,
     migrations: {
-      directory: './database/migrations',
+      directory: __dirname + '/database/migrations',
       tableName: 'knex_migrations'
     },
     seeds: {
-      directory: './database/seeds'
+      directory: __dirname + '/database/seeds'
     }
   },
 
