@@ -274,12 +274,23 @@ const ThuThachKhoiDau = () => {
 
     try {
       // Prepare answers for API
-      const answersArray = questions.map(q => ({
-        question_id: q.id,
-        user_answer: q.options[userAnswers[q.id]] || '' // Convert index to actual answer text
-      }));
+      const answersArray = questions.map(q => {
+        const answerIndex = userAnswers[q.id];
+        const answerText = (answerIndex !== undefined && q.options && q.options[answerIndex])
+          ? q.options[answerIndex]
+          : '';
+
+        console.log(`Question ${q.id}: User selected index ${answerIndex}, which is "${answerText}"`);
+
+        return {
+          question_id: q.id,
+          user_answer: answerText
+        };
+      });
 
       const timeTaken = Math.floor((Date.now() - startTime) / 1000); // seconds
+
+      console.log('📤 Submitting answers:', answersArray);
 
       // Submit to API
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -318,8 +329,33 @@ const ThuThachKhoiDau = () => {
         console.log('📋 Review questions received:', data.data.review_questions);
         console.log('📊 Review questions count:', data.data.review_questions?.length || 0);
 
+        // If backend doesn't return review_questions, create fallback from frontend
+        let reviewData = data.data.review_questions;
+        if (!reviewData || reviewData.length === 0) {
+          console.warn('⚠️ Backend did not return review_questions, creating fallback...');
+          reviewData = questions.map((q, index) => {
+            const answerIndex = userAnswers[q.id];
+            const userAnswerText = (answerIndex !== undefined && q.options)
+              ? q.options[answerIndex]
+              : '';
+
+            // We don't know the correct answer from frontend, so mark as unknown
+            return {
+              question_id: q.id,
+              question_text: q.question || q.question_text,
+              options: q.options,
+              user_answer: userAnswerText,
+              correct_answer: 'N/A (chưa có từ backend)',
+              is_correct: false, // Can't determine without backend
+              explanation: 'Chưa có giải thích (backend chưa trả về dữ liệu)',
+              subject: q.subject,
+              topic: q.topic
+            };
+          });
+        }
+
         setTestResults(results);
-        setReviewQuestions(data.data.review_questions || []); // Store detailed review
+        setReviewQuestions(reviewData);
         setShowResults(true);
         setShowConfirmDialog(false);
       } else {
@@ -392,16 +428,18 @@ const ThuThachKhoiDau = () => {
 
   const getGridColumns = () => {
     const count = questions.length;
-    if (count <= 15) return 3;
-    if (count <= 24) return 4;
-    return 5; // 30, 45 questions
+    if (count <= 15) return 3;  // 3 cột: tối đa 5 dòng
+    if (count <= 24) return 4;  // 4 cột: tối đa 6 dòng
+    if (count <= 30) return 5;  // 5 cột: tối đa 6 dòng
+    return 6;                    // 6 cột: 45 câu = 7.5 dòng ~ 8 dòng
   };
 
   const getGridGap = () => {
     const count = questions.length;
-    if (count <= 15) return '10px';
-    if (count <= 24) return '8px';
-    return '6px'; // 30, 45 questions - gap nhỏ hơn
+    if (count <= 15) return '8px';
+    if (count <= 24) return '6px';
+    if (count <= 30) return '5px';
+    return '4px'; // 45 questions - gap rất nhỏ
   };
 
   // Màn hình chọn cấp độ
@@ -550,59 +588,79 @@ const ThuThachKhoiDau = () => {
               ⏱️ Thời gian làm bài: {formatTime(testResults.timeTaken)}
             </div>
 
-            {/* Detailed Review */}
-            <div className="detailed-review">
-              <h3 className="review-title">Chi tiết bài làm</h3>
-              {reviewQuestions.length > 0 ? (
+            {/* Detailed Review - ALWAYS VISIBLE */}
+            <div className="detailed-review" style={{ marginTop: '24px' }}>
+              <h3 className="review-title">📝 Chi tiết bài làm ({reviewQuestions.length} câu)</h3>
+              {(() => {
+                console.log('🔍 Rendering review section, reviewQuestions:', reviewQuestions);
+                console.log('📊 Review questions count:', reviewQuestions.length);
+                return null;
+              })()}
+              {reviewQuestions && reviewQuestions.length > 0 ? (
                 <div className="review-questions">
-                  {reviewQuestions.map((review, index) => (
-                    <div key={review.question_id || index} className={`review-item ${review.is_correct ? 'correct' : 'incorrect'}`}>
-                      <div className="review-header">
-                        <span className="review-number">Câu {index + 1}</span>
-                        <span className={`review-badge ${review.is_correct ? 'correct' : 'incorrect'}`}>
-                          {review.is_correct ? '✓ Đúng' : '✗ Sai'}
-                        </span>
-                      </div>
-                      <div className="review-question-text">
-                        <span className="subject-tag" style={{ backgroundColor: SUBJECT_CONFIG[review.subject]?.color || '#87CEEB' }}>
-                          {SUBJECT_CONFIG[review.subject]?.name || review.subject || 'Chưa xác định'}
-                        </span>
-                        {review.question_text || 'Không có nội dung câu hỏi'}
-                      </div>
-                      <div className="review-answers">
-                        <div className="review-answer">
-                          <strong>Đáp án của bạn:</strong>{' '}
-                          <span className={review.is_correct ? 'answer-correct' : 'answer-wrong'}>
-                            {review.user_answer || '(Chưa trả lời)'}
+                  {reviewQuestions.map((review, index) => {
+                    const subjectConfig = getSafeSubjectConfig(review.subject);
+                    return (
+                      <div key={review.question_id || index} className={`review-item ${review.is_correct ? 'correct' : 'incorrect'}`}>
+                        <div className="review-header">
+                          <span className="review-number">Câu {index + 1}</span>
+                          <span className={`review-badge ${review.is_correct ? 'correct' : 'incorrect'}`}>
+                            {review.is_correct ? '✓ Đúng' : '✗ Sai'}
                           </span>
                         </div>
-                        {!review.is_correct && (
+                        <div className="review-question-text">
+                          <span className="subject-tag" style={{ backgroundColor: subjectConfig.color }}>
+                            {subjectConfig.name}
+                          </span>
+                          {review.question_text || 'Không có nội dung câu hỏi'}
+                        </div>
+                        <div className="review-answers">
                           <div className="review-answer">
-                            <strong>Đáp án đúng:</strong>{' '}
-                            <span className="answer-correct">{review.correct_answer || 'N/A'}</span>
+                            <strong>Đáp án của bạn:</strong>{' '}
+                            <span className={review.is_correct ? 'answer-correct' : 'answer-wrong'}>
+                              {review.user_answer || '(Chưa trả lời)'}
+                            </span>
+                          </div>
+                          {!review.is_correct && (
+                            <div className="review-answer">
+                              <strong>Đáp án đúng:</strong>{' '}
+                              <span className="answer-correct">{review.correct_answer || 'N/A'}</span>
+                            </div>
+                          )}
+                        </div>
+                        {review.explanation && review.explanation !== 'Chưa có giải thích (backend chưa trả về dữ liệu)' && (
+                          <div className="review-explanation">
+                            <strong>💡 Giải thích:</strong> {review.explanation}
                           </div>
                         )}
                       </div>
-                      {review.explanation && (
-                        <div className="review-explanation">
-                          <strong>💡 Giải thích:</strong> {review.explanation}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="review-placeholder" style={{
                   textAlign: 'center',
                   padding: '40px',
-                  background: '#f9f9f9',
+                  background: '#fff5f5',
                   borderRadius: '12px',
-                  color: '#666'
+                  color: '#FF6B6B',
+                  border: '2px dashed #FF6B6B'
                 }}>
-                  <p>⚠️ Không có chi tiết bài làm. Vui lòng thử lại hoặc liên hệ quản trị viên.</p>
-                  <p style={{ fontSize: '0.9rem', marginTop: '10px' }}>
-                    (Backend chưa trả về review_questions)
+                  <h3>❌ Không có dữ liệu chi tiết</h3>
+                  <p style={{ marginTop: '10px' }}>
+                    Backend chưa trả về review_questions. Vui lòng chạy:
                   </p>
+                  <code style={{
+                    display: 'block',
+                    background: '#000',
+                    color: '#0f0',
+                    padding: '10px',
+                    borderRadius: '4px',
+                    marginTop: '10px',
+                    fontFamily: 'monospace'
+                  }}>
+                    cd vuot-vu-mon/server && npx knex migrate:latest
+                  </code>
                 </div>
               )}
             </div>
