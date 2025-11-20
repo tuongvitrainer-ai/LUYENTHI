@@ -540,14 +540,19 @@ const ThuThachKhoiDau = () => {
           </div>
 
           <div className="results-content">
-            {/* Overall Score */}
+            {/* Overall Score with Time */}
             <div className="score-card">
               <div className="score-circle">
                 <div className="score-number">{testResults.percentage || 0}%</div>
                 <div className="score-label">Điểm số</div>
               </div>
-              <div className="score-detail">
-                Đúng <strong>{testResults.score || 0}</strong> / {testResults.total || 0} câu
+              <div className="score-right-info">
+                <div className="score-detail">
+                  Đúng <strong>{testResults.score || 0}</strong> / {testResults.total || 0} câu
+                </div>
+                <div className="time-info-inline">
+                  ⏱️ Thời gian làm bài: {formatTime(testResults.timeTaken)}
+                </div>
               </div>
             </div>
 
@@ -581,11 +586,6 @@ const ThuThachKhoiDau = () => {
                   );
                 })}
               </div>
-            </div>
-
-            {/* Time Taken */}
-            <div className="time-info">
-              ⏱️ Thời gian làm bài: {formatTime(testResults.timeTaken)}
             </div>
 
             {/* Detailed Review - ALWAYS VISIBLE */}
