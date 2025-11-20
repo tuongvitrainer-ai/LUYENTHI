@@ -42,27 +42,20 @@ const getQuestions = async (req, res) => {
       });
     }
 
+    // Get count from query params with validation
     const count = parseInt(req.query.count) || 15;
-    const useDistribution = req.query.distribution !== 'false';
+
+    if (count < 5 || count > 50) {
+      return res.status(400).json({
+        success: false,
+        message: 'Số câu hỏi phải từ 5 đến 50'
+      });
+    }
 
     console.log(`🎯 [Challenge] Fetching ${count} questions for grade ${gradeLevel}`);
 
-    let questions;
-
-    if (useDistribution) {
-      // Phân bố đều theo môn
-      const distribution = {
-        math: 4,
-        vietnamese: 4,
-        english: 4,
-        logic: 3
-      };
-
-      questions = await Question.getRandomQuestions(gradeLevel, count, distribution);
-    } else {
-      // Ngẫu nhiên không phân bố
-      questions = await Question.getRandomQuestions(gradeLevel, count);
-    }
+    // Always random without fixed distribution for flexibility
+    const questions = await Question.getRandomQuestions(gradeLevel, count);
 
     console.log(`   ✅ Found ${questions.length} questions`);
 
@@ -221,6 +214,24 @@ const submitTest = async (req, res) => {
 
     console.log(`   ✅ Saved test result #${result.id}\n`);
 
+    // Format detailed review for frontend
+    const reviewQuestions = questions.map((q, index) => {
+      const answer = answers[index];
+      const isCorrect = String(answer.user_answer).trim() === String(q.correct_answer).trim();
+
+      return {
+        question_id: q.id,
+        question_text: q.question_text,
+        options: q.options,
+        user_answer: answer.user_answer,
+        correct_answer: q.correct_answer,
+        is_correct: isCorrect,
+        explanation: q.explanation,
+        subject: q.subject,
+        topic: q.topic
+      };
+    });
+
     // Response
     res.json({
       success: true,
@@ -234,7 +245,8 @@ const submitTest = async (req, res) => {
         stars_earned: result.stars_earned,
         subject_scores: result.subject_scores,
         time_taken: result.time_taken,
-        completed_at: result.completed_at
+        completed_at: result.completed_at,
+        review_questions: reviewQuestions // NEW: Detailed review với explanation
       }
     });
 
