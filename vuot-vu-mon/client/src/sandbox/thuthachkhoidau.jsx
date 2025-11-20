@@ -397,6 +397,13 @@ const ThuThachKhoiDau = () => {
     return 5; // 30, 45 questions
   };
 
+  const getGridGap = () => {
+    const count = questions.length;
+    if (count <= 15) return '10px';
+    if (count <= 24) return '8px';
+    return '6px'; // 30, 45 questions - gap nhỏ hơn
+  };
+
   // Màn hình chọn cấp độ
   if (!showTest) {
     return (
@@ -478,6 +485,15 @@ const ThuThachKhoiDau = () => {
 
   // Màn hình kết quả
   if (showResults && testResults) {
+    // Safe get subject config
+    const getSafeSubjectConfig = (subject) => {
+      return SUBJECT_CONFIG[subject] || {
+        name: subject || 'Không xác định',
+        icon: '❓',
+        color: '#87CEEB'
+      };
+    };
+
     return (
       <div className="thu-thach-khoi-dau">
         <div className="results-container">
@@ -489,11 +505,11 @@ const ThuThachKhoiDau = () => {
             {/* Overall Score */}
             <div className="score-card">
               <div className="score-circle">
-                <div className="score-number">{testResults.percentage}%</div>
+                <div className="score-number">{testResults.percentage || 0}%</div>
                 <div className="score-label">Điểm số</div>
               </div>
               <div className="score-detail">
-                Đúng <strong>{testResults.score}</strong> / {testResults.total} câu
+                Đúng <strong>{testResults.score || 0}</strong> / {testResults.total || 0} câu
               </div>
             </div>
 
@@ -501,28 +517,31 @@ const ThuThachKhoiDau = () => {
             <div className="subject-breakdown">
               <h3 className="breakdown-title">Phân tích theo môn học</h3>
               <div className="subject-scores">
-                {Object.entries(testResults.subjectScores).map(([subject, scores]) => (
-                  <div key={subject} className="subject-score-card">
-                    <div className="subject-header">
-                      <span className="subject-icon">{SUBJECT_CONFIG[subject].icon}</span>
-                      <span className="subject-name">{SUBJECT_CONFIG[subject].name}</span>
-                    </div>
-                    <div className="subject-progress">
-                      <div className="progress-bar">
-                        <div
-                          className="progress-fill"
-                          style={{
-                            width: `${(scores.correct / scores.total) * 100}%`,
-                            backgroundColor: SUBJECT_CONFIG[subject].color
-                          }}
-                        ></div>
+                {testResults.subjectScores && Object.entries(testResults.subjectScores).map(([subject, scores]) => {
+                  const subjectConfig = getSafeSubjectConfig(subject);
+                  return (
+                    <div key={subject} className="subject-score-card">
+                      <div className="subject-header">
+                        <span className="subject-icon">{subjectConfig.icon}</span>
+                        <span className="subject-name">{subjectConfig.name}</span>
                       </div>
-                      <div className="progress-text">
-                        {scores.correct}/{scores.total} câu đúng
+                      <div className="subject-progress">
+                        <div className="progress-bar">
+                          <div
+                            className="progress-fill"
+                            style={{
+                              width: `${scores.total > 0 ? (scores.correct / scores.total) * 100 : 0}%`,
+                              backgroundColor: subjectConfig.color
+                            }}
+                          ></div>
+                        </div>
+                        <div className="progress-text">
+                          {scores.correct || 0}/{scores.total || 0} câu đúng
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -618,19 +637,44 @@ const ThuThachKhoiDau = () => {
   const currentQuestion = questions[currentQuestionIndex] || null;
   const currentAnswer = currentQuestion ? userAnswers[currentQuestion.id] : undefined;
 
-  // Guard: Nếu không có câu hỏi, hiển thị loading
+  // Guard: Nếu không có câu hỏi hoặc data không hợp lệ, hiển thị loading
   if (questions.length === 0 || !currentQuestion) {
+    console.warn('⚠️ No questions available or currentQuestion is null', {
+      questionsLength: questions.length,
+      currentQuestionIndex,
+      currentQuestion
+    });
+
     return (
       <div className="thu-thach-khoi-dau test-mode">
         <div className="test-container">
           <div className="test-content" style={{ width: '100%', textAlign: 'center', padding: '40px' }}>
             <h2>⏳ Đang tải câu hỏi...</h2>
             <p>Vui lòng đợi trong giây lát</p>
+            {questions.length === 0 && (
+              <button
+                onClick={() => window.location.reload()}
+                style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}
+              >
+                🔄 Tải lại trang
+              </button>
+            )}
           </div>
         </div>
       </div>
     );
   }
+
+  // Safe get subject config with fallback
+  const getSubjectConfig = (subject) => {
+    return SUBJECT_CONFIG[subject] || {
+      name: subject || 'Không xác định',
+      icon: '❓',
+      color: '#87CEEB'
+    };
+  };
+
+  const subjectConfig = getSubjectConfig(currentQuestion.subject);
 
   return (
     <div className="thu-thach-khoi-dau test-mode">
@@ -649,11 +693,14 @@ const ThuThachKhoiDau = () => {
             <div className="grid-title">Danh sách câu hỏi</div>
             <div
               className="question-numbers"
-              style={{ gridTemplateColumns: `repeat(${getGridColumns()}, 1fr)` }}
+              style={{
+                gridTemplateColumns: `repeat(${getGridColumns()}, 1fr)`,
+                gap: getGridGap()
+              }}
             >
               {questions.map((q, index) => (
                 <button
-                  key={q.id}
+                  key={q.id || index}
                   className={`question-number-btn ${getQuestionStatus(index)}`}
                   onClick={() => handleQuestionClick(index)}
                 >
@@ -668,6 +715,7 @@ const ThuThachKhoiDau = () => {
             <div className="progress-title">Tiến độ theo môn</div>
             {Object.entries(SUBJECT_CONFIG).map(([key, config]) => {
               const progress = getSubjectProgress(key);
+              if (progress.total === 0) return null; // Skip subjects with no questions
               return (
                 <div key={key} className="subject-item">
                   <span className="subject-icon">{config.icon}</span>
@@ -687,20 +735,22 @@ const ThuThachKhoiDau = () => {
           <div className="question-header">
             <div className="question-title">CÂU {currentQuestionIndex + 1}</div>
             <div className="question-topic">
-              <span className="topic-icon">{SUBJECT_CONFIG[currentQuestion.subject].icon}</span>
+              <span className="topic-icon">{subjectConfig.icon}</span>
               <span className="topic-text">
-                {SUBJECT_CONFIG[currentQuestion.subject].name}: {currentQuestion.topic}
+                {subjectConfig.name}: {currentQuestion.topic || 'Chưa có chủ đề'}
               </span>
             </div>
           </div>
 
           {/* Question Content */}
           <div className="question-content">
-            <div className="question-text">{currentQuestion.question}</div>
+            <div className="question-text">
+              {currentQuestion.question || currentQuestion.question_text || 'Không có nội dung câu hỏi'}
+            </div>
 
             {/* Answer Options */}
             <div className="answer-options">
-              {currentQuestion.options.map((option, index) => (
+              {(currentQuestion.options || []).map((option, index) => (
                 <button
                   key={index}
                   className={`answer-option ${currentAnswer === index ? 'selected' : ''}`}
