@@ -150,9 +150,24 @@ const submitTest = async (req, res) => {
 
     // Lấy questions để chấm điểm
     const questionIds = answers.map(a => a.question_id);
+    console.log(`   📋 Question IDs to fetch:`, questionIds);
+
     const questions = await Promise.all(
-      questionIds.map(id => Question.getById(id))
+      questionIds.map(async (id) => {
+        try {
+          const q = await Question.getById(id);
+          if (!q) {
+            console.error(`   ❌ Question ${id} not found`);
+          }
+          return q;
+        } catch (err) {
+          console.error(`   ❌ Error fetching question ${id}:`, err.message);
+          return null;
+        }
+      })
     );
+
+    console.log(`   ✅ Fetched ${questions.filter(q => q).length}/${questionIds.length} questions`);
 
     // Kiểm tra questions exist
     if (questions.some(q => !q)) {
@@ -215,47 +230,63 @@ const submitTest = async (req, res) => {
     console.log(`   ✅ Saved test result #${result.id}\n`);
 
     // Format detailed review for frontend
+    console.log(`   📝 Creating review_questions...`);
     const reviewQuestions = questions.map((q, index) => {
       const answer = answers[index];
       const isCorrect = String(answer.user_answer).trim() === String(q.correct_answer).trim();
 
-      return {
+      const review = {
         question_id: q.id,
         question_text: q.question_text,
         options: q.options,
         user_answer: answer.user_answer,
         correct_answer: q.correct_answer,
         is_correct: isCorrect,
-        explanation: q.explanation,
+        explanation: q.explanation || null,
         subject: q.subject,
         topic: q.topic
       };
+
+      console.log(`      Q${index + 1}: ${q.id} - ${isCorrect ? '✓' : '✗'} - has explanation: ${!!q.explanation}`);
+
+      return review;
     });
 
+    console.log(`   ✅ Created ${reviewQuestions.length} review questions`);
+
     // Response
+    const responseData = {
+      test_id: result.id,
+      score: result.score,
+      correct_answers: result.correct_answers,
+      total_questions: result.total_questions,
+      percentage: result.score,
+      stars_earned: result.stars_earned,
+      subject_scores: result.subject_scores,
+      time_taken: result.time_taken,
+      completed_at: result.completed_at,
+      review_questions: reviewQuestions // NEW: Detailed review với explanation
+    };
+
+    console.log(`   📤 Sending response with ${responseData.review_questions.length} review questions`);
+
     res.json({
       success: true,
       message: 'Nộp bài thành công',
-      data: {
-        test_id: result.id,
-        score: result.score,
-        correct_answers: result.correct_answers,
-        total_questions: result.total_questions,
-        percentage: result.score,
-        stars_earned: result.stars_earned,
-        subject_scores: result.subject_scores,
-        time_taken: result.time_taken,
-        completed_at: result.completed_at,
-        review_questions: reviewQuestions // NEW: Detailed review với explanation
-      }
+      data: responseData
     });
 
   } catch (error) {
     console.error('❌ [Challenge] Submit test error:', error);
+    console.error('   Stack trace:', error.stack);
+
     res.status(500).json({
       success: false,
       message: 'Lỗi khi nộp bài',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: process.env.NODE_ENV === 'development' ? {
+        message: error.message,
+        stack: error.stack
+      } : undefined
     });
   }
 };
