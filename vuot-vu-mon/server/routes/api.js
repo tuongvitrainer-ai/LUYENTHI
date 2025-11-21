@@ -6,6 +6,7 @@ const authController = require('../controllers/authController');
 const adminController = require('../controllers/adminController');
 const gameController = require('../controllers/gameController');
 const shopController = require('../controllers/shopController');
+const challengeController = require('../controllers/challengeController');
 
 // Import middleware
 const { authenticateToken, isAdmin } = require('../middleware/auth');
@@ -64,5 +65,27 @@ router.get('/shop/purchases', authenticateToken, shopController.getUserPurchases
 
 // Get user's inventory
 router.get('/shop/inventory', authenticateToken, shopController.getInventory);
+
+// ============================================
+// CHALLENGE ROUTES - "Thử thách khởi đầu" Game
+// ============================================
+
+// Get questions for test (PUBLIC - no auth required for sandbox testing)
+router.get('/challenge/questions/:gradeLevel', challengeController.getQuestions);
+
+// Submit test result (PUBLIC for now - will add auth later)
+router.post('/challenge/submit', challengeController.submitTest);
+
+// Get user's test history
+router.get('/challenge/history/:userId', challengeController.getHistory);
+
+// Get user statistics for a grade level
+router.get('/challenge/stats/:userId/:gradeLevel', challengeController.getStats);
+
+// Get leaderboard for a grade level
+router.get('/challenge/leaderboard/:gradeLevel', challengeController.getLeaderboard);
+
+// Get question count by grade level
+router.get('/challenge/question-count/:gradeLevel', challengeController.getQuestionCount);
 
 module.exports = router;
