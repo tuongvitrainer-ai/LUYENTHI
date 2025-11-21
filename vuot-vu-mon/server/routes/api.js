@@ -41,6 +41,9 @@ router.get('/game/history', authenticateToken, gameController.getHistory);
 // Get user statistics
 router.get('/game/stats', authenticateToken, gameController.getStats);
 
+// Report question issue (Requires auth)
+router.post('/game/report_question', authenticateToken, gameController.reportQuestion);
+
 // ============================================
 // ADMIN ROUTES (V6)
 // ============================================
@@ -48,7 +51,20 @@ router.get('/game/stats', authenticateToken, gameController.getStats);
 // Question management (Admin only)
 router.post('/admin/questions', authenticateToken, isAdmin, adminController.createQuestion);
 router.get('/admin/questions', authenticateToken, isAdmin, adminController.getAllQuestions);
-// Note: update and delete will be added later if needed
+router.get('/admin/questions/:id', authenticateToken, isAdmin, adminController.getQuestionById);
+router.put('/admin/questions/:id', authenticateToken, isAdmin, adminController.updateQuestion);
+router.delete('/admin/questions/:id', authenticateToken, isAdmin, adminController.deleteQuestion);
+
+// User management (Admin only)
+router.get('/admin/users', authenticateToken, isAdmin, adminController.getAllUsers);
+
+// Dashboard stats (Admin only)
+router.get('/admin/stats', authenticateToken, isAdmin, adminController.getDashboardStats);
+
+// Question reports management (Admin only)
+router.get('/admin/question-reports', authenticateToken, isAdmin, adminController.getQuestionReports);
+router.put('/admin/question-reports/:id', authenticateToken, isAdmin, adminController.updateQuestionReport);
+router.get('/admin/question-reports/stats', authenticateToken, isAdmin, adminController.getQuestionReportStats);
 
 // ============================================
 // SHOP ROUTES

@@ -548,12 +548,213 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+// ============================================
+// API 8: GET /api/admin/question-reports
+// Lấy danh sách báo cáo lỗi câu hỏi (Admin only)
+// ============================================
+const getQuestionReports = async (req, res) => {
+  try {
+    const { limit = 50, offset = 0, status } = req.query;
+
+    let query = knex('question_reports as qr')
+      .select(
+        'qr.id', 'qr.question_id', 'qr.user_id', 'qr.report_type',
+        'qr.comment', 'qr.context_json', 'qr.status',
+        'qr.resolved_by', 'qr.admin_note', 'qr.created_at', 'qr.resolved_at',
+        'q.content_json', 'q.correct_answer', 'q.difficulty',
+        'u.username as reporter_username', 'u.email as reporter_email'
+      )
+      .leftJoin('questions as q', 'qr.question_id', 'q.id')
+      .leftJoin('users as u', 'qr.user_id', 'u.id');
+
+    // Filter by status
+    if (status) {
+      query = query.where('qr.status', status);
+    }
+
+    query = query
+      .orderBy('qr.created_at', 'desc')
+      .limit(parseInt(limit))
+      .offset(parseInt(offset));
+
+    const reports = await query;
+
+    // Parse JSON fields
+    const reportsWithParsedData = reports.map(r => ({
+      ...r,
+      content_json: r.content_json ? JSON.parse(r.content_json) : null,
+      context_json: r.context_json ? JSON.parse(r.context_json) : null
+    }));
+
+    // Get total count
+    const totalCountQuery = knex('question_reports');
+    if (status) {
+      totalCountQuery.where('status', status);
+    }
+    const totalCount = await totalCountQuery.count('* as count').first();
+
+    res.json({
+      success: true,
+      data: {
+        reports: reportsWithParsedData,
+        count: reportsWithParsedData.length,
+        total: parseInt(totalCount.count),
+        limit: parseInt(limit),
+        offset: parseInt(offset)
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Get question reports error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching question reports'
+    });
+  }
+};
+
+// ============================================
+// API 9: PUT /api/admin/question-reports/:id
+// Cập nhật trạng thái báo cáo (Admin only)
+// ============================================
+const updateQuestionReport = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, admin_note } = req.body;
+    const adminId = req.user.id;
+
+    // Check if report exists
+    const report = await knex('question_reports')
+      .where('id', id)
+      .first();
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found'
+      });
+    }
+
+    // Validate status
+    const validStatuses = ['pending', 'reviewing', 'resolved', 'rejected'];
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+      });
+    }
+
+    // Build update object
+    const updateData = { };
+
+    if (status) {
+      updateData.status = status;
+    }
+
+    if (admin_note !== undefined) {
+      updateData.admin_note = admin_note;
+    }
+
+    // If resolving or rejecting, set resolved_by and resolved_at
+    if (status === 'resolved' || status === 'rejected') {
+      updateData.resolved_by = adminId;
+      updateData.resolved_at = knex.fn.now();
+    }
+
+    await knex('question_reports')
+      .where('id', id)
+      .update(updateData);
+
+    // Fetch updated report
+    const updatedReport = await knex('question_reports')
+      .where('id', id)
+      .first();
+
+    res.json({
+      success: true,
+      message: 'Report updated successfully',
+      data: {
+        report: {
+          ...updatedReport,
+          context_json: updatedReport.context_json ? JSON.parse(updatedReport.context_json) : null
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Update question report error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating question report'
+    });
+  }
+};
+
+// ============================================
+// API 10: GET /api/admin/question-reports/stats
+// Thống kê báo cáo lỗi (Admin only)
+// ============================================
+const getQuestionReportStats = async (req, res) => {
+  try {
+    // Overall stats
+    const overallStats = await knex('question_reports')
+      .select(
+        knex.raw('COUNT(*) as total_reports'),
+        knex.raw('COUNT(CASE WHEN status = ? THEN 1 END) as pending_reports', ['pending']),
+        knex.raw('COUNT(CASE WHEN status = ? THEN 1 END) as reviewing_reports', ['reviewing']),
+        knex.raw('COUNT(CASE WHEN status = ? THEN 1 END) as resolved_reports', ['resolved']),
+        knex.raw('COUNT(CASE WHEN status = ? THEN 1 END) as rejected_reports', ['rejected'])
+      )
+      .first();
+
+    // Reports by type
+    const reportsByType = await knex('question_reports')
+      .select('report_type')
+      .select(knex.raw('COUNT(*) as count'))
+      .groupBy('report_type');
+
+    // Most reported questions
+    const mostReported = await knex('question_reports as qr')
+      .select('qr.question_id')
+      .select(knex.raw('COUNT(*) as report_count'))
+      .select('q.content_json')
+      .leftJoin('questions as q', 'qr.question_id', 'q.id')
+      .groupBy('qr.question_id', 'q.content_json')
+      .orderBy('report_count', 'desc')
+      .limit(10);
+
+    const mostReportedParsed = mostReported.map(r => ({
+      ...r,
+      content_json: r.content_json ? JSON.parse(r.content_json) : null
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        overall_stats: overallStats,
+        reports_by_type: reportsByType,
+        most_reported_questions: mostReportedParsed
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Get question report stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching question report stats'
+    });
+  }
+};
+
 module.exports = {
-  createQuestion,     // POST /api/admin/questions
-  getQuestionById,    // GET /api/admin/questions/:id
-  updateQuestion,     // PUT /api/admin/questions/:id
-  deleteQuestion,     // DELETE /api/admin/questions/:id
-  getAllQuestions,    // GET /api/admin/questions
-  getAllUsers,        // GET /api/admin/users
-  getDashboardStats   // GET /api/admin/stats
+  createQuestion,          // POST /api/admin/questions
+  getQuestionById,         // GET /api/admin/questions/:id
+  updateQuestion,          // PUT /api/admin/questions/:id
+  deleteQuestion,          // DELETE /api/admin/questions/:id
+  getAllQuestions,         // GET /api/admin/questions
+  getAllUsers,             // GET /api/admin/users
+  getDashboardStats,       // GET /api/admin/stats
+  getQuestionReports,      // GET /api/admin/question-reports
+  updateQuestionReport,    // PUT /api/admin/question-reports/:id
+  getQuestionReportStats   // GET /api/admin/question-reports/stats
 };
