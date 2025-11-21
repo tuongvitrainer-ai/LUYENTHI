@@ -215,6 +215,38 @@ function QuestionView() {
 
           <h2 className="question-text">{content.question_text}</h2>
 
+          {/* Media Display - Image and Audio */}
+          {(currentQuestion.image_url || currentQuestion.audio_url) && (
+            <div className="question-media" style={{ marginBottom: '20px' }}>
+              {currentQuestion.image_url && (
+                <div className="question-image" style={{ marginBottom: '12px' }}>
+                  <img
+                    src={currentQuestion.image_url}
+                    alt="Question illustration"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '300px',
+                      height: 'auto',
+                      borderRadius: '8px',
+                      objectFit: 'contain'
+                    }}
+                  />
+                </div>
+              )}
+              {currentQuestion.audio_url && (
+                <div className="question-audio">
+                  <audio
+                    controls
+                    src={currentQuestion.audio_url}
+                    style={{ width: '100%', maxWidth: '400px' }}
+                  >
+                    Trình duyệt của bạn không hỗ trợ phát audio.
+                  </audio>
+                </div>
+              )}
+            </div>
+          )}
+
           {isMultipleChoice && (
             <div className="options-container">
               {content.options.map((option) => {

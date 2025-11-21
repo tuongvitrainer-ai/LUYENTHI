@@ -15,13 +15,18 @@ import {
   Col,
   Divider,
   Tag,
-  Radio
+  Radio,
+  Upload,
+  Image
 } from 'antd';
 import {
   SaveOutlined,
   CloseOutlined,
   PlusOutlined,
-  DeleteOutlined
+  DeleteOutlined,
+  UploadOutlined,
+  FileImageOutlined,
+  AudioOutlined
 } from '@ant-design/icons';
 import AdminLayout from '../../components/AdminLayout';
 
@@ -40,6 +45,9 @@ function QuestionForm() {
     { id: 'C', text: '' },
     { id: 'D', text: '' }
   ]);
+  const [imageUrl, setImageUrl] = useState(null);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const isEditMode = !!id;
 
@@ -78,6 +86,8 @@ function QuestionForm() {
           const content = question.content_json;
           setQuestionText(content.question_text || '');
           setExplanation(content.explanation || '');
+          setImageUrl(question.image_url);
+          setAudioUrl(question.audio_url);
 
           if (content.options) {
             setOptions(content.options);
@@ -94,9 +104,9 @@ function QuestionForm() {
             subject: subjectTag?.tag_value,
             grade: gradeTag?.tag_value,
             topic: topicTag?.tag_value,
-            difficulty_level: question.difficulty_level,
-            points: question.points,
-            time_limit: question.time_limit
+            difficulty_level: question.difficulty_level || 1,
+            points: question.points || 10,
+            time_limit: question.time_limit || 60
           });
         } else {
           message.error('Không tìm thấy câu hỏi!');
@@ -109,6 +119,45 @@ function QuestionForm() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFileUpload = async (file, type) => {
+    try {
+      setUploading(true);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('http://localhost:3000/api/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const url = `http://localhost:3000${data.data.url}`;
+        if (type === 'image') {
+          setImageUrl(url);
+          message.success('Tải hình ảnh thành công!');
+        } else if (type === 'audio') {
+          setAudioUrl(url);
+          message.success('Tải âm thanh thành công!');
+        }
+      } else {
+        message.error(data.message || 'Lỗi khi tải file');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      message.error('Lỗi khi tải file');
+    } finally {
+      setUploading(false);
+    }
+
+    return false; // Prevent default upload behavior
   };
 
   const handleOptionChange = (index, value) => {
@@ -185,7 +234,9 @@ function QuestionForm() {
         tags,
         difficulty_level: values.difficulty_level,
         points: values.points,
-        time_limit: values.time_limit
+        time_limit: values.time_limit,
+        image_url: imageUrl,
+        audio_url: audioUrl
       };
 
       // API call
@@ -371,6 +422,64 @@ function QuestionForm() {
                       placeholder="Nhập phần giải thích cho câu trả lời..."
                     />
                   </Form.Item>
+
+                  <Divider />
+
+                  <div style={{ marginBottom: '16px' }}>
+                    <Form.Item label="Hình ảnh (tùy chọn)">
+                      <Space direction="vertical" style={{ width: '100%' }}>
+                        <Upload
+                          beforeUpload={(file) => handleFileUpload(file, 'image')}
+                          showUploadList={false}
+                          accept="image/*"
+                        >
+                          <Button icon={<FileImageOutlined />} loading={uploading}>
+                            Chọn hình ảnh
+                          </Button>
+                        </Upload>
+                        {imageUrl && (
+                          <div>
+                            <Image src={imageUrl} alt="Question image" style={{ maxWidth: '100%', maxHeight: '200px' }} />
+                            <Button
+                              danger
+                              size="small"
+                              onClick={() => setImageUrl(null)}
+                              style={{ marginTop: '8px' }}
+                            >
+                              Xóa hình ảnh
+                            </Button>
+                          </div>
+                        )}
+                      </Space>
+                    </Form.Item>
+
+                    <Form.Item label="Âm thanh (tùy chọn)">
+                      <Space direction="vertical" style={{ width: '100%' }}>
+                        <Upload
+                          beforeUpload={(file) => handleFileUpload(file, 'audio')}
+                          showUploadList={false}
+                          accept="audio/*"
+                        >
+                          <Button icon={<AudioOutlined />} loading={uploading}>
+                            Chọn file âm thanh
+                          </Button>
+                        </Upload>
+                        {audioUrl && (
+                          <div>
+                            <audio controls src={audioUrl} style={{ width: '100%', maxWidth: '400px' }} />
+                            <Button
+                              danger
+                              size="small"
+                              onClick={() => setAudioUrl(null)}
+                              style={{ marginTop: '8px' }}
+                            >
+                              Xóa âm thanh
+                            </Button>
+                          </div>
+                        )}
+                      </Space>
+                    </Form.Item>
+                  </div>
                 </Card>
               </Col>
 

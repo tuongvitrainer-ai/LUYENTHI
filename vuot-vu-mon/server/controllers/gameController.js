@@ -27,7 +27,12 @@ const getQuestions = async (req, res) => {
         'q.content_json',
         'q.correct_answer',
         'q.explanation',
-        'q.difficulty'
+        'q.difficulty',
+        'q.image_url',
+        'q.audio_url',
+        'q.difficulty_level',
+        'q.points',
+        'q.time_limit'
       );
 
     // Filter by subject if provided
@@ -80,8 +85,11 @@ const getQuestions = async (req, res) => {
         },
         correct_answer: correctAnswerId, // Trả về A, B, C, D thay vì text
         explanation: q.explanation,
-        difficulty_level: q.difficulty || 'medium',
-        points: 5 // Default points
+        image_url: q.image_url,
+        audio_url: q.audio_url,
+        difficulty_level: q.difficulty_level || 1,
+        points: q.points || 5,
+        time_limit: q.time_limit || 60
       };
     });
 
