@@ -10,8 +10,7 @@ const MOCK_QUESTIONS = [
     topic: 'Phép cộng',
     question: '125 + 378 = ?',
     options: ['493', '503', '513', '523'],
-    correctAnswer: 1,
-    difficulty: 'easy'
+    correctAnswer: 1
   },
   {
     id: 2,
@@ -19,8 +18,7 @@ const MOCK_QUESTIONS = [
     topic: 'Phép trừ',
     question: '500 - 247 = ?',
     options: ['253', '263', '243', '273'],
-    correctAnswer: 0,
-    difficulty: 'medium'
+    correctAnswer: 0
   },
   {
     id: 3,
@@ -28,8 +26,7 @@ const MOCK_QUESTIONS = [
     topic: 'Phép nhân',
     question: '8 × 7 = ?',
     options: ['54', '56', '58', '64'],
-    correctAnswer: 1,
-    difficulty: 'easy'
+    correctAnswer: 1
   },
   {
     id: 4,
@@ -37,8 +34,7 @@ const MOCK_QUESTIONS = [
     topic: 'Phép chia',
     question: '72 ÷ 8 = ?',
     options: ['7', '8', '9', '10'],
-    correctAnswer: 2,
-    difficulty: 'hard'
+    correctAnswer: 2
   },
   // Tiếng Việt - 4 câu
   {
@@ -47,8 +43,7 @@ const MOCK_QUESTIONS = [
     topic: 'Chính tả',
     question: 'Từ nào viết đúng?',
     options: ['Học sịnh', 'Học sinh', 'Hoc sinh', 'Học xịnh'],
-    correctAnswer: 1,
-    difficulty: 'easy'
+    correctAnswer: 1
   },
   {
     id: 6,
@@ -56,8 +51,7 @@ const MOCK_QUESTIONS = [
     topic: 'Từ vựng',
     question: 'Từ trái nghĩa của "cao" là gì?',
     options: ['Thấp', 'Nhỏ', 'Bé', 'Ngắn'],
-    correctAnswer: 0,
-    difficulty: 'medium'
+    correctAnswer: 0
   },
   {
     id: 7,
@@ -65,8 +59,7 @@ const MOCK_QUESTIONS = [
     topic: 'Ngữ pháp',
     question: 'Câu nào đúng?',
     options: ['Tôi đi học', 'Tôi học đi', 'Đi tôi học', 'Học đi tôi'],
-    correctAnswer: 0,
-    difficulty: 'easy'
+    correctAnswer: 0
   },
   {
     id: 8,
@@ -74,8 +67,7 @@ const MOCK_QUESTIONS = [
     topic: 'Đọc hiểu',
     question: 'Con vật nào sống ở nước?',
     options: ['Chó', 'Mèo', 'Cá', 'Gà'],
-    correctAnswer: 2,
-    difficulty: 'hard'
+    correctAnswer: 2
   },
   // Tiếng Anh - 4 câu
   {
@@ -84,8 +76,7 @@ const MOCK_QUESTIONS = [
     topic: 'Vocabulary',
     question: 'What color is the sky?',
     options: ['Red', 'Blue', 'Green', 'Yellow'],
-    correctAnswer: 1,
-    difficulty: 'easy'
+    correctAnswer: 1
   },
   {
     id: 10,
@@ -93,8 +84,7 @@ const MOCK_QUESTIONS = [
     topic: 'Numbers',
     question: 'How many fingers do you have?',
     options: ['Five', 'Eight', 'Ten', 'Twelve'],
-    correctAnswer: 2,
-    difficulty: 'medium'
+    correctAnswer: 2
   },
   {
     id: 11,
@@ -102,8 +92,7 @@ const MOCK_QUESTIONS = [
     topic: 'Grammar',
     question: 'I ___ a student.',
     options: ['is', 'am', 'are', 'be'],
-    correctAnswer: 1,
-    difficulty: 'easy'
+    correctAnswer: 1
   },
   {
     id: 12,
@@ -111,8 +100,7 @@ const MOCK_QUESTIONS = [
     topic: 'Animals',
     question: 'A cat says:',
     options: ['Woof', 'Meow', 'Moo', 'Quack'],
-    correctAnswer: 1,
-    difficulty: 'hard'
+    correctAnswer: 1
   },
   // Tư duy Logic - 3 câu
   {
@@ -121,8 +109,7 @@ const MOCK_QUESTIONS = [
     topic: 'Dãy số',
     question: 'Tìm số tiếp theo: 2, 4, 6, 8, ?',
     options: ['9', '10', '11', '12'],
-    correctAnswer: 1,
-    difficulty: 'medium'
+    correctAnswer: 1
   },
   {
     id: 14,
@@ -130,8 +117,7 @@ const MOCK_QUESTIONS = [
     topic: 'Hình học',
     question: 'Hình nào có 4 cạnh bằng nhau?',
     options: ['Tam giác', 'Hình vuông', 'Hình chữ nhật', 'Hình tròn'],
-    correctAnswer: 1,
-    difficulty: 'easy'
+    correctAnswer: 1
   },
   {
     id: 15,
@@ -139,8 +125,7 @@ const MOCK_QUESTIONS = [
     topic: 'So sánh',
     question: 'Số nào lớn nhất?',
     options: ['45', '54', '44', '55'],
-    correctAnswer: 3,
-    difficulty: 'hard'
+    correctAnswer: 3
   }
 ];
 
@@ -154,8 +139,6 @@ const SUBJECT_CONFIG = {
 const ThuThachKhoiDau = () => {
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [questionCount, setQuestionCount] = useState(15); // NEW: Số câu hỏi
-  const [difficultyLevel, setDifficultyLevel] = useState(4); // NEW: Mức độ khó (1-10)
-  const [selectedSubjects, setSelectedSubjects] = useState(['all']); // NEW: Môn học được chọn
   const [showTest, setShowTest] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
@@ -497,144 +480,22 @@ const ThuThachKhoiDau = () => {
           </div>
 
           {/* Question Count Selection */}
-          <div className="question-count-selection">
-            <div className="count-label">Chọn số lượng câu hỏi:</div>
-            <div className="count-options">
-              {[15, 24, 30, 45].map(count => (
-                <button
-                  key={count}
-                  className={`count-option ${questionCount === count ? 'selected' : ''}`}
-                  onClick={() => setQuestionCount(count)}
-                >
-                  {count} câu
-                </button>
-              ))}
+          {selectedLevel && (
+            <div className="question-count-selection">
+              <div className="count-label">Chọn số lượng câu hỏi:</div>
+              <div className="count-options">
+                {[15, 24, 30, 45].map(count => (
+                  <button
+                    key={count}
+                    className={`count-option ${questionCount === count ? 'selected' : ''}`}
+                    onClick={() => setQuestionCount(count)}
+                  >
+                    {count} câu
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="count-hint" style={{
-              fontSize: '13px',
-              color: '#666',
-              marginTop: '8px',
-              fontStyle: 'italic',
-              textAlign: 'center'
-            }}>
-              💡 Nên chọn số lượng câu hỏi nhiều thì mức độ đánh giá càng chính xác bạn nhé!
-            </div>
-          </div>
-
-          {/* Difficulty Level Selection */}
-          <div className="difficulty-selection" style={{
-            marginTop: '20px',
-            padding: '20px',
-            background: '#f8f9fa',
-            borderRadius: '12px'
-          }}>
-            <div className="difficulty-label" style={{
-              fontSize: '16px',
-              fontWeight: '600',
-              marginBottom: '12px',
-              color: '#333'
-            }}>
-              Mức độ khó:
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '14px', color: '#666' }}>Dễ</span>
-              <input
-                type="range"
-                min="1"
-                max="10"
-                value={difficultyLevel}
-                onChange={(e) => setDifficultyLevel(parseInt(e.target.value))}
-                style={{
-                  flex: 1,
-                  height: '6px',
-                  borderRadius: '3px',
-                  outline: 'none',
-                  background: `linear-gradient(to right, #51CF66 0%, #FFD43B ${(difficultyLevel - 1) * 10}%, #FF6B6B 100%)`
-                }}
-              />
-              <span style={{ fontSize: '14px', color: '#666' }}>Khó</span>
-              <span style={{
-                fontSize: '16px',
-                fontWeight: '700',
-                color: difficultyLevel <= 3 ? '#51CF66' : difficultyLevel <= 7 ? '#FFD43B' : '#FF6B6B',
-                minWidth: '40px',
-                textAlign: 'center'
-              }}>
-                {difficultyLevel}
-              </span>
-            </div>
-          </div>
-
-          {/* Subject Selection */}
-          <div className="subject-selection" style={{
-            marginTop: '20px',
-            padding: '20px',
-            background: '#f8f9fa',
-            borderRadius: '12px'
-          }}>
-            <div className="subject-label" style={{
-              fontSize: '16px',
-              fontWeight: '600',
-              marginBottom: '12px',
-              color: '#333'
-            }}>
-              Môn học:
-            </div>
-            <div className="subject-options" style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '10px'
-            }}>
-              <button
-                className={`subject-option ${selectedSubjects.includes('all') ? 'selected' : ''}`}
-                onClick={() => setSelectedSubjects(['all'])}
-                style={{
-                  padding: '8px 16px',
-                  border: '2px solid',
-                  borderColor: selectedSubjects.includes('all') ? '#4dabf7' : '#ddd',
-                  borderRadius: '20px',
-                  background: selectedSubjects.includes('all') ? '#e7f5ff' : '#fff',
-                  color: selectedSubjects.includes('all') ? '#1971c2' : '#666',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-              >
-                ✨ Tất cả
-              </button>
-              {Object.entries(SUBJECT_CONFIG).map(([key, config]) => (
-                <button
-                  key={key}
-                  className={`subject-option ${selectedSubjects.includes(key) && !selectedSubjects.includes('all') ? 'selected' : ''}`}
-                  onClick={() => {
-                    if (selectedSubjects.includes('all')) {
-                      setSelectedSubjects([key]);
-                    } else if (selectedSubjects.includes(key)) {
-                      const newSubjects = selectedSubjects.filter(s => s !== key);
-                      setSelectedSubjects(newSubjects.length > 0 ? newSubjects : ['all']);
-                    } else {
-                      setSelectedSubjects([...selectedSubjects, key]);
-                    }
-                  }}
-                  style={{
-                    padding: '8px 16px',
-                    border: '2px solid',
-                    borderColor: selectedSubjects.includes(key) && !selectedSubjects.includes('all') ? config.color : '#ddd',
-                    borderRadius: '20px',
-                    background: selectedSubjects.includes(key) && !selectedSubjects.includes('all') ? config.color + '20' : '#fff',
-                    color: selectedSubjects.includes(key) && !selectedSubjects.includes('all') ? config.color : '#666',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  {config.icon} {config.name}
-                </button>
-              ))}
-            </div>
-          </div>
+          )}
 
           {/* Start Button */}
           {selectedLevel && (
