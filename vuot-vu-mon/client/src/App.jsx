@@ -14,8 +14,10 @@ import Dashboard from './pages/admin/Dashboard';
 import QuestionBank from './pages/admin/QuestionBank';
 import QuestionForm from './pages/admin/QuestionForm';
 import UserManagement from './pages/admin/UserManagement';
+import QuestionReports from './pages/admin/QuestionReports';
 import GameLatTheTriNho from './pages/GameMap/Grade3/GameLatTheTriNho';
 import BangCuuChuong1 from './pages/GameMap/Grade3/BangCuuChuong1';
+import ThuThachKhoiDau from './sandbox/thuthachkhoidau';
 import './App.css';
 
 // Protected Route Component
@@ -103,6 +105,18 @@ function App() {
               }
             />
 
+            {/* Sandbox Routes - Testing */}
+            <Route
+              path="/sandbox-thuthachkhoidau"
+              element={
+                <GuestRoute>
+                  <Layout>
+                    <ThuThachKhoiDau />
+                  </Layout>
+                </GuestRoute>
+              }
+            />
+
             {/* Protected Routes - Cần đăng ký + Sidebar */}
 
             <Route
@@ -169,6 +183,15 @@ function App() {
               element={
                 <AdminRoute>
                   <UserManagement />
+                </AdminRoute>
+              }
+            />
+
+            <Route
+              path="/admin/question-reports"
+              element={
+                <AdminRoute>
+                  <QuestionReports />
                 </AdminRoute>
               }
             />

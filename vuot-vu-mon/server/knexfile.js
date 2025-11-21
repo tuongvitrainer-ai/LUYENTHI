@@ -1,4 +1,4 @@
-// Knex configuration for PostgreSQL and SQLite
+// Knex configuration for PostgreSQL
 require('dotenv').config();
 
 module.exports = {
@@ -15,22 +15,6 @@ module.exports = {
       min: 2,
       max: 10
     },
-    migrations: {
-      directory: './database/migrations',
-      tableName: 'knex_migrations'
-    },
-    seeds: {
-      directory: './database/seeds'
-    }
-  },
-
-  // SQLite fallback for local development without PostgreSQL
-  sqlite: {
-    client: 'better-sqlite3',
-    connection: {
-      filename: './database/database.sqlite'
-    },
-    useNullAsDefault: true,
     migrations: {
       directory: './database/migrations',
       tableName: 'knex_migrations'

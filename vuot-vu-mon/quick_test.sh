@@ -2,7 +2,6 @@
 
 # Start server in background
 cd /home/user/LUYENTHI/vuot-vu-mon
-npm rebuild better-sqlite3 > /dev/null 2>&1
 node server.js > server.log 2>&1 &
 SERVER_PID=$!
 
