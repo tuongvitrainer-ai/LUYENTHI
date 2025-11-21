@@ -19,6 +19,8 @@ function QuestionView() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [startTime, setStartTime] = useState(Date.now());
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
 
   // Load questions on mount
   useEffect(() => {
@@ -132,6 +134,32 @@ function QuestionView() {
     navigate('/');
   };
 
+  const handleReportQuestion = async () => {
+    try {
+      await gameAPI.reportQuestion({
+        question_id: currentQuestion.id,
+        report_type: 'error',
+        context: {
+          subject: subject,
+          exam_type: 'quiz_race',
+          user_answer: selectedAnswer,
+          current_index: currentIndex
+        }
+      });
+
+      setReportSubmitted(true);
+
+      // Auto close modal after 2 seconds
+      setTimeout(() => {
+        setShowReportModal(false);
+        setReportSubmitted(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Report error:', error);
+      alert('Lỗi khi gửi báo cáo. Vui lòng thử lại.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="question-page loading">
@@ -151,9 +179,18 @@ function QuestionView() {
     <div className="question-page">
       {/* Header */}
       <div className="question-header">
-        <button onClick={handleBackToMap} className="btn-back">
-          ← Về trang chủ
-        </button>
+        <div className="header-left">
+          <button onClick={handleBackToMap} className="btn-back">
+            ← Về trang chủ
+          </button>
+          <button
+            onClick={() => setShowReportModal(true)}
+            className="btn-report-error"
+            title="Báo đề bị lỗi"
+          >
+            ⚠️
+          </button>
+        </div>
         <div className="question-progress">
           Câu {currentIndex + 1} / {questions.length}
         </div>
@@ -241,6 +278,37 @@ function QuestionView() {
           </div>
         </div>
       </div>
+
+      {/* Report Error Modal */}
+      {showReportModal && (
+        <div className="modal-overlay" onClick={() => setShowReportModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            {!reportSubmitted ? (
+              <>
+                <h2>Báo cáo lỗi câu hỏi</h2>
+                <p>Bạn có chắc muốn báo cáo câu hỏi này có vấn đề?</p>
+                <div className="modal-actions">
+                  <button onClick={handleReportQuestion} className="btn btn-primary">
+                    Xác nhận
+                  </button>
+                  <button
+                    onClick={() => setShowReportModal(false)}
+                    className="btn btn-secondary"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="report-success">
+                <div className="success-icon">✅</div>
+                <h2>Cảm ơn bạn đã thông báo!</h2>
+                <p>Chúng tôi sẽ kiểm tra và chỉnh sửa trong thời gian sớm nhất.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -435,9 +435,90 @@ const getStats = async (req, res) => {
   }
 };
 
+// ============================================
+// API: POST /api/game/report_question
+// BÁO CÁO CÂU HỎI BỊ LỖI
+// ============================================
+/**
+ * Báo cáo câu hỏi bị lỗi
+ *
+ * Body:
+ * {
+ *   "question_id": 123,
+ *   "report_type": "error" | "typo" | "wrong_answer" | "other",
+ *   "comment": "Giải thích lỗi..." (optional),
+ *   "context": { ... } (optional - exam_type, user_answer, etc.)
+ * }
+ */
+const reportQuestion = async (req, res) => {
+  try {
+    const userId = req.user ? req.user.id : null; // Allow anonymous reports
+    const { question_id, report_type = 'error', comment, context } = req.body;
+
+    console.log(`📢 User #${userId} báo cáo câu hỏi #${question_id}: ${report_type}`);
+
+    // Validation
+    if (!question_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'question_id is required'
+      });
+    }
+
+    // Check if question exists
+    const question = await knex('questions')
+      .where('id', question_id)
+      .first();
+
+    if (!question) {
+      return res.status(404).json({
+        success: false,
+        message: 'Question not found'
+      });
+    }
+
+    // Save report
+    const contextJsonString = context
+      ? (typeof context === 'string' ? context : JSON.stringify(context))
+      : null;
+
+    const [reportInsert] = await knex('question_reports')
+      .insert({
+        question_id: question_id,
+        user_id: userId,
+        report_type: report_type,
+        comment: comment || null,
+        context_json: contextJsonString,
+        status: 'pending'
+      })
+      .returning('id');
+
+    const reportId = reportInsert.id || reportInsert;
+
+    console.log(`   ✅ Đã lưu báo cáo #${reportId}`);
+
+    res.json({
+      success: true,
+      message: 'Cảm ơn bạn đã báo cáo! Chúng tôi sẽ kiểm tra và chỉnh sửa trong thời gian sớm nhất.',
+      data: {
+        report_id: reportId
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Report question error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error reporting question',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 module.exports = {
-  getQuestions,  // GET /api/game/questions
-  submitResult,  // POST /api/game/submit_result
-  getHistory,    // GET /api/game/history
-  getStats       // GET /api/game/stats
+  getQuestions,    // GET /api/game/questions
+  submitResult,    // POST /api/game/submit_result
+  getHistory,      // GET /api/game/history
+  getStats,        // GET /api/game/stats
+  reportQuestion   // POST /api/game/report_question
 };

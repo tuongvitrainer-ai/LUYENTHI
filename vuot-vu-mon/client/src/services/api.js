@@ -114,6 +114,9 @@ export const gameAPI = {
 
   // Get user stats
   getStats: () => api.get('/game/stats'),
+
+  // Report question issue
+  reportQuestion: (data) => api.post('/game/report_question', data),
 };
 
 // ============================================
@@ -124,8 +127,20 @@ export const adminAPI = {
   // Question management
   createQuestion: (questionData) => api.post('/admin/questions', questionData),
   getQuestions: (params) => api.get('/admin/questions', { params }),
+  getQuestionById: (id) => api.get(`/admin/questions/${id}`),
   updateQuestion: (id, questionData) => api.put(`/admin/questions/${id}`, questionData),
   deleteQuestion: (id) => api.delete(`/admin/questions/${id}`),
+
+  // User management
+  getUsers: (params) => api.get('/admin/users', { params }),
+
+  // Dashboard stats
+  getDashboardStats: () => api.get('/admin/stats'),
+
+  // Question reports management
+  getQuestionReports: (params) => api.get('/admin/question-reports', { params }),
+  updateQuestionReport: (id, data) => api.put(`/admin/question-reports/${id}`, data),
+  getQuestionReportStats: () => api.get('/admin/question-reports/stats'),
 };
 
 // ============================================
