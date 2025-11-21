@@ -193,6 +193,52 @@ class Question {
     const result = await query.count('* as count').first();
     return parseInt(result.count);
   }
+
+  /**
+   * Get random questions with filters for subjects and difficulty
+   * @param {number} gradeLevel - Grade level (3, 4, 5)
+   * @param {number} count - Number of questions to return
+   * @param {Object} options - Filter options
+   *   - subjects: Array of subjects ['math', 'english'] or null for all
+   *   - difficultyLevel: Number 1-10 (maps to easy/medium/hard)
+   * @returns {Promise<Array>} Array of random questions
+   */
+  static async getRandomQuestionsWithFilters(gradeLevel, count = 15, options = {}) {
+    const { subjects = null, difficultyLevel = null } = options;
+
+    let query = knex('questions')
+      .where({ grade_level: gradeLevel, is_active: true });
+
+    // Filter by subjects if provided
+    if (subjects && Array.isArray(subjects) && subjects.length > 0) {
+      query = query.whereIn('subject', subjects);
+    }
+
+    // Filter by difficulty if provided
+    // Map difficultyLevel (1-10) to difficulty ('easy', 'medium', 'hard')
+    if (difficultyLevel) {
+      let difficultyFilter;
+      if (difficultyLevel <= 3) {
+        difficultyFilter = 'easy';
+      } else if (difficultyLevel <= 7) {
+        difficultyFilter = 'medium';
+      } else {
+        difficultyFilter = 'hard';
+      }
+      query = query.where({ difficulty: difficultyFilter });
+    }
+
+    const questions = await query
+      .orderByRaw('RANDOM()')
+      .limit(count)
+      .select('*');
+
+    return questions.map(q => ({
+      ...q,
+      options: q.options_json ? JSON.parse(q.options_json) : [],
+      content: q.content_json ? JSON.parse(q.content_json) : null
+    }));
+  }
 }
 
 module.exports = Question;

@@ -52,10 +52,34 @@ const getQuestions = async (req, res) => {
       });
     }
 
-    console.log(`🎯 [Challenge] Fetching ${count} questions for grade ${gradeLevel}`);
+    // Get subjects filter (can be array or single value)
+    let subjects = null;
+    if (req.query.subjects) {
+      // If it's an array, use it directly
+      if (Array.isArray(req.query.subjects)) {
+        subjects = req.query.subjects;
+      } else {
+        // If it's a single value, convert to array
+        subjects = [req.query.subjects];
+      }
+    }
 
-    // Always random without fixed distribution for flexibility
-    const questions = await Question.getRandomQuestions(gradeLevel, count);
+    // Get difficulty level (1-10)
+    const difficultyLevel = req.query.difficulty ? parseInt(req.query.difficulty) : null;
+
+    console.log(`🎯 [Challenge] Fetching ${count} questions for grade ${gradeLevel}`);
+    if (subjects) {
+      console.log(`   📚 Subjects filter: ${subjects.join(', ')}`);
+    }
+    if (difficultyLevel) {
+      console.log(`   📊 Difficulty level: ${difficultyLevel}`);
+    }
+
+    // Get questions with filters
+    const questions = await Question.getRandomQuestionsWithFilters(gradeLevel, count, {
+      subjects,
+      difficultyLevel
+    });
 
     console.log(`   ✅ Found ${questions.length} questions`);
 
