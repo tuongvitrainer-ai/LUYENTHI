@@ -139,6 +139,8 @@ const SUBJECT_CONFIG = {
 const ThuThachKhoiDau = () => {
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [questionCount, setQuestionCount] = useState(15); // NEW: Số câu hỏi
+  const [difficultyLevel, setDifficultyLevel] = useState(4); // NEW: Mức độ khó (1-10, mặc định 4)
+  const [selectedSubjects, setSelectedSubjects] = useState(['all']); // NEW: Môn học đã chọn (mặc định: tất cả)
   const [showTest, setShowTest] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
@@ -174,6 +176,22 @@ const ThuThachKhoiDau = () => {
 
   const handleLevelSelect = (level) => {
     setSelectedLevel(level);
+  };
+
+  const handleSubjectToggle = (subject) => {
+    if (subject === 'all') {
+      setSelectedSubjects(['all']);
+    } else {
+      setSelectedSubjects(prev => {
+        const newSelection = prev.filter(s => s !== 'all');
+        if (newSelection.includes(subject)) {
+          const filtered = newSelection.filter(s => s !== subject);
+          return filtered.length === 0 ? ['all'] : filtered;
+        } else {
+          return [...newSelection, subject];
+        }
+      });
+    }
   };
 
   const startTest = async () => {
@@ -480,22 +498,149 @@ const ThuThachKhoiDau = () => {
           </div>
 
           {/* Question Count Selection */}
-          {selectedLevel && (
-            <div className="question-count-selection">
-              <div className="count-label">Chọn số lượng câu hỏi:</div>
-              <div className="count-options">
-                {[15, 24, 30, 45].map(count => (
-                  <button
-                    key={count}
-                    className={`count-option ${questionCount === count ? 'selected' : ''}`}
-                    onClick={() => setQuestionCount(count)}
-                  >
-                    {count} câu
-                  </button>
-                ))}
-              </div>
+          <div className="question-count-selection">
+            <div className="count-label">Chọn số lượng câu hỏi:</div>
+            <div className="count-options">
+              {[15, 24, 30, 45].map(count => (
+                <button
+                  key={count}
+                  className={`count-option ${questionCount === count ? 'selected' : ''}`}
+                  onClick={() => setQuestionCount(count)}
+                >
+                  {count} câu
+                </button>
+              ))}
             </div>
-          )}
+            <div className="count-hint" style={{
+              fontSize: '14px',
+              color: '#666',
+              marginTop: '12px',
+              textAlign: 'center',
+              fontStyle: 'italic'
+            }}>
+              💡 Chọn số lượng câu hỏi nhiều thì mức độ đánh giá sẽ càng chính xác bạn nhé!
+            </div>
+          </div>
+
+          {/* Difficulty Level Selection */}
+          <div className="difficulty-selection" style={{
+            marginTop: '24px',
+            padding: '20px',
+            background: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            <div className="difficulty-label" style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              marginBottom: '16px',
+              color: '#333',
+              textAlign: 'center'
+            }}>
+              Chọn mức độ khó:
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '12px'
+            }}>
+              <span style={{ fontSize: '14px', color: '#51CF66', fontWeight: '600' }}>
+                Dễ
+              </span>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={difficultyLevel}
+                onChange={(e) => setDifficultyLevel(Number(e.target.value))}
+                style={{
+                  flex: 1,
+                  height: '6px',
+                  borderRadius: '3px',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              />
+              <span style={{ fontSize: '14px', color: '#FF6B6B', fontWeight: '600' }}>
+                Khó
+              </span>
+            </div>
+            <div style={{
+              textAlign: 'center',
+              fontSize: '20px',
+              fontWeight: '700',
+              color: difficultyLevel <= 3 ? '#51CF66' : difficultyLevel <= 7 ? '#FFD43B' : '#FF6B6B',
+              marginTop: '8px'
+            }}>
+              Mức {difficultyLevel}
+            </div>
+          </div>
+
+          {/* Subject Filter Selection */}
+          <div className="subject-filter-selection" style={{
+            marginTop: '24px',
+            padding: '20px',
+            background: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            <div className="subject-filter-label" style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              marginBottom: '16px',
+              color: '#333',
+              textAlign: 'center'
+            }}>
+              Chọn môn học:
+            </div>
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '10px',
+              justifyContent: 'center'
+            }}>
+              <button
+                className={`subject-filter-option ${selectedSubjects.includes('all') ? 'selected' : ''}`}
+                onClick={() => handleSubjectToggle('all')}
+                style={{
+                  padding: '8px 16px',
+                  border: '2px solid',
+                  borderColor: selectedSubjects.includes('all') ? '#4A90E2' : '#ddd',
+                  borderRadius: '20px',
+                  background: selectedSubjects.includes('all') ? '#4A90E2' : 'white',
+                  color: selectedSubjects.includes('all') ? 'white' : '#666',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                ✨ Tất cả
+              </button>
+              {Object.entries(SUBJECT_CONFIG).map(([key, config]) => (
+                <button
+                  key={key}
+                  className={`subject-filter-option ${selectedSubjects.includes(key) ? 'selected' : ''}`}
+                  onClick={() => handleSubjectToggle(key)}
+                  style={{
+                    padding: '8px 16px',
+                    border: '2px solid',
+                    borderColor: selectedSubjects.includes(key) ? config.color : '#ddd',
+                    borderRadius: '20px',
+                    background: selectedSubjects.includes(key) ? config.color : 'white',
+                    color: selectedSubjects.includes(key) ? 'white' : '#666',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  {config.icon} {config.name}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Start Button */}
           {selectedLevel && (
