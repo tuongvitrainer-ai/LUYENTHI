@@ -73,6 +73,21 @@ const getQuestions = async (req, res) => {
     }
     if (difficultyLevel) {
       console.log(`   📊 Difficulty level: ${difficultyLevel}`);
+
+      // Log difficulty distribution
+      const distributions = {
+        1: '100% easy',
+        2: '80% easy, 20% medium',
+        3: '60% easy, 40% medium',
+        4: '50% easy, 50% medium',
+        5: '20% easy, 80% medium',
+        6: '100% medium',
+        7: '80% medium, 20% hard',
+        8: '50% medium, 50% hard',
+        9: '20% medium, 80% hard',
+        10: '100% hard'
+      };
+      console.log(`   📈 Distribution: ${distributions[difficultyLevel] || 'mixed'}`);
     }
 
     // Get questions with filters
@@ -82,6 +97,15 @@ const getQuestions = async (req, res) => {
     });
 
     console.log(`   ✅ Found ${questions.length} questions`);
+
+    // Log actual difficulty breakdown
+    if (questions.length > 0) {
+      const breakdown = questions.reduce((acc, q) => {
+        acc[q.difficulty] = (acc[q.difficulty] || 0) + 1;
+        return acc;
+      }, {});
+      console.log(`   📋 Actual breakdown: ${JSON.stringify(breakdown)}`);
+    }
 
     // Format response - KHÔNG trả về correct_answer
     const safeQuestions = questions.map(q => ({
