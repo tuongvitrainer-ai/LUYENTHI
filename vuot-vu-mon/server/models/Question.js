@@ -200,44 +200,103 @@ class Question {
    * @param {number} count - Number of questions to return
    * @param {Object} options - Filter options
    *   - subjects: Array of subjects ['math', 'english'] or null for all
-   *   - difficultyLevel: Number 1-10 (maps to easy/medium/hard)
+   *   - difficultyLevel: Number 1-10 (maps to distribution of easy/medium/hard)
    * @returns {Promise<Array>} Array of random questions
    */
   static async getRandomQuestionsWithFilters(gradeLevel, count = 15, options = {}) {
     const { subjects = null, difficultyLevel = null } = options;
 
-    let query = knex('questions')
-      .where({ grade_level: gradeLevel, is_active: true });
+    // Define difficulty distribution map for each level (1-10)
+    const difficultyDistribution = {
+      1: { easy: 1.0, medium: 0.0, hard: 0.0 },    // 100% easy
+      2: { easy: 0.8, medium: 0.2, hard: 0.0 },    // 80% easy, 20% medium
+      3: { easy: 0.6, medium: 0.4, hard: 0.0 },    // 60% easy, 40% medium
+      4: { easy: 0.5, medium: 0.5, hard: 0.0 },    // 50% easy, 50% medium
+      5: { easy: 0.2, medium: 0.8, hard: 0.0 },    // 20% easy, 80% medium
+      6: { easy: 0.0, medium: 1.0, hard: 0.0 },    // 100% medium
+      7: { easy: 0.0, medium: 0.8, hard: 0.2 },    // 80% medium, 20% hard
+      8: { easy: 0.0, medium: 0.5, hard: 0.5 },    // 50% medium, 50% hard
+      9: { easy: 0.0, medium: 0.2, hard: 0.8 },    // 20% medium, 80% hard
+      10: { easy: 0.0, medium: 0.0, hard: 1.0 }    // 100% hard
+    };
 
-    // Filter by subjects if provided
-    if (subjects && Array.isArray(subjects) && subjects.length > 0) {
-      query = query.whereIn('subject', subjects);
-    }
+    // If difficultyLevel is provided, use distribution; otherwise get random from all difficulties
+    if (difficultyLevel && difficultyDistribution[difficultyLevel]) {
+      const distribution = difficultyDistribution[difficultyLevel];
+      const allQuestions = [];
 
-    // Filter by difficulty if provided
-    // Map difficultyLevel (1-10) to difficulty ('easy', 'medium', 'hard')
-    if (difficultyLevel) {
-      let difficultyFilter;
-      if (difficultyLevel <= 3) {
-        difficultyFilter = 'easy';
-      } else if (difficultyLevel <= 7) {
-        difficultyFilter = 'medium';
-      } else {
-        difficultyFilter = 'hard';
+      // Calculate number of questions for each difficulty
+      const counts = {
+        easy: Math.round(count * distribution.easy),
+        medium: Math.round(count * distribution.medium),
+        hard: Math.round(count * distribution.hard)
+      };
+
+      // Adjust counts to ensure total equals requested count
+      const totalCalculated = counts.easy + counts.medium + counts.hard;
+      if (totalCalculated < count) {
+        // Add remaining questions to the most prominent difficulty
+        const maxKey = Object.keys(distribution).reduce((a, b) =>
+          distribution[a] > distribution[b] ? a : b
+        );
+        counts[maxKey] += (count - totalCalculated);
+      } else if (totalCalculated > count) {
+        // Remove excess from the most prominent difficulty
+        const maxKey = Object.keys(distribution).reduce((a, b) =>
+          distribution[a] > distribution[b] ? a : b
+        );
+        counts[maxKey] -= (totalCalculated - count);
       }
-      query = query.where({ difficulty: difficultyFilter });
+
+      // Fetch questions for each difficulty level
+      for (const [difficulty, difficultyCount] of Object.entries(counts)) {
+        if (difficultyCount > 0) {
+          let query = knex('questions')
+            .where({ grade_level: gradeLevel, is_active: true, difficulty });
+
+          // Filter by subjects if provided
+          if (subjects && Array.isArray(subjects) && subjects.length > 0) {
+            query = query.whereIn('subject', subjects);
+          }
+
+          const questions = await query
+            .orderByRaw('RANDOM()')
+            .limit(difficultyCount)
+            .select('*');
+
+          allQuestions.push(...questions);
+        }
+      }
+
+      // Shuffle all questions together
+      const shuffled = allQuestions.sort(() => Math.random() - 0.5);
+
+      return shuffled.map(q => ({
+        ...q,
+        options: q.options_json ? JSON.parse(q.options_json) : [],
+        content: q.content_json ? JSON.parse(q.content_json) : null
+      }));
+    } else {
+      // No difficulty level specified, get random questions
+      let query = knex('questions')
+        .where({ grade_level: gradeLevel, is_active: true });
+
+      // Filter by subjects if provided
+      if (subjects && Array.isArray(subjects) && subjects.length > 0) {
+        query = query.whereIn('subject', subjects);
+      }
+
+      const questions = await query
+        .orderByRaw('RANDOM()')
+        .limit(count)
+        .select('*');
+
+      return questions.map(q => ({
+        ...q,
+        options: q.options_json ? JSON.parse(q.options_json) : [],
+        content: q.content_json ? JSON.parse(q.content_json) : null
+      }));
     }
-
-    const questions = await query
-      .orderByRaw('RANDOM()')
-      .limit(count)
-      .select('*');
-
-    return questions.map(q => ({
-      ...q,
-      options: q.options_json ? JSON.parse(q.options_json) : [],
-      content: q.content_json ? JSON.parse(q.content_json) : null
-    }));
   }
 }
 
