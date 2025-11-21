@@ -7,9 +7,11 @@ const adminController = require('../controllers/adminController');
 const gameController = require('../controllers/gameController');
 const shopController = require('../controllers/shopController');
 const challengeController = require('../controllers/challengeController');
+const uploadController = require('../controllers/uploadController');
 
 // Import middleware
 const { authenticateToken, isAdmin } = require('../middleware/auth');
+const upload = require('../middleware/upload');
 
 // ============================================
 // AUTH ROUTES (V6 - GUEST-FIRST)
@@ -65,6 +67,16 @@ router.get('/admin/stats', authenticateToken, isAdmin, adminController.getDashbo
 router.get('/admin/question-reports', authenticateToken, isAdmin, adminController.getQuestionReports);
 router.put('/admin/question-reports/:id', authenticateToken, isAdmin, adminController.updateQuestionReport);
 router.get('/admin/question-reports/stats', authenticateToken, isAdmin, adminController.getQuestionReportStats);
+
+// ============================================
+// UPLOAD ROUTES (Admin only)
+// ============================================
+
+// Upload single file (image or audio) for questions
+router.post('/upload', authenticateToken, isAdmin, upload.single('file'), uploadController.uploadFile);
+
+// Upload multiple files
+router.post('/upload/multiple', authenticateToken, isAdmin, upload.array('files', 5), uploadController.uploadMultipleFiles);
 
 // ============================================
 // SHOP ROUTES

@@ -32,7 +32,12 @@ const createQuestion = async (req, res) => {
       correct_answer,
       difficulty = 'medium',
       explanation,
-      tags
+      tags,
+      image_url,
+      audio_url,
+      difficulty_level = 1,
+      points = 10,
+      time_limit = 60
     } = req.body;
 
     const created_by = req.user.id;
@@ -113,6 +118,11 @@ const createQuestion = async (req, res) => {
           correct_answer: correct_answer,
           difficulty: difficulty,
           explanation: explanation || null,
+          image_url: image_url || null,
+          audio_url: audio_url || null,
+          difficulty_level: difficulty_level,
+          points: points,
+          time_limit: time_limit,
           created_by: created_by,
           is_active: true
         })
@@ -139,6 +149,7 @@ const createQuestion = async (req, res) => {
     const question = await knex('questions')
       .select(
         'id', 'content_json', 'correct_answer', 'difficulty', 'explanation',
+        'image_url', 'audio_url', 'difficulty_level', 'points', 'time_limit',
         'is_active', 'created_by', 'created_at', 'updated_at'
       )
       .where('id', questionId)
@@ -183,6 +194,7 @@ const getQuestionById = async (req, res) => {
     const question = await knex('questions')
       .select(
         'id', 'content_json', 'correct_answer', 'difficulty', 'explanation',
+        'image_url', 'audio_url', 'difficulty_level', 'points', 'time_limit',
         'is_active', 'created_by', 'created_at', 'updated_at'
       )
       .where('id', id)
@@ -232,7 +244,12 @@ const updateQuestion = async (req, res) => {
       difficulty,
       explanation,
       is_active,
-      tags
+      tags,
+      image_url,
+      audio_url,
+      difficulty_level,
+      points,
+      time_limit
     } = req.body;
 
     // Check if question exists
@@ -259,6 +276,11 @@ const updateQuestion = async (req, res) => {
     if (difficulty !== undefined) updateData.difficulty = difficulty;
     if (explanation !== undefined) updateData.explanation = explanation;
     if (is_active !== undefined) updateData.is_active = is_active;
+    if (image_url !== undefined) updateData.image_url = image_url;
+    if (audio_url !== undefined) updateData.audio_url = audio_url;
+    if (difficulty_level !== undefined) updateData.difficulty_level = difficulty_level;
+    if (points !== undefined) updateData.points = points;
+    if (time_limit !== undefined) updateData.time_limit = time_limit;
 
     await knex.transaction(async (trx) => {
       // Update question
@@ -369,7 +391,8 @@ const getAllQuestions = async (req, res) => {
       .distinct('q.id')
       .select(
         'q.id', 'q.content_json', 'q.correct_answer', 'q.difficulty',
-        'q.explanation', 'q.is_active', 'q.created_by', 'q.created_at', 'q.updated_at'
+        'q.explanation', 'q.image_url', 'q.audio_url', 'q.difficulty_level',
+        'q.points', 'q.time_limit', 'q.is_active', 'q.created_by', 'q.created_at', 'q.updated_at'
       );
 
     // Apply filters
