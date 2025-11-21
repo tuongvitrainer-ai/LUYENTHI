@@ -1,6 +1,5 @@
 /**
  * Database connection using Knex.js for PostgreSQL
- * Supports both PostgreSQL and SQLite for development flexibility
  */
 
 require('dotenv').config();
@@ -9,18 +8,12 @@ const knexConfig = require('../knexfile');
 // Determine which configuration to use
 const environment = process.env.NODE_ENV || 'development';
 
-// Use SQLite if explicitly set or if PostgreSQL is not available
-let config;
-if (process.env.USE_SQLITE === 'true') {
-  config = knexConfig.sqlite;
-  console.log('📦 Using SQLite database');
-} else if (environment === 'production') {
-  config = knexConfig.production;
-  console.log('🐘 Using PostgreSQL (production)');
-} else {
-  config = knexConfig.development;
-  console.log('🐘 Using PostgreSQL (development)');
-}
+// Use production config if in production, otherwise use development
+const config = environment === 'production'
+  ? knexConfig.production
+  : knexConfig.development;
+
+console.log(`🐘 Using PostgreSQL (${environment})`);
 
 // Initialize Knex
 const knex = require('knex')(config);
