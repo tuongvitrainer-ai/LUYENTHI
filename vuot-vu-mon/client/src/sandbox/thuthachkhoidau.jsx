@@ -174,6 +174,26 @@ const ThuThachKhoiDau = () => {
     }
   }, [showTest, showResults]);
 
+  // Keyboard navigation - Press Enter to go to next question
+  useEffect(() => {
+    if (showTest && !showResults && !showConfirmDialog) {
+      const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (currentQuestionIndex < questions.length - 1) {
+            handleNextQuestion();
+          }
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyPress);
+
+      return () => {
+        window.removeEventListener('keydown', handleKeyPress);
+      };
+    }
+  }, [showTest, showResults, showConfirmDialog, currentQuestionIndex, questions.length]);
+
   const handleLevelSelect = (level) => {
     setSelectedLevel(level);
   };
@@ -195,15 +215,30 @@ const ThuThachKhoiDau = () => {
   };
 
   const startTest = async () => {
-    if (!selectedLevel) return;
+    if (!selectedLevel) {
+      alert('Vui lòng chọn lớp học!');
+      return;
+    }
 
     setLoading(true);
     setError(null);
 
     try {
-      // Fetch questions from API
+      // Build query parameters
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const response = await fetch(`${API_BASE}/api/challenge/questions/${selectedLevel}?count=${questionCount}`);
+      const queryParams = new URLSearchParams({
+        count: questionCount,
+        difficulty: difficultyLevel
+      });
+
+      // Add subject filters (if not "all")
+      if (!selectedSubjects.includes('all')) {
+        selectedSubjects.forEach(subject => {
+          queryParams.append('subjects', subject);
+        });
+      }
+
+      const response = await fetch(`${API_BASE}/api/challenge/questions/${selectedLevel}?${queryParams.toString()}`);
 
       if (!response.ok) {
         throw new Error('Không thể tải câu hỏi');
@@ -237,9 +272,19 @@ const ThuThachKhoiDau = () => {
       console.error('Error fetching questions:', err);
       setError(err.message);
 
-      // Fallback to MOCK_QUESTIONS if API fails
+      // Fallback to MOCK_QUESTIONS if API fails - filter by selected subjects
       console.log('⚠️  Using mock data as fallback');
-      setQuestions(MOCK_QUESTIONS);
+      let filteredQuestions = MOCK_QUESTIONS;
+
+      // Filter by subject if not "all"
+      if (!selectedSubjects.includes('all')) {
+        filteredQuestions = MOCK_QUESTIONS.filter(q => selectedSubjects.includes(q.subject));
+      }
+
+      // Limit to questionCount
+      filteredQuestions = filteredQuestions.slice(0, questionCount);
+
+      setQuestions(filteredQuestions);
       setShowTest(true);
       setCurrentQuestionIndex(0);
       setUserAnswers({});
@@ -643,17 +688,15 @@ const ThuThachKhoiDau = () => {
           </div>
 
           {/* Start Button */}
-          {selectedLevel && (
-            <div className="action-buttons">
-              <button
-                className="btn-start-test"
-                onClick={startTest}
-                disabled={loading}
-              >
-                {loading ? 'Đang tải câu hỏi...' : 'Bắt đầu thử thách! 🚀'}
-              </button>
-            </div>
-          )}
+          <div className="action-buttons">
+            <button
+              className="btn-start-test"
+              onClick={startTest}
+              disabled={loading}
+            >
+              {loading ? 'Đang tải câu hỏi...' : 'Bắt đầu thử thách! 🚀'}
+            </button>
+          </div>
 
           {/* Back Button */}
           <div className="back-section">
