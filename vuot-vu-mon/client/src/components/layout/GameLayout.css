@@ -1,0 +1,356 @@
+/* ===================================
+   GAME LAYOUT STYLES
+   =================================== */
+
+.game-layout {
+  background: #87CEEB !important;
+  min-height: 100vh;
+}
+
+.game-container {
+  padding: 0;
+  height: calc(100vh - 80px); /* Full height minus header */
+  overflow: hidden; /* Prevent scroll by default */
+}
+
+.game-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto; /* Allow scroll if game content is long */
+}
+
+/* ===================================
+   GAME HEADER RIGHT
+   =================================== */
+
+.game-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Timer */
+.game-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #2d5016;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.timer-icon {
+  font-size: 18px;
+}
+
+.timer-value {
+  font-size: 16px;
+  font-family: 'Courier New', monospace;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* Score */
+.game-score {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #2d5016;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.score-icon {
+  font-size: 18px;
+}
+
+.score-value {
+  font-size: 16px;
+  font-family: 'Courier New', monospace;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Action Buttons */
+.game-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.game-action-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 8px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.game-action-btn:hover {
+  background: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.game-action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.game-action-btn--primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+.game-action-btn--primary:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* ===================================
+   GAME SPECIFIC UTILITIES
+   =================================== */
+
+/* Game card wrapper */
+.game-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+/* Game section */
+.game-section {
+  margin-bottom: 24px;
+}
+
+.game-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2d5016;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Game button */
+.game-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #4a7c2f 0%, #7ed87a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(74, 124, 47, 0.3);
+}
+
+.game-btn:hover {
+  background: linear-gradient(135deg, #3d6626 0%, #6bc767 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(74, 124, 47, 0.4);
+}
+
+.game-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(74, 124, 47, 0.2);
+}
+
+.game-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Game input */
+.game-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #7ed87a;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.game-input:focus {
+  outline: none;
+  border-color: #4a7c2f;
+  box-shadow: 0 0 0 3px rgba(74, 124, 47, 0.1);
+}
+
+/* Game progress */
+.game-progress {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.game-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4a7c2f 0%, #7ed87a 100%);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+/* ===================================
+   RESPONSIVE - TABLET
+   =================================== */
+
+@media (max-width: 1024px) {
+  .game-content {
+    padding: 16px;
+  }
+
+  .game-card {
+    padding: 20px;
+  }
+
+  .timer-value,
+  .score-value {
+    font-size: 14px;
+  }
+}
+
+/* ===================================
+   RESPONSIVE - MOBILE
+   =================================== */
+
+@media (max-width: 767px) {
+  .game-container {
+    height: auto;
+    min-height: calc(100vh - 70px);
+  }
+
+  .game-content {
+    padding: 12px;
+  }
+
+  .game-header-right {
+    gap: 8px;
+  }
+
+  .game-timer,
+  .game-score {
+    padding: 6px 10px;
+  }
+
+  .timer-icon,
+  .score-icon {
+    font-size: 16px;
+  }
+
+  .timer-value,
+  .score-value {
+    font-size: 13px;
+    min-width: 40px;
+  }
+
+  .game-action-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .game-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .game-section-title {
+    font-size: 18px;
+  }
+
+  .game-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  /* Stack timer/score vertically on very small screens */
+  @media (max-width: 480px) {
+    .game-header-right {
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .game-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+}
+
+/* ===================================
+   FULLSCREEN MODE
+   =================================== */
+
+.game-layout:fullscreen {
+  background: #87CEEB;
+}
+
+.game-layout:fullscreen .sidebar,
+.game-layout:fullscreen .hamburger-menu {
+  display: none;
+}
+
+.game-layout:fullscreen .layout-main {
+  margin-left: 0 !important;
+}
+
+/* ===================================
+   ANIMATIONS
+   =================================== */
+
+@keyframes gameSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.game-card {
+  animation: gameSlideIn 0.4s ease;
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
+.game-action-btn:focus-visible {
+  outline: 2px solid #4a7c2f;
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .game-card,
+  .game-btn,
+  .game-action-btn,
+  .game-progress-fill {
+    animation: none;
+    transition: none;
+  }
+}
