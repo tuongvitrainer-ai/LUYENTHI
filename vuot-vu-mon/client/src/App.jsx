@@ -18,8 +18,8 @@ import GameLatTheTriNho from './pages/GameMap/Grade3/GameLatTheTriNho';
 import BangCuuChuong1 from './pages/GameMap/Grade3/BangCuuChuong1';
 import ThuThachKhoiDau from './pages/GameMap/Grade3/ThuThachKhoiDau';
 import DemoGameLayout from './pages/DemoGameLayout';
-import GameConfigEditor from './pages/Admin/GameConfigEditor';
-import PageBuilderWrapper from './pages/Admin/PageBuilderWrapper';
+import GameConfigEditor from './pages/admin/GameConfigEditor';
+import PageBuilderWrapper from './pages/admin/PageBuilderWrapper';
 import { LayoutProvider } from './context/LayoutContext';
 import './App.css';
 
