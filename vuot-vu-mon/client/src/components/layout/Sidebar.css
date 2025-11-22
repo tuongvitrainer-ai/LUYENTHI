@@ -7,8 +7,8 @@
   left: 0;
   top: 0;
   height: 100vh;
-  width: 220px;
-  background: linear-gradient(180deg, #a8e6a3 0%, #7ed87a 100%);
+  width: 220px; /* CUSTOM: Thay đổi số này để chỉnh chiều rộng (ví dụ: 250px, 200px) */
+  background: linear-gradient(180deg, #87CEEB 0%, #5DADE2 100%); /* Màu xanh da trời - đồng bộ với website */
   display: flex;
   flex-direction: column;
   padding: 20px 12px;
@@ -35,7 +35,7 @@
 
 /* Compact variant - Smaller width */
 .sidebar--compact {
-  width: 180px;
+  width: 180px; /* CUSTOM: Thay đổi chiều rộng cho compact mode */
   padding: 16px 10px;
 }
 
@@ -67,7 +67,7 @@
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  color: #2d5016;
+  color: #003d5c; /* Màu text xanh đậm - phù hợp với nền xanh da trời */
   font-weight: 600;
   transition: transform 0.2s;
 }
@@ -85,7 +85,7 @@
   font-size: 18px;
   font-weight: 700;
   white-space: nowrap;
-  color: #2d5016;
+  color: #003d5c; /* Màu text xanh đậm */
 }
 
 .sidebar--collapsed .logo-text {
@@ -145,7 +145,7 @@
 .profile-name {
   font-size: 14px;
   font-weight: 600;
-  color: #2d5016;
+  color: #003d5c; /* Màu text xanh đậm */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -159,7 +159,7 @@
 
 .stat-item {
   font-size: 12px;
-  color: #3d6020;
+  color: #1565c0; /* Màu xanh đậm hơn cho stats */
   display: flex;
   align-items: center;
   gap: 3px;
@@ -201,24 +201,24 @@
   width: 100%;
   text-align: left;
   position: relative;
-  color: #2d5016;
+  color: #003d5c; /* Màu text xanh đậm */
   font-size: 15px;
   font-weight: 500;
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.3); /* Hover sáng hơn một chút */
   transform: translateX(2px);
 }
 
 .nav-link--active {
-  background: #4a7c2f;
+  background: #1976d2; /* Màu active xanh đậm - phù hợp với theme */
   color: #fff;
-  box-shadow: 0 3px 8px rgba(74, 124, 47, 0.3);
+  box-shadow: 0 3px 8px rgba(25, 118, 210, 0.4);
 }
 
 .nav-link--active:hover {
-  background: #3d6626;
+  background: #1565c0; /* Hover active xanh đậm hơn */
   transform: translateX(0);
 }
 
@@ -246,7 +246,7 @@
   transform: translateY(-50%);
   width: 4px;
   height: 60%;
-  background: #4a7c2f;
+  background: #1976d2; /* Màu indicator xanh - đồng bộ với active */
   border-radius: 2px 0 0 2px;
 }
 
@@ -282,7 +282,7 @@
   border-radius: 8px;
   padding: 8px;
   cursor: pointer;
-  color: #2d5016;
+  color: #003d5c; /* Màu text xanh đậm */
   font-size: 14px;
   transition: all 0.2s;
   display: none; /* Hidden by default, show on desktop */
@@ -316,7 +316,7 @@
 
 .sidebar-action-btn--logout {
   background: rgba(255, 255, 255, 0.3);
-  color: #2d5016;
+  color: #003d5c; /* Màu text xanh đậm */
 }
 
 .sidebar-action-btn--logout:hover {
@@ -372,7 +372,7 @@
 .hamburger-line {
   width: 100%;
   height: 3px;
-  background: #2d5016;
+  background: #1976d2; /* Màu xanh - đồng bộ với theme */
   border-radius: 2px;
   transition: all 0.3s;
 }
@@ -383,11 +383,11 @@
 
 @media (max-width: 1024px) {
   .sidebar {
-    width: 200px;
+    width: 200px; /* CUSTOM: Chiều rộng trên tablet */
   }
 
   .sidebar--compact {
-    width: 160px;
+    width: 160px; /* CUSTOM: Chiều rộng compact trên tablet */
   }
 }
 
@@ -397,7 +397,7 @@
 
 @media (max-width: 767px) {
   .sidebar {
-    width: 280px;
+    width: 280px; /* CUSTOM: Chiều rộng trên mobile */
     box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
   }
 
@@ -419,7 +419,7 @@
 
   /* Always show labels on mobile */
   .sidebar--collapsed {
-    width: 280px;
+    width: 280px; /* CUSTOM: Chiều rộng mobile khi collapsed */
   }
 
   .sidebar--collapsed .nav-label,
