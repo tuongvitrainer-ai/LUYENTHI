@@ -20,10 +20,10 @@
 .game-container {
   max-width: 900px;
   width: 100%;
-  background: white;
-  border-radius: var(--border-radius-lg, 24px);
-  padding: var(--spacing-2xl, 40px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: transparent; /* Không dùng box trắng - để GameLayout quản lý */
+  border-radius: 0;
+  padding: var(--spacing-lg, 20px);
+  box-shadow: none;
   animation: fadeInUp 0.6s ease;
 }
 
@@ -72,6 +72,10 @@
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: var(--spacing-xl, 24px);
   margin-bottom: var(--spacing-2xl, 40px);
+  background: rgba(255, 255, 255, 0.95); /* Card riêng */
+  padding: var(--spacing-xl, 24px);
+  border-radius: var(--border-radius-lg, 24px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .level-card {
@@ -163,6 +167,10 @@
   margin-bottom: var(--spacing-xl, 24px);
   text-align: center;
   animation: fadeIn 0.5s ease;
+  background: rgba(255, 255, 255, 0.95); /* Card riêng cho section này */
+  padding: var(--spacing-xl, 24px);
+  border-radius: var(--border-radius-lg, 24px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .count-label {
