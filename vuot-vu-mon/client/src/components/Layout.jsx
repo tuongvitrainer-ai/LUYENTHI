@@ -1,44 +1,22 @@
 import { useState } from 'react';
-import Sidebar from './Sidebar';
+import Sidebar from './layout/Sidebar'; // Dùng Sidebar MỚI - đồng bộ với GameLayout
+import { LayoutProvider } from '../context/LayoutContext'; // Cần LayoutProvider
 import './Layout.css';
 
 function Layout({ children }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  const closeSidebar = () => {
-    setIsSidebarOpen(false);
-  };
-
   return (
-    <div className="layout-container">
-      {/* Sidebar */}
-      <Sidebar className={isSidebarOpen ? 'open' : ''} />
+    <LayoutProvider>
+      <div className="layout-container">
+        {/* Sidebar - Giống với GameLayout */}
+        <Sidebar variant="default" showStats={true} />
 
-      {/* Mobile Overlay */}
-      <div
-        className={`sidebar-overlay ${isSidebarOpen ? 'show' : ''}`}
-        onClick={closeSidebar}
-      ></div>
-
-      {/* Main Content */}
-      <div className="layout-content">
-        {/* Mobile Toggle Button */}
-        <button
-          className="sidebar-toggle-btn"
-          onClick={toggleSidebar}
-          aria-label="Toggle sidebar"
-        >
-          <span className="toggle-icon">{isSidebarOpen ? '✕' : '☰'}</span>
-        </button>
-
-        {/* Page Content */}
-        <div className="page-content">{children}</div>
+        {/* Main Content */}
+        <div className="layout-content" style={{ marginLeft: '220px' }}>
+          {/* Page Content */}
+          <div className="page-content">{children}</div>
+        </div>
       </div>
-    </div>
+    </LayoutProvider>
   );
 }
 
