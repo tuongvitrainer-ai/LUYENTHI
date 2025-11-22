@@ -19,6 +19,7 @@ import BangCuuChuong1 from './pages/GameMap/Grade3/BangCuuChuong1';
 import ThuThachKhoiDau from './pages/GameMap/Grade3/ThuThachKhoiDau';
 import DemoGameLayout from './pages/DemoGameLayout';
 import GameConfigEditor from './pages/Admin/GameConfigEditor';
+import PageBuilderWrapper from './pages/Admin/PageBuilderWrapper';
 import { LayoutProvider } from './context/LayoutContext';
 import './App.css';
 
@@ -204,6 +205,16 @@ function App() {
               element={
                 <GameConfigEditor />
               }
+            />
+
+            {/* Page Builder - GrapeJS Visual Editor */}
+            <Route
+              path="/admin/builder"
+              element={<PageBuilderWrapper />}
+            />
+            <Route
+              path="/admin/builder/:pageName"
+              element={<PageBuilderWrapper />}
             />
 
             {/* Catch all - redirect to home */}
