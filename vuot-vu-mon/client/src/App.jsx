@@ -109,11 +109,11 @@ function App() {
             <Route
               path="/game/grade3/thu-thach-khoi-dau"
               element={
-                <GuestRoute>
-                  <Layout>
+                <LayoutProvider>
+                  <GuestRoute>
                     <ThuThachKhoiDau />
-                  </Layout>
-                </GuestRoute>
+                  </GuestRoute>
+                </LayoutProvider>
               }
             />
 
