@@ -8,7 +8,7 @@
   top: 0;
   height: 100vh;
   width: 220px; /* CUSTOM: Thay đổi số này để chỉnh chiều rộng (ví dụ: 250px, 200px) */
-  background: linear-gradient(180deg, #87CEEB 0%, #5DADE2 100%); /* Màu xanh da trời - đồng bộ với website */
+  background: linear-gradient(180deg, #B3D9FF 0%, #87CEEB 100%); /* Blue Pastel - sáng hơn nền website một chút để tạo contrast */
   display: flex;
   flex-direction: column;
   padding: 20px 12px;
