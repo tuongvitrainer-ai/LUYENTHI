@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { gameAPI } from '../../../services/api';
+import { GameLayout } from '../../../components/layout';
 import './ThuThachKhoiDau.css';
 
 // Mock data - 15 câu hỏi phân bổ đều cho lớp 3
@@ -519,50 +520,8 @@ const ThuThachKhoiDau = () => {
   // Màn hình chọn cấp độ
   if (!showTest) {
     return (
-      <div className="thu-thach-khoi-dau">
+      <GameLayout title="KHỞI ĐỘNG THỬ THÁCH">
         <div className="game-container">
-          {/* Header with Home Button */}
-          <div style={{
-            position: 'relative',
-            marginBottom: '20px'
-          }}>
-            <button
-              className="btn-home-top"
-              onClick={() => window.history.back()}
-              style={{
-                position: 'absolute',
-                left: '0',
-                top: '0',
-                padding: '10px 20px',
-                background: '#4A90E2',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => e.target.style.background = '#357ABD'}
-              onMouseLeave={(e) => e.target.style.background = '#4A90E2'}
-            >
-              🏠 Về trang chủ
-            </button>
-
-            <h1 style={{
-              textAlign: 'center',
-              fontSize: '36px',
-              fontWeight: '700',
-              color: '#4A90E2',
-              margin: '0',
-              padding: '10px 0'
-            }}>
-              KHỞI ĐỘNG THỬ THÁCH
-            </h1>
-          </div>
 
           {/* Question for Level Selection */}
           <div style={{
@@ -813,7 +772,7 @@ const ThuThachKhoiDau = () => {
             </button>
           </div>
         </div>
-      </div>
+      </GameLayout>
     );
   }
 
@@ -829,7 +788,7 @@ const ThuThachKhoiDau = () => {
     };
 
     return (
-      <div className="thu-thach-khoi-dau">
+      <GameLayout title="KẾT QUẢ BÀI TEST">
         <div className="results-container">
           <div className="results-header">
             <h1 className="results-title">🎉 KẾT QUẢ BÀI TEST</h1>
@@ -983,7 +942,7 @@ const ThuThachKhoiDau = () => {
             </div>
           </div>
         </div>
-      </div>
+      </GameLayout>
     );
   }
 
@@ -1000,22 +959,20 @@ const ThuThachKhoiDau = () => {
     });
 
     return (
-      <div className="thu-thach-khoi-dau test-mode">
-        <div className="test-container">
-          <div className="test-content" style={{ width: '100%', textAlign: 'center', padding: '40px' }}>
-            <h2>⏳ Đang tải câu hỏi...</h2>
-            <p>Vui lòng đợi trong giây lát</p>
-            {questions.length === 0 && (
-              <button
-                onClick={() => window.location.reload()}
-                style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}
-              >
-                🔄 Tải lại trang
-              </button>
-            )}
-          </div>
+      <GameLayout title="ĐANG TẢI CÂU HỎI..." showTimer={false}>
+        <div className="test-content" style={{ width: '100%', textAlign: 'center', padding: '40px' }}>
+          <h2>⏳ Đang tải câu hỏi...</h2>
+          <p>Vui lòng đợi trong giây lát</p>
+          {questions.length === 0 && (
+            <button
+              onClick={() => window.location.reload()}
+              style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}
+            >
+              🔄 Tải lại trang
+            </button>
+          )}
         </div>
-      </div>
+      </GameLayout>
     );
   }
 
@@ -1031,17 +988,14 @@ const ThuThachKhoiDau = () => {
   const subjectConfig = getSubjectConfig(currentQuestion.subject);
 
   return (
-    <div className="thu-thach-khoi-dau test-mode">
+    <GameLayout
+      title="LÀM BÀI TEST"
+      showTimer={true}
+      timerValue={timeRemaining}
+    >
       <div className="test-container">
         {/* Left Column - Navigation */}
         <div className="test-navigation">
-          {/* Timer */}
-          <div className="timer-box">
-            <div className="timer-icon">⏱️</div>
-            <div className="timer-value">{formatTime(timeRemaining)}</div>
-            <div className="timer-label">Thời gian còn lại</div>
-          </div>
-
           {/* Question Grid */}
           <div className="question-grid">
             <div className="grid-title">Danh sách câu hỏi</div>
@@ -1174,7 +1128,7 @@ const ThuThachKhoiDau = () => {
           </div>
         </div>
       )}
-    </div>
+    </GameLayout>
   );
 };
 
