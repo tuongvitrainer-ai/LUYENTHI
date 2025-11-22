@@ -17,6 +17,8 @@ import UserManagement from './pages/admin/UserManagement';
 import GameLatTheTriNho from './pages/GameMap/Grade3/GameLatTheTriNho';
 import BangCuuChuong1 from './pages/GameMap/Grade3/BangCuuChuong1';
 import ThuThachKhoiDau from './pages/GameMap/Grade3/ThuThachKhoiDau';
+import DemoGameLayout from './pages/DemoGameLayout';
+import { LayoutProvider } from './context/LayoutContext';
 import './App.css';
 
 // Protected Route Component
@@ -112,6 +114,16 @@ function App() {
                     <ThuThachKhoiDau />
                   </Layout>
                 </GuestRoute>
+              }
+            />
+
+            {/* Demo Route - Xem GameLayout */}
+            <Route
+              path="/demo-game-layout"
+              element={
+                <LayoutProvider>
+                  <DemoGameLayout />
+                </LayoutProvider>
               }
             />
 
