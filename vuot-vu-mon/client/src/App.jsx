@@ -16,7 +16,7 @@ import QuestionForm from './pages/admin/QuestionForm';
 import UserManagement from './pages/admin/UserManagement';
 import GameLatTheTriNho from './pages/GameMap/Grade3/GameLatTheTriNho';
 import BangCuuChuong1 from './pages/GameMap/Grade3/BangCuuChuong1';
-import ThuThachKhoiDau from './sandbox/thuthachkhoidau';
+import ThuThachKhoiDau from './pages/GameMap/Grade3/ThuThachKhoiDau';
 import './App.css';
 
 // Protected Route Component
@@ -104,9 +104,8 @@ function App() {
               }
             />
 
-            {/* Sandbox Routes - Testing */}
             <Route
-              path="/sandbox-thuthachkhoidau"
+              path="/game/grade3/thu-thach-khoi-dau"
               element={
                 <GuestRoute>
                   <Layout>

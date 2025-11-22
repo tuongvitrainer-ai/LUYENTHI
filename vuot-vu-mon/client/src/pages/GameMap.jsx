@@ -102,6 +102,12 @@ function GameMap() {
         <div className="mini-games-section">
           <h3>🎮 Mini Games - Lớp 3</h3>
           <div className="mini-games-grid">
+            <Link to="/game/grade3/thu-thach-khoi-dau" className="mini-game-card">
+              <div className="mini-game-icon">🚀</div>
+              <h4>Khởi Động Thử Thách</h4>
+              <p>Đánh giá năng lực toàn diện lớp 3-5</p>
+              <span className="mini-game-badge" style={{ background: '#FF6B6B' }}>Hot</span>
+            </Link>
             <Link to="/game/grade3/game-lat-the-tri-nho" className="mini-game-card">
               <div className="mini-game-icon">🎴</div>
               <h4>Lật Thẻ Trí Nhớ</h4>
