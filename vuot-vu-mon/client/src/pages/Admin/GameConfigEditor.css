@@ -1,0 +1,372 @@
+/* ========================================
+   GAME CONFIG EDITOR - WordPress-style UI
+======================================== */
+
+.game-config-editor {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f5f5f5;
+  min-height: 100vh;
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ========================================
+   HEADER
+======================================== */
+
+.editor-header {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.editor-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+  color: #333;
+}
+
+.editor-header p {
+  margin: 0 0 20px 0;
+  color: #666;
+  font-size: 16px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-save,
+.btn-import,
+.btn-reset {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.btn-save {
+  background: #4A90E2;
+  color: white;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+}
+
+.btn-save:hover {
+  background: #357ABD;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
+.btn-import {
+  background: #51CF66;
+  color: white;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.btn-import:hover {
+  background: #40B352;
+  transform: translateY(-2px);
+}
+
+.btn-reset {
+  background: #FF6B6B;
+  color: white;
+}
+
+.btn-reset:hover {
+  background: #E55555;
+  transform: translateY(-2px);
+}
+
+/* ========================================
+   TABS
+======================================== */
+
+.editor-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: white;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #666;
+  font-family: inherit;
+}
+
+.tab:hover {
+  background: #f0f0f0;
+}
+
+.tab.active {
+  background: white;
+  color: #4A90E2;
+  box-shadow: 0 -2px 0 #4A90E2 inset;
+}
+
+/* ========================================
+   CONTENT
+======================================== */
+
+.editor-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.tab-panel h2 {
+  margin: 0 0 24px 0;
+  font-size: 24px;
+  color: #333;
+  border-bottom: 3px solid #f0f0f0;
+  padding-bottom: 12px;
+}
+
+.tab-panel h3 {
+  margin: 24px 0 16px 0;
+  font-size: 20px;
+  color: #4A90E2;
+}
+
+.tab-panel hr {
+  border: none;
+  border-top: 2px solid #f0f0f0;
+  margin: 32px 0;
+}
+
+/* ========================================
+   FORM FIELDS
+======================================== */
+
+.field-group {
+  margin-bottom: 20px;
+}
+
+.field-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+}
+
+.field-group input[type="text"],
+.field-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.field-group input[type="text"]:focus,
+.field-group textarea:focus {
+  outline: none;
+  border-color: #4A90E2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.field-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.field-group small {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #666;
+}
+
+.field-group small a {
+  color: #4A90E2;
+  text-decoration: none;
+}
+
+.field-group small a:hover {
+  text-decoration: underline;
+}
+
+/* Color input */
+.color-input {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.color-input input[type="color"] {
+  width: 60px;
+  height: 50px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.color-input input[type="text"] {
+  flex: 1;
+}
+
+/* Field row (2 columns) */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* ========================================
+   LEVEL CONFIG
+======================================== */
+
+.level-config {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border-left: 4px solid #4A90E2;
+}
+
+.level-config h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+/* ========================================
+   PREVIEW
+======================================== */
+
+.editor-preview {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.editor-preview h3 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.editor-preview p {
+  margin: 0 0 20px 0;
+  color: #666;
+}
+
+.preview-box {
+  background: #87CEEB;
+  padding: 40px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ========================================
+   INSTRUCTIONS
+======================================== */
+
+.editor-instructions {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.editor-instructions h3 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.editor-instructions ol {
+  margin: 0;
+  padding-left: 24px;
+}
+
+.editor-instructions li {
+  margin-bottom: 12px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.editor-instructions code {
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: #E55555;
+  font-size: 14px;
+}
+
+.tip {
+  margin-top: 20px;
+  padding: 16px;
+  background: #FFF9E6;
+  border-left: 4px solid #FFD43B;
+  border-radius: 4px;
+  color: #666;
+}
+
+.tip strong {
+  color: #333;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 768px) {
+  .game-config-editor {
+    padding: 12px;
+  }
+
+  .editor-header,
+  .editor-content,
+  .editor-preview,
+  .editor-instructions {
+    padding: 20px;
+  }
+
+  .editor-header h1 {
+    font-size: 24px;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .header-actions {
+    flex-direction: column;
+  }
+
+  .btn-save,
+  .btn-import,
+  .btn-reset {
+    width: 100%;
+  }
+}
