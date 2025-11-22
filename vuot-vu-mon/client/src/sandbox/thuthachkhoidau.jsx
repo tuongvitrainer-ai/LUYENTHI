@@ -139,6 +139,8 @@ const SUBJECT_CONFIG = {
 const ThuThachKhoiDau = () => {
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [questionCount, setQuestionCount] = useState(15); // NEW: Số câu hỏi
+  const [difficultyLevel, setDifficultyLevel] = useState(4); // NEW: Mức độ khó (1-10, mặc định 4)
+  const [selectedSubjects, setSelectedSubjects] = useState(['all']); // NEW: Môn học đã chọn (mặc định: tất cả)
   const [showTest, setShowTest] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
@@ -172,20 +174,71 @@ const ThuThachKhoiDau = () => {
     }
   }, [showTest, showResults]);
 
+  // Keyboard navigation - Press Enter to go to next question
+  useEffect(() => {
+    if (showTest && !showResults && !showConfirmDialog) {
+      const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (currentQuestionIndex < questions.length - 1) {
+            handleNextQuestion();
+          }
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyPress);
+
+      return () => {
+        window.removeEventListener('keydown', handleKeyPress);
+      };
+    }
+  }, [showTest, showResults, showConfirmDialog, currentQuestionIndex, questions.length]);
+
   const handleLevelSelect = (level) => {
     setSelectedLevel(level);
   };
 
+  const handleSubjectToggle = (subject) => {
+    if (subject === 'all') {
+      setSelectedSubjects(['all']);
+    } else {
+      setSelectedSubjects(prev => {
+        const newSelection = prev.filter(s => s !== 'all');
+        if (newSelection.includes(subject)) {
+          const filtered = newSelection.filter(s => s !== subject);
+          return filtered.length === 0 ? ['all'] : filtered;
+        } else {
+          return [...newSelection, subject];
+        }
+      });
+    }
+  };
+
   const startTest = async () => {
-    if (!selectedLevel) return;
+    if (!selectedLevel) {
+      alert('Vui lòng chọn lớp học!');
+      return;
+    }
 
     setLoading(true);
     setError(null);
 
     try {
-      // Fetch questions from API
+      // Build query parameters
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const response = await fetch(`${API_BASE}/api/challenge/questions/${selectedLevel}?count=${questionCount}`);
+      const queryParams = new URLSearchParams({
+        count: questionCount,
+        difficulty: difficultyLevel
+      });
+
+      // Add subject filters (if not "all")
+      if (!selectedSubjects.includes('all')) {
+        selectedSubjects.forEach(subject => {
+          queryParams.append('subjects', subject);
+        });
+      }
+
+      const response = await fetch(`${API_BASE}/api/challenge/questions/${selectedLevel}?${queryParams.toString()}`);
 
       if (!response.ok) {
         throw new Error('Không thể tải câu hỏi');
@@ -219,9 +272,19 @@ const ThuThachKhoiDau = () => {
       console.error('Error fetching questions:', err);
       setError(err.message);
 
-      // Fallback to MOCK_QUESTIONS if API fails
+      // Fallback to MOCK_QUESTIONS if API fails - filter by selected subjects
       console.log('⚠️  Using mock data as fallback');
-      setQuestions(MOCK_QUESTIONS);
+      let filteredQuestions = MOCK_QUESTIONS;
+
+      // Filter by subject if not "all"
+      if (!selectedSubjects.includes('all')) {
+        filteredQuestions = MOCK_QUESTIONS.filter(q => selectedSubjects.includes(q.subject));
+      }
+
+      // Limit to questionCount
+      filteredQuestions = filteredQuestions.slice(0, questionCount);
+
+      setQuestions(filteredQuestions);
       setShowTest(true);
       setCurrentQuestionIndex(0);
       setUserAnswers({});
@@ -447,9 +510,62 @@ const ThuThachKhoiDau = () => {
     return (
       <div className="thu-thach-khoi-dau">
         <div className="game-container">
-          {/* Header */}
-          <div className="game-header">
-            <h1 className="game-title">THỬ THÁCH KHỞI ĐẦU</h1>
+          {/* Header with Home Button */}
+          <div style={{
+            position: 'relative',
+            marginBottom: '20px'
+          }}>
+            <button
+              className="btn-home-top"
+              onClick={() => window.history.back()}
+              style={{
+                position: 'absolute',
+                left: '0',
+                top: '0',
+                padding: '10px 20px',
+                background: '#4A90E2',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => e.target.style.background = '#357ABD'}
+              onMouseLeave={(e) => e.target.style.background = '#4A90E2'}
+            >
+              🏠 Về trang chủ
+            </button>
+
+            <h1 style={{
+              textAlign: 'center',
+              fontSize: '36px',
+              fontWeight: '700',
+              color: '#4A90E2',
+              margin: '0',
+              padding: '10px 0'
+            }}>
+              KHỞI ĐỘNG THỬ THÁCH
+            </h1>
+          </div>
+
+          {/* Question for Level Selection */}
+          <div style={{
+            textAlign: 'center',
+            fontSize: '20px',
+            fontWeight: '600',
+            color: '#333',
+            marginBottom: '20px',
+            padding: '15px',
+            background: '#FFE5E5',
+            borderRadius: '12px',
+            border: '2px solid #FF6B6B'
+          }}>
+            Bạn đang học lớp mấy?
           </div>
 
           {/* Level Selection */}
@@ -479,41 +595,210 @@ const ThuThachKhoiDau = () => {
             </div>
           </div>
 
-          {/* Question Count Selection */}
-          {selectedLevel && (
-            <div className="question-count-selection">
-              <div className="count-label">Chọn số lượng câu hỏi:</div>
-              <div className="count-options">
+          {/* All Settings in unified style */}
+          <div style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+            {/* Question Count Selection */}
+            <div style={{
+              padding: '20px',
+              background: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                color: '#333',
+                textAlign: 'center'
+              }}>
+                Chọn số lượng câu hỏi:
+              </div>
+              <div style={{
+                display: 'flex',
+                gap: '10px',
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+              }}>
                 {[15, 24, 30, 45].map(count => (
                   <button
                     key={count}
                     className={`count-option ${questionCount === count ? 'selected' : ''}`}
                     onClick={() => setQuestionCount(count)}
+                    style={{
+                      padding: '12px 24px',
+                      border: '2px solid',
+                      borderColor: questionCount === count ? '#4A90E2' : '#ddd',
+                      borderRadius: '8px',
+                      background: questionCount === count ? '#4A90E2' : 'white',
+                      color: questionCount === count ? 'white' : '#666',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      transition: 'all 0.3s ease',
+                      minWidth: '80px'
+                    }}
                   >
                     {count} câu
                   </button>
                 ))}
               </div>
+              <div style={{
+                fontSize: '13px',
+                color: '#666',
+                marginTop: '12px',
+                textAlign: 'center',
+                fontStyle: 'italic'
+              }}>
+                💡 Chọn số lượng câu hỏi nhiều thì mức độ đánh giá sẽ càng chính xác bạn nhé!
+              </div>
             </div>
-          )}
 
-          {/* Start Button */}
-          {selectedLevel && (
-            <div className="action-buttons">
-              <button
-                className="btn-start-test"
-                onClick={startTest}
-                disabled={loading}
-              >
-                {loading ? 'Đang tải câu hỏi...' : 'Bắt đầu thử thách! 🚀'}
-              </button>
+            {/* Difficulty Level Selection */}
+            <div style={{
+              padding: '20px',
+              background: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                color: '#333',
+                textAlign: 'center'
+              }}>
+                Chọn mức độ khó:
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '12px'
+              }}>
+                <span style={{ fontSize: '14px', color: '#51CF66', fontWeight: '600' }}>
+                  Dễ
+                </span>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={difficultyLevel}
+                  onChange={(e) => setDifficultyLevel(Number(e.target.value))}
+                  style={{
+                    flex: 1,
+                    height: '6px',
+                    borderRadius: '3px',
+                    outline: 'none',
+                    cursor: 'pointer'
+                  }}
+                />
+                <span style={{ fontSize: '14px', color: '#FF6B6B', fontWeight: '600' }}>
+                  Khó
+                </span>
+              </div>
+              <div style={{
+                textAlign: 'center',
+                fontSize: '20px',
+                fontWeight: '700',
+                color: difficultyLevel <= 3 ? '#51CF66' : difficultyLevel <= 7 ? '#FFD43B' : '#FF6B6B',
+                marginTop: '8px'
+              }}>
+                Mức {difficultyLevel}
+              </div>
             </div>
-          )}
 
-          {/* Back Button */}
-          <div className="back-section">
-            <button className="btn-back" onClick={() => window.history.back()}>
-              ← Quay lại
+            {/* Subject Filter Selection */}
+            <div style={{
+              padding: '20px',
+              background: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                color: '#333',
+                textAlign: 'center'
+              }}>
+                Chọn môn học:
+              </div>
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '10px',
+                justifyContent: 'center'
+              }}>
+                <button
+                  className={`subject-filter-option ${selectedSubjects.includes('all') ? 'selected' : ''}`}
+                  onClick={() => handleSubjectToggle('all')}
+                  style={{
+                    padding: '10px 20px',
+                    border: '2px solid',
+                    borderColor: selectedSubjects.includes('all') ? '#4A90E2' : '#ddd',
+                    borderRadius: '20px',
+                    background: selectedSubjects.includes('all') ? '#4A90E2' : 'white',
+                    color: selectedSubjects.includes('all') ? 'white' : '#666',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  ✨ Tất cả
+                </button>
+                {Object.entries(SUBJECT_CONFIG).map(([key, config]) => (
+                  <button
+                    key={key}
+                    className={`subject-filter-option ${selectedSubjects.includes(key) ? 'selected' : ''}`}
+                    onClick={() => handleSubjectToggle(key)}
+                    style={{
+                      padding: '10px 20px',
+                      border: '2px solid',
+                      borderColor: selectedSubjects.includes(key) ? config.color : '#ddd',
+                      borderRadius: '20px',
+                      background: selectedSubjects.includes(key) ? config.color : 'white',
+                      color: selectedSubjects.includes(key) ? 'white' : '#666',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    {config.icon} {config.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Start Button - Centered */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: '30px',
+            marginBottom: '30px'
+          }}>
+            <button
+              className="btn-start-test"
+              onClick={startTest}
+              disabled={loading}
+              style={{
+                padding: '16px 48px',
+                fontSize: '18px',
+                fontWeight: '700',
+                background: loading ? '#ccc' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                transition: 'all 0.3s ease',
+                minWidth: '250px'
+              }}
+            >
+              {loading ? 'Đang tải câu hỏi...' : 'Bắt đầu thử thách! 🚀'}
             </button>
           </div>
         </div>
