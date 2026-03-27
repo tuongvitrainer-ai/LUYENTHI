@@ -10,39 +10,123 @@ function QuestionView() {
   const [searchParams] = useSearchParams();
   const { user, updateUser } = useAuth();
 
-  const subject = searchParams.get('subject');
+  const subjectFromUrl = searchParams.get('subject');
 
+  // Setup screen states
+  const [showSetup, setShowSetup] = useState(true);
+  const [questionCount, setQuestionCount] = useState(10);
+  const [difficultyLevel, setDifficultyLevel] = useState(4);
+  const [selectedSubjects, setSelectedSubjects] = useState(['Tất cả']);
+  const [gradeLevel, setGradeLevel] = useState('');
+
+  // Game states
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [startTime, setStartTime] = useState(Date.now());
 
-  // Load questions on mount
+  // Initialize subjects on mount
   useEffect(() => {
-    loadQuestions();
-  }, [subject]);
+    if (subjectFromUrl) {
+      setSelectedSubjects([subjectFromUrl]);
+    }
+  }, [subjectFromUrl]);
+
+  // Convert difficulty level (1-10) to difficulty distribution
+  const getDifficultyDistribution = (level) => {
+    if (level <= 3) {
+      // Levels 1-3: Mostly easy
+      return { easy: 0.8, medium: 0.2, hard: 0 };
+    } else if (level <= 5) {
+      // Levels 4-5: Mix easy and medium
+      return { easy: 0.5, medium: 0.4, hard: 0.1 };
+    } else if (level <= 7) {
+      // Levels 6-7: Mix medium and some hard
+      return { easy: 0.2, medium: 0.6, hard: 0.2 };
+    } else {
+      // Levels 8-10: Mostly hard
+      return { easy: 0, medium: 0.3, hard: 0.7 };
+    }
+  };
 
   const loadQuestions = async () => {
     try {
       setLoading(true);
-      const response = await gameAPI.getQuestions({ subject, limit: 5 });
+
+      // Prepare params - load more questions to ensure we have enough for filtering
+      const params = {
+        limit: Math.min(questionCount * 3, 50), // Load 3x more to ensure variety
+      };
+
+      // Add subject filter if specific subjects selected
+      if (selectedSubjects.length > 0 && !selectedSubjects.includes('Tất cả')) {
+        // For now, API only supports one subject at a time
+        params.subject = selectedSubjects[0];
+      }
+
+      const response = await gameAPI.getQuestions(params);
 
       if (response.data.success && response.data.data.questions.length > 0) {
-        setQuestions(response.data.data.questions);
-        setStartTime(Date.now());
+        let loadedQuestions = response.data.data.questions;
+
+        // Filter questions by difficulty level (client-side filtering)
+        const distribution = getDifficultyDistribution(difficultyLevel);
+        const easyCount = Math.floor(questionCount * distribution.easy);
+        const mediumCount = Math.floor(questionCount * distribution.medium);
+        const hardCount = questionCount - easyCount - mediumCount;
+
+        const easyQuestions = loadedQuestions.filter(q => q.difficulty === 'easy');
+        const mediumQuestions = loadedQuestions.filter(q => q.difficulty === 'medium');
+        const hardQuestions = loadedQuestions.filter(q => q.difficulty === 'hard');
+
+        const selectedQuestions = [
+          ...easyQuestions.slice(0, easyCount),
+          ...mediumQuestions.slice(0, mediumCount),
+          ...hardQuestions.slice(0, hardCount)
+        ];
+
+        // Shuffle questions
+        const shuffled = selectedQuestions.sort(() => Math.random() - 0.5);
+
+        // Take only the requested number of questions
+        const finalQuestions = shuffled.slice(0, questionCount);
+
+        if (finalQuestions.length >= Math.min(5, questionCount)) {
+          setQuestions(finalQuestions);
+          setStartTime(Date.now());
+          setShowSetup(false);
+        } else {
+          alert('Không đủ câu hỏi phù hợp với mức độ đã chọn! Vui lòng thử mức độ khác hoặc chọn ít câu hỏi hơn.');
+        }
       } else {
         alert('Không tìm thấy câu hỏi nào!');
-        navigate('/');
       }
     } catch (error) {
       console.error('Load questions error:', error);
       alert('Lỗi khi tải câu hỏi. Vui lòng thử lại.');
-      navigate('/');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStartGame = () => {
+    loadQuestions();
+  };
+
+  const handleSubjectToggle = (subject) => {
+    if (subject === 'Tất cả') {
+      setSelectedSubjects(['Tất cả']);
+    } else {
+      const filtered = selectedSubjects.filter(s => s !== 'Tất cả');
+      if (selectedSubjects.includes(subject)) {
+        const updated = filtered.filter(s => s !== subject);
+        setSelectedSubjects(updated.length === 0 ? ['Tất cả'] : updated);
+      } else {
+        setSelectedSubjects([...filtered, subject]);
+      }
     }
   };
 
@@ -131,6 +215,98 @@ function QuestionView() {
   const handleBackToMap = () => {
     navigate('/');
   };
+
+  const getDifficultyLabel = (level) => {
+    if (level <= 3) return 'Dễ';
+    if (level <= 5) return 'Trung bình';
+    if (level <= 7) return 'Khó';
+    return 'Rất khó';
+  };
+
+  // Show setup screen
+  if (showSetup) {
+    return (
+      <div className="question-page setup-page">
+        <div className="setup-container">
+          <button onClick={handleBackToMap} className="btn-back">
+            ← Về trang chủ
+          </button>
+
+          <h1 className="setup-title">🎯 Cài đặt trò chơi</h1>
+
+          {/* Question Count */}
+          <div className="setup-section">
+            <label className="setup-label">
+              📝 Chọn số lượng câu hỏi:
+            </label>
+            <div className="question-count-buttons">
+              {[5, 10, 15, 20, 30, 50].map(count => (
+                <button
+                  key={count}
+                  className={`count-btn ${questionCount === count ? 'active' : ''}`}
+                  onClick={() => setQuestionCount(count)}
+                >
+                  {count}
+                </button>
+              ))}
+            </div>
+            <p className="setup-hint">
+              💡 <em>Chọn số lượng câu hỏi nhiều thì mức độ đánh giá kỹ năng của bạn càng chính xác nhé!</em>
+            </p>
+          </div>
+
+          {/* Difficulty Level */}
+          <div className="setup-section">
+            <label className="setup-label">
+              ⚡ Mức độ khó: <strong>{getDifficultyLabel(difficultyLevel)}</strong> (Cấp {difficultyLevel})
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={difficultyLevel}
+              onChange={(e) => setDifficultyLevel(parseInt(e.target.value))}
+              className="difficulty-slider"
+            />
+            <div className="difficulty-marks">
+              <span>1<br/>Dễ</span>
+              <span>5<br/>TB</span>
+              <span>10<br/>Khó</span>
+            </div>
+          </div>
+
+          {/* Subject Filter */}
+          <div className="setup-section">
+            <label className="setup-label">
+              📚 Môn học:
+            </label>
+            <div className="subject-checkboxes">
+              {['Tất cả', 'Toán', 'Tiếng Việt', 'Tiếng Anh'].map(subject => (
+                <label key={subject} className="subject-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={selectedSubjects.includes(subject) ||
+                            (subject === 'Tất cả' && selectedSubjects.length === 0)}
+                    onChange={() => handleSubjectToggle(subject)}
+                  />
+                  <span>{subject}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Start Button */}
+          <button
+            onClick={handleStartGame}
+            className="btn btn-primary btn-start"
+            disabled={loading}
+          >
+            {loading ? '⏳ Đang tải...' : '🚀 Bắt đầu chơi'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
